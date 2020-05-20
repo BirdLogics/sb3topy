@@ -1,0 +1,69 @@
+
+Event Model (per sprite):
+self.events = {
+    "broadcast1": [func1, func2, ...],
+    "green_flag": [func3, func4, ...]
+}
+
+specmap.py
+ Contains code to be copied by generator
+engine.py
+ Contains files to be used by generated scripts
+parser.py
+ Parses sb3 and generates python
+
+Parser
+Parses into this format:
+
+class Block
+ opcode
+ uuid
+ parameters = {}
+ code = ""
+
+[
+    {
+        "opcode": "greenflagclicked",
+        "uuid": "asfidfdskjnakjnasdkjfnlskjd",
+        "parameters": {
+            "SUBSTACK": [
+                {
+                    "opcode": "motion_move",
+                    "uuid": "mbkmkmzkxmalcxzvmkl",
+                    "parameters": {
+                        "STEPS": 10
+                    }
+                },
+                {
+                    "opcode": "control_repeattimes",
+                    "uuid"; "dajdfslslvcvxz",
+                    "parameters": {
+                        "TIMES": 10,
+                        "SUBSTACK": [ // List= indent, dict= no indent? No longer could detect using SUBSTACK
+                            {
+                                "opcode": "motion_rotatecw",
+                                "uuid": "kjfandskjfnds",
+                                "parameters": {
+                                    "DEGREES": 5
+                                },
+                                "code": "self.direction += DEGREES"
+                            }
+                        ]
+                    },
+                    "code": "for _ in range(TIMES):\n    SUBSTACK" // re.sub(" +(SUBSTACK)", SUBSTACK, indented_code)
+                }
+            ]
+        }
+    }
+]
+
+green_flag
+move 10
+repeat 10
+ rotate 5
+
+
+parse_script
+ current: the current dict block
+   - Only contains uid before parsing
+   - Also contains parameters afterwards
