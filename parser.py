@@ -9,58 +9,108 @@ import textwrap
 
 def clean_identifier(text):
     """Makes an identifier valid"""
-    text = re.sub(r"(\d|_)?(\W|__)?", "", text)
+    text = re.sub(r"(?a)(?:^([\d_]+))?(\W|__)*?", "", text)
     if text.isidentifier():
         return text
-    else:
-        return ""
+    raise Exception("Failed to clean identifier")
+
+
+def escape_string(text, quote="'"):
+    """Escapes and quotes a string"""
+    if quote == "'":
+        return re.sub(r"()(?=\\|')", r"\\", text)
+    if quote == '"':
+        return re.sub(r'()(?=\\|")', r"\\", text)
+    raise Exception("Invalid string quote")
+
+
+class Block:
+    """Represents a block being parsed"""
+    code = ""  # Python representation
+    args = {}  # Blocks and values
 
 
 class Parser:
     """Main parse class"""
 
     queue = None
-    hats = {}
+    targets = {}
+    hats = []
 
-    def __init__(self):
-        with open("test2.json", 'r') as sb3_file:
+    def __init__(self, path):
+        with open(path, 'r') as sb3_file:
             self.sb3 = json.load(sb3_file)
 
         # Gets a list of specmap tuples,
         # In the format (opcode, parameters, flags, code)
-        with open("specmap.py", 'r') as map_file:
-            text = map_file.read()
-        specmap = re.findall(
-            r"(?s)    def (\w+)\(self(?:, ([\w|, ]+))?\):(?:  # (\w+))?\n(?!\w+#)(.+?)\n\n", text)
+        self.load_specmap("specmap2.txt")
 
-        # Change format to opcode:(parameters, flags, code)
-        self.specmap = {}
-        for block in specmap:
-            self.specmap[block[0]] = (block[1].split(
-                ", "), block[2], textwrap.dedent(block[3]))
+    def load_specmap(self, path):
+        """Reads and parses the specmap file"""
+        # Read the specmap file
+        with open(path, 'r') as file:
+            specmap = file.read()
+
+        # Parse the specmap file
+        pattern = (
+            r"(?s)#: ?(\w+)(?# opcode) ?"
+            r"(?:\(([\w, ]+)?\))?(?# args) ?"
+            r"(?:-(\w+))?(?# flags)"
+            r"(?:\n#\? ?([\w{}]+))?(?# switch)"
+            r"\n(.+?)\n\n(?# code)")
+        specmap = re.findall(pattern, specmap)
+
+        # Create the specmap dict
+        self.specmap = {block[0]: {
+            "args": re.split(", ?", block[1]),
+            "flags": block[2],
+            "switch": block[3],
+            "code": block[4]
+        } for block in specmap}
 
     def parse(self):
         """Parse the sb3 to python"""
+        # Top of the file
         code = '"""\nGenerated with sb3topy\n"""\nimport asyncio\nimport math\
-            \nimport random\n\nfrom engine import SpriteBase'
+            \nimport random\nimport time\n\nimport engine'
+
+        # Identifier names
+        names = []
 
         for target in self.sb3["targets"]:
+            # Get a unique name for the sprite class
+            target['name'] = clean_identifier(target['name'])
+            if target['name'] in names:
+                target['name'] = target['name'] + \
+                    str(names.count(target['name']))
+            names.append(target['name'])
+
+            # Parse the code
             code = code + self.parse_target(target)
+
         return code + '\n'
 
     def parse_target(self, target):
         """Parse a sprite"""
-        # TODO Class name validation
-        code = f"\n\nclass {clean_identifier(target['name'])}(SpriteBase):"
+        # Top of the sprite
+        code = f"\n\nclass {target['name']}(SpriteBase):"
 
+        # Class function names
+        self.hats = []
+
+        # Find block hats
         for block in target["blocks"].values():
-            if isinstance(block, dict) and block["topLevel"] and "proc" not in block["opcode"]:
+            if isinstance(block, dict) and block["topLevel"]:
+                # Parse the line
                 line = self.parse_script(block, target['blocks'])
-                line = self.parse_script2(line)
+
+                # If the function is empty, add pass
                 if len(line.strip().split('\n')) == 1:
                     line = line + "    pass"
                 if line.strip().startswith("async def"):
                     code = code + textwrap.indent(line, '    ') + '\n'
+                else:
+                    raise Exception("Invalid function")
         if len(code.strip().split('\n')) == 1:
             code = code + '\n    pass\n'
 
@@ -82,19 +132,20 @@ class Parser:
             # node - the list current is appended to
             # parameters - parsed inputs and fields
 
-            parameters = {}
+            args = {}
             block, node = self.queue.pop()
-            current = {'block': block, 'parameters': parameters,
+            current = {'block': block, 'args': args,
                        'opcode': block['opcode']}
+
+            # TODO arg validation from map
 
             # Parse fields
             for field, value in block['fields'].items():
-                parameters[field] = value[0]  # TODO Field and input parsing
+                args[field] = value[0]
 
             # Parse inputs
             for inp in block['inputs']:
-                parameters[re.escape(inp)] = self.parse_input(
-                    block, inp, blocks)
+                args[inp] = self.parse_input(block, inp, blocks)
 
             # Save the block if necesary
             if not node is False:
@@ -103,11 +154,6 @@ class Parser:
             # Add the next block to the queue
             if block['next']:
                 self.queue.append((blocks[block['next']], node))
-
-        return tree
-
-    def parse_script2(self, tree):
-        """Finishes parsing into python"""
 
         # Container, key
         self.queue = [(tree, 0)]
@@ -119,7 +165,7 @@ class Parser:
 
             # Check if the parameters are fully parsed
             done = True
-            for name, value in block['parameters'].items():
+            for name, value in block['args'].items():
                 # Check if this is a value or script
                 if isinstance(value, list):
                     # Ensure each block has been parsed
@@ -130,43 +176,48 @@ class Parser:
                             done = False
                     if done:
                         # Compile the parsed script into a single string
-                        block['parameters'][name] = '\n'.join(value)
+                        block['args'][name] = '\n'.join(value)
+                else:
+                    pass#print()
 
             if done:
                 # Turn this block into a string
                 self.queue.pop(-1)
-                block_map = self.specmap.get(
-                    block['opcode'], ([], '', f"{block['opcode']}"))
-                code = block_map[2]
+
+                if block['opcode'] == 'procedures_prototype':
+                    print()
+
+                block_map = self.specmap.get(block['opcode'])
+
+                if not block_map:
+                    continue
+
+                # Check if a diffrent block should be used
+                if block_map['switch']:
+                    block_map = self.specmap.get(
+                        block_map['switch'].format(**block['args']), block_map)
+
+                code = block_map['code']
 
                 # Hat blocks require special parsing
-                if block_map[1] == 'h':
-                    name = re.search(
-                        f"def (.+?)_?{block_map[0][1]}", code).group(1)
-                    block['parameters'][block_map[0][1]] = self.hats[name] =\
-                        self.hats.get(name, 0) + 1
-                    if len(block_map[0]) == 3:
-                        block['parameters'][block_map[0][2]] = clean_identifier(
-                            block['parameters'][block_map[0][2]])
+                if block_map['flags'] == 'h':
+                    name = clean_identifier(
+                        code.format(**block['args']))
+                    if name in self.hats:
+                        if code[-1] == '}':
+                            name = name + "_"
+                        self.hats.append(name)
+                        name = name + str(self.hats.count(name))
+                    code = f"async def {name}(self, runtime):{{SUBSTACK}}"
 
-                if block['parameters']:
-                    # Indent the parameter code properly
-                    for name, value in block['parameters'].items():
-                        # if re.escape(name) != name:
-                        #     block['parameters'].pop(name) # TODO Proc definitions
-                        #     continue
-                        # Get the indentation
-                        indent = re.search(f"( +){(name)}", code)
-                        if indent and len(indent.group(1)) > 1:
-                            block['parameters'][name] = textwrap.indent(
-                                value, indent.group(1))
+                # Indent the parameter code properly
+                for name, value in block['args'].items():
+                    if name[:8] == 'SUBSTACK':
+                        block['args'][name] = textwrap.indent(
+                            value, '    ')
 
-                        # Substitute in the actual code
-                        #code = re.sub(f"(?:  +)?({name})", str(value), code)
-
-                    # Substitute in the parameters
-                    code = re.sub(f"(?:  +)?({'(?!2)|'.join(block['parameters'].keys())}(?!2))",
-                                  lambda match: str(block['parameters'].get(match.group(1), "pass")), code)
+                # Substitute in the parameters
+                code = code.format(**block['args'])
 
                 # Save the block
                 node[key] = code
@@ -244,7 +295,7 @@ class Parser:
 
 def main():
     """Main function"""
-    parse = Parser()
+    parse = Parser("test3.json")
     code = parse.parse()
     with open("result.py", 'w') as code_file:
         code_file.write(code)
