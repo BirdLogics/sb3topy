@@ -403,23 +403,23 @@ class AssetCache:
     def get_costume(self, costume, scale):
         """Gets or loads a costume"""
         # Try to get the costume from the cache
-        image = self.costumes.get((costume['assetId'], scale), None)
+        image = self.costumes.get((costume['path'], scale), None)
         if not image:
             # Need to scale a new image
             image = self.costumes.get(
-                (costume['assetId'], costume['scale']), None)
+                (costume['path'], costume['scale']), None)
             if not image:
                 # Need to load the image first
                 image = pg.image.load(
-                    ASSETS_PATH + costume['md5ext']).convert_alpha()
-                self.costumes[(costume['assetId'], costume['scale'])] = image
+                    ASSETS_PATH + costume['path']).convert_alpha()
+                self.costumes[(costume['path'], costume['scale'])] = image
 
             # Smooth scale the image
             image = pg.transform.smoothscale(
                 image,
                 (int(image.get_width() * scale / costume['scale']),
                  int(image.get_height() * scale / costume['scale'])))
-            self.costumes[(costume['assetId'], scale)] = image
+            self.costumes[(costume['path'], scale)] = image
         return image
 
     def apply_effects(self, image, effects):
@@ -630,14 +630,14 @@ class Target:
         # Parse costumes
         for index, costume in enumerate(self.costumes):
             # Preload the costume
-            costume['scale'] = costume.get('bitmapResolution', 1)
             image = cache.get_costume(costume, costume['scale'])
 
             # Calculate the rotation offset
-            center = pg.math.Vector2(image.get_size()) / 2
-            costume['offset'] = pg.math.Vector2(
-                costume['rotationCenterX'],
-                costume['rotationCenterY']) - center
+            if costume['center'] is None:
+                costume['offset'] = pg.math.Vector2(0, 0)
+            else:
+                center = pg.math.Vector2(image.get_size()) / 2
+                costume['offset'] = pg.math.Vector2(costume['center']) - center
 
             # Save the index
             costume['number'] = index
@@ -648,7 +648,7 @@ class Target:
         # Parse sounds
         for asset in self.sounds:
             # Load the sound
-            asset['sound'] = cache.get_sound(asset['md5ext'])
+            asset['sound'] = cache.get_sound(asset['path'])
 
             # Add the asset to the dict
             self.sounds_dict[asset['name']] = asset
@@ -707,7 +707,7 @@ class Target:
         if dirty > self.dirty:
             self.dirty = dirty
 
-    async def do_yield(self, dirty=0):
+    async def _yield(self, dirty=0):
         """Yields and sets the dirty flag if not in warp mode"""
         # Also checks if running longer than WARP_TIME
         if not self.warp or time.monotonic() > self.warp_timer + WARP_TIME:
