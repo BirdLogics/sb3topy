@@ -1,0 +1,606 @@
+"""
+
+"""
+
+import asyncio
+import math
+import random
+
+import engine
+
+#pylint: disable=all
+
+# flags:
+# -d Means the sprite will become Dirty after running
+# -r Means the Rectangle will need updating after running
+# -i Means the Image will need updating after running
+# -s Means the block has Substacks so dirty needs to be set
+# -y Means the block Yields after its substack
+# -c Means the block should be parsed as a custom block
+
+# -u Means any Updates need to be made before running [Unused]
+# Updates are normally performed right before redrawing the screen
+# -u flag is currently unused, however the functions with it will
+# need to update the sprite(s) themself. For example, the 
+# is_touching function will update this and all checked sprites.
+
+# The -s flag uses this
+#: special_dirty
+self.set_dirty({DIRTY})
+
+# The -y flag uses this
+# _yield sets dirty
+#: special_yield
+await self._yield({DIRTY})
+
+#: procedures_definition (NAME, PARAMETERS, SUBSTACK)
+async def {NAME}(self, {PARAMETERS}):{SUBSTACK}
+
+# argument_reporter_string_number (VALUE)
+args[{VALUE}]
+
+#: procedures_call (NAME, PARAMETERS) -c
+{NAME}({PARAMETERS})
+
+#: motion_movesteps (STEPS) -r
+radians = math.radians(self.direction)
+self.xpos += {STEPS} * math.cos(radians)
+self.ypos += {STEPS} * math.sin(radians)
+
+#: motion_turnright (DEGREES) -i
+self.set_direction(self.direction + {DEGREES})
+
+#: motion_turnleft (DEGREES) -i
+self.set_direction(self.direction - DEGREES)
+
+#: motion_pointindirection (DIRECTION) -i
+self.set_direction({DIRECTION})
+
+#: motion_pointtowards (TOWARDS) -i
+#? motion_pointtowards{TOWARDS}
+other = util.targets[{TOWARDS}]
+radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
+self.set_direction(math.degrees(radians))
+
+#: motion_pointtowards_mouse_
+mouse = pg.mouse.get_pos()
+radians = math.atan2(self.xpos - mouse[0], self.ypos - mouse[1])
+self.set_direction(math.degrees(radians))
+
+#: motion_gotoxy (X, Y) -r
+self.xpos = {X}
+self.ypos = {Y}
+
+#: goto (TO) -r
+other = util.targets[{TO}]
+self.xpos, self.ypos = other.xpos, other.ypos
+
+#: motion_glidesecstoxy (SECS, X, Y) -r
+# motion_glidesecstoxy({SECS}, {X}, {Y})
+
+#: motion_changexby (DX) -r
+self.xpos += DX
+
+#: motion_setx (X) -r
+self.xpos = X
+
+#: motion_changeyby (DY) -r
+self.ypos += DY
+
+#: motion_sety (Y) -r
+self.ypos = Y
+
+#: motion_ifonedgebounce () -i
+# motion_ifonedgebounce()
+
+#: motion_setrotationstyle (STYLE) -i
+self.rotation_style = {STYLE}
+
+#: motion_xposition ()
+self.xpos
+
+#: motion_yposition ()
+self.ypos
+
+#: motion_direction ()
+self.direction
+
+#: looks_sayforsecs (MESSAGE, SECS)
+# looks_sayforsecs({MESSAGE}, {SECS})
+
+#: looks_say (MESSAGE)
+# looks_say({MESSAGE})
+
+#: looks_thinkforsecs (MESSAGE, SECS)
+# looks_thinkforsecs({MESSAGE, SECS})
+
+#: looks_think (MESSAGE)
+# looks_think({MESSAGE})
+
+#: looks_show () -d
+self.visible = 1
+
+#: looks_hide () -d
+self.visible = 0
+
+#: looks_switchcostumeto (COSTUME) -i
+self.costume = self.get_costume({COSTUME})
+
+#: looks_nextcostume () -i
+next_costume = self.costume['number'] + 1
+if next_costume == len(self.costumes):
+    self.costume = self.costumes[0]
+else:
+    self.costume = self.costumes[next_costume]
+
+#: looks_switchbackdropto (BACKDROP) -i
+self.costume = self.get_costume({BACKDROP})
+asyncio.create_task(util.send_event(
+    'onbackdrop_' + self.costume['name']))
+
+#: looks_switchbackdroptoandwait (BACKDROP) -i
+self.costume = self.get_costume({BACKDROP})
+await util.send_event('onbackdrop_' + self.costume['name'])
+
+#: looks_nextbackdrop () -i
+next_backdrop = self.costume['number'] + 1
+if next_backdrop == len(self.costumes):
+    self.costume = self.costumes[0]
+else:
+    self.costume = self.costumes[next_backdrop]
+asyncio.create_task(util.send_event(
+    'onbackdrop_' + self.costume['name']))
+
+#: looks_changeeffectby (EFFECT, CHANGE) -i
+self.change_effect({EFFECT}, {CHANGE})
+
+#: looks_seteffectto (EFFECT, VALUE) -i
+self.set_effect({EFFECT}, {VALUE})
+
+#: looks_cleargraphiceffects () -i
+self.clear_effects()
+
+#: looks_changesizeby (CHANGE) -i
+self.size += {CHANGE}
+
+#: looks_setsizeto (SIZE) -i
+self.size = {SIZE}
+
+#: looks_gotofrontback (FRONT_BACK) -d
+#? looks_goto{FRONT_BACK}
+# looks_gotofrontback()
+
+#: looks_gotofront ()
+# looks_gotofront()
+
+#: looks_gotoback ()
+# looks_gotoback
+
+# looks_gofowardsbackwardslayers (NUM) -d
+# looks_gofowardsbackwardslayers({NUM})
+
+#: looks_goforwardbackwardlayers (FORWARD_BACKWARD, NUM)
+#? looks_go{FORWARD_BACKWARD}layers
+# looks_goforwardbackwardlayers({NUM})
+
+#: looks_gofowardlayers
+# looks_gofowardlayers()
+
+#: looks_gobackwardlayers
+# looks_gobackwardlayers()
+
+# TODO Name/number field?
+#: looks_costumenumbername (NUMBER_NAME)
+self.costume[{NUMBER_NAME}]
+
+#: looks_backdropnumbername (NUMBER_NAME)
+self.costume[{NUMBER_NAME}]
+
+#: looks_size ()
+self.size
+
+#: sound_play (SOUND_MENU)
+# sound_play({SOUND_MENU})
+
+#: sound_playuntildone (SOUND_MENU)
+# sound_playuntildone({SOUND_MENU})
+
+#: sound_stopallsounds ()
+# sound_stopallsounds()
+
+#: sound_changevolumeby (VOLUME)
+# sound_changevolumeby({VOLUME})
+
+#: sound_setvolumeto (VOLUME)
+# sound_setvolumeto({VOLUME})
+
+#: sound_volume ()
+0
+
+# TODO Verify pen opcodes
+#: pen_clear ()
+# pen_clear()
+
+#: pen_stamp ()
+# pen_stamp()
+
+#: pen_down ()
+# pen_down()
+
+#: pen_up ()
+# pen_up()
+
+# Verified
+#: pen_penUp ()
+# pen_up()
+
+#: pen_penDown ()
+# pen_down()
+
+# TODO Pen shade color menu
+#: pen_changePenHueBy (HUE)
+# pen_changePenHueBy({HUE})
+
+#: pen_setPenHueToNumber (HUE)
+# pen_setPenHueToNumber({HUE})
+
+#: pen_changePenShadeBy (SHADE)
+# pen_changePenShadeBy({SHADE})
+
+#: pen_setPenShadeToNumber (SHADE)
+# pen_setPenShadeToNumber({SHADE})
+
+#: pen_changePenSizeBy (SIZE)
+# pen_changePenSizeBy({SIZE})
+
+#: pen_setPenSizeTo (SIZE)
+# pen_setPenSizeTo({SIZE})
+
+#: pen_setPenColorToColor (COLOR)
+# pen_setPenColorToColor({COLOR})
+
+#: event_whenflagclicked (SUBSTACK) -h
+green_flag
+
+#: event_whenkeypressed (SUBSTACK, KEY_OPTION) -h
+key{KEY_OPTION}_pressed
+
+#: event_whenthisspritelicked (SUBSTACK) -h
+sprite_clicked
+
+#: event_whenbackdropswitchesto (SUBSTACK, BACKDROP) -h
+onbackdrop_{BACKDROP}
+
+#: event_whengreaterthan (SUBSTACK, WHENGREATERTHANMENU, VALUE) -h
+#? event_whengreaterthan_{WHENGREATERTHANMENU}
+event_whengreaterthan
+
+if not {VALUE} > util.timer:
+    return
+
+#: event_whenbroadcastreceived (SUBSTACK, BROADCAST_OPTION) -h
+broadcast_{BROADCAST_OPTION}
+
+#: event_broadcast (BROADCAST_INPUT)
+util.send_event('broadcast_{BROADCAST_INPUT}')
+
+#: event_broadcastandwait (BROADCAST_INPUT)
+await util.send_event('broadcast_{BROADCAST_INPUT}')
+
+#: control_wait (DURATION)
+await self.sleep({DURATION})
+
+#: control_repeat (TIMES, SUBSTACK) -sy
+for _ in range(TIMES):
+{SUBSTACK}
+
+#: control_forever (SUBSTACK) -sy
+while True:
+{SUBSTACK}
+
+#: control_if (CONDITION, SUBSTACK) -s
+if CONDITION:
+{SUBSTACK}
+
+#: control_if_else (CONDITION, SUBSTACK, SUBSTACK2) -s
+if {CONDITION}:
+{SUBSTACK}
+else:
+{SUBSTACK2}
+
+#: control_wait_until (CONDITION) -d
+while not {CONDITION}:
+    await self._yield()
+
+#: control_repeat_until (CONDITION, SUBSTACK) -sy
+while not {CONDITION}:
+{SUBSTACK}
+
+#: control_stop (STOP_OPTION)
+#? control_stop_{STOP_OPTION}
+return None
+
+# TODO Clones
+#: control_start_as_clone (SUBSTACK) -h
+clone_start
+
+#: control_create_clone_of (CLONE_OPTION)
+# control_create_clone_of({CLONE_OPTION})
+
+#: control_delete_this_clone ()
+# control_delete_this_clone()
+
+#: sensing_touchingobject (TOUCHINGOBJECTMENU) -u
+#? sensing_touching{TOUCHINGOBJECTMENU}
+self.get_touching(util, util.targets[{TOUCHINGOBJECTMENU}])
+
+#: sensing_touching_mouse_
+self.get_touching_point(util, pg.mouse.get_pos())
+
+# TODO Color detection?
+#: sensing_touchingcolor (COLOR) -u
+False
+
+#: sensing_coloristouchingcolor (COLOR, COLOR2) -u
+False
+
+#: sensing_distanceto (DISTANCETOMENU)
+#? sensing_distanceto{DISTANCETOMENU}
+self.distance_to(util.targets[{DISTANCETOMENU}])
+
+#: sensing_distanceto_mouse_
+self.distance_to_point(pg.mouse.get_pos())
+
+# TODO sensing_askandwait
+#: sensing_askandwait (QUESTION)
+answer = input({QUESTION})
+
+#: sensing_answer
+answer
+
+#: sensing_keypressed (KEY_OPTION)
+util.get_key({KEY_OPTION})
+
+#: sensing_mousedown ()
+pg.mouse.get_pressed()[0]
+
+#: sensing_mousex ()
+pg.mouse.get_pos()[0]
+
+#: sensing_mousey ()
+pg.mouse.get_pos()[1]
+
+#: sensing_loudness ()
+0
+
+#: sensing_loud ()
+False
+
+# TODO timer
+#: sensing_timer ()
+util.timer()
+
+#: sensing_resettimer ()
+util.reset_timer()
+
+# TODO {OBJECT} Stage = _stage_
+#: sensing_of (PROPERTY, OBJECT)
+#? sensing_{PROPERTY}_of
+util.targets[{OBJECT}].variables[{PROPERTY}]
+
+#: sensing_x position_of
+util.targets[{OBJECT}].xpos
+
+#: sensing_y position_of
+util.targets[{OBJECT}].ypos
+
+#: sensing_direction_of
+util.targets[{OBJECT}].direction
+
+#: sensing_costume #_of
+util.targets[{OBJECT}].costume['number']
+
+#: sensing_costume name_of
+util.targets[{OBJECT}].costume['name']
+
+#: sensing_size_of
+util.targets[{OBJECT}].size
+
+#: sensing_volume_of
+util.targets[{OBJECT}].volume
+
+#: sensing_backdrop #_of
+util.targets[{OBJECT}].costume['number']
+
+#: sensing_backdrop name_of
+util.targets[{OBJECT}].costume['name']
+
+#: sensing_current (CURRENT_MENU)
+#? sensing_current_{CURRENT_MENU}
+0
+
+#: sensing_current_year
+time.localtime()['tm_year']
+
+#: sensing_current_month
+time.localtime()['tm_month']
+
+#: sensing_current_date
+time.localtime()['tm_mday']
+
+#: sensing_current_day of week
+(time.localtime()['tm_wday'] + 2)
+
+#: sensing_current_hour
+time.localtime()['tm_hour']
+
+#: sensing_current_minute
+time.localtime()['tm_min']
+
+#: sensing_current_second
+time.localtime()['tm_sec']
+
+# TODO Diffrent epoches?
+#: sensing_dayssince2000 ()
+(time.time() / 86400 - 10957)
+
+#: sensing_username ()
+engine.USERNAME
+
+#: operator_add (NUM1, NUM2)
+({NUM1} + {NUM2})
+
+#: operator_subtract (NUM1, NUM2)
+({NUM1} - {NUM2})
+
+#: operator_multiply (NUM1, NUM2)
+({NUM1} * {NUM2})
+
+#: operator_divide (NUM1, NUM2)
+({NUM1} / {NUM2})
+
+# TODO Decimal random
+#: operator_random (FROM, TO)
+random.randint({FROM}, {TO})
+
+# TODO String num '123' comparison
+#: operator_lt (OPERAND1, OPERAND2)
+({OPERAND1} < {OPERAND2})
+
+#: operator_equals (OPERAND1, OPERAND2)
+({OPERAND1} == {OPERAND2})
+
+#: operator_gt (OPERAND1, OPERAND2)
+({OPERAND1} > {OPERAND2})
+
+#: operator_and (OPERAND1, OPERAND2)
+({OPERAND1} and {OPERAND2})
+
+#: operator_or (OPERAND1, OPERAND2)
+({OPERAND1} or {OPERAND2})
+
+#: operator_not (OPERAND)
+not {OPERAND}
+
+# TODO Limited length join
+#: operator_join (STRING1, STRING2)
+(str({STRING1}) + str({STRING2}))
+
+#: operator_letter_of (LETTER, STRING)
+str({STRING})[{LETTER}]
+
+#: operator_length (STRING)
+len({STRING})
+
+#: operator_mod (NUM1, NUM2)
+({NUM1} % {NUM2})
+
+#: operator_round (NUM)
+round({NUM})
+
+#: operator_mathop (OPERATOR, NUM)
+#? operator_mathop_{OPERATOR}
+{NUM}
+
+#: data_variable (VARIABLE)
+self.variables[{VARIABLE}]
+
+#: data_setvariableto (VARIABLE, VALUE)
+self.variables[{VARIABLE}] = {VALUE}
+
+#: data_changevariableby (VARIABLE, VALUE)
+self.variables[{VARIABLE}] += {VALUE}
+
+# TODO Variable monitors
+#: data_showvariable (VARIABLE)
+# data_showvariable({VARIABLE})
+
+#: data_hidevariable (VARIABLE)
+# data_hidevariable({VARIABLE})
+
+# TODO Single character join
+#: data_listcontents (LIST)
+' '.join(self.lists[{LIST}])
+
+# TODO List item limit
+#: data_addtolist (ITEM, LIST)
+self.lists[{LIST}].append({ITEM})
+
+#: data_deleteoflist (INDEX, LIST)
+#? data_delete{INDEX}oflist
+self.lists[{LIST}].pop({INDEX} - 1)
+
+#: data_deletefirstoflist
+self.lists[{LIST}].pop(0)
+
+#: data_deletelastoflist
+self.lists[{LIST}].pop()
+
+#: data_deleterandomoflist
+self.lists[{LIST}].pop(random.randrange(
+    len(self.lists[{LIST}])))
+
+#: data_deletealloflist (LIST)
+self.lists[{LIST}] = []
+
+#: data_insertatlist (ITEM, INDEX, LIST)
+#? data_insertat{INDEX}list
+self.lists[{LIST}].insert({INDEX} - 1, {ITEM})
+
+#: data_insertatfirstlist
+self.lists[{LIST}].insert(0, {ITEM})
+
+#: data_insertatlastlist
+self.lists[{LIST}].append({ITEM})
+
+#: data_insertatrandomlist
+self.lists[{LIST}].insert(random.randrange(
+    len(self.lists[{LIST}])), {ITEM})
+
+#: data_replaceitemoflist (INDEX, LIST, ITEM)
+#? data_replace{INDEX}itemoflist
+self.lists[{LIST}][{INDEX} - 1] = {ITEM}
+
+#: data_replacefirstitemoflist
+self.lists[{LIST}][0] = {ITEM}
+
+#: data_replacelastitemoflist
+self.lists[{LIST}][-1] = {ITEM}
+
+#: data_replacerandomitemoflist
+self.lists[{LIST}][random.randrange(
+    len(self.lists[{LIST}]))] = {ITEM}
+
+#: data_itemoflist (INDEX, LIST)
+#? data_item{INDEX}oflist
+self.lists[{LIST}][{INDEX} - 1]
+
+#: data_itemfirstoflist
+self.lists[{LIST}][0]
+
+#: data_itemlastoflist
+self.lists[{LIST}][-1]
+
+#: data_itemrandomoflist
+self.lists[{LIST}][random.randrange(
+    len(self.lists[{LIST}]))]
+
+#: data_itemnumoflist (LIST, ITEM)
+self.lists[{LIST}].index({ITEM})
+
+#: data_lengthoflist (LIST)
+len(self.lists[{LIST}])
+
+#: data_listcontainsitem (LIST, ITEM)
+{ITEM} in self.lists[{LIST}]
+
+# TODO List monitors
+#: data_showlist (LIST)
+# data_showlist({LIST})
+
+#: data_hidelist (LIST)
+# data_hidelist({LIST})
+
+
+if __name__ == '__main__':
+    pass

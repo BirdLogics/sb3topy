@@ -1,4 +1,35 @@
+classes
 
+Runtime
+ - display
+ - util
+ - stage
+ - sprites
+
+BlockUtil
+ - down_keys
+ - targets
+ - variables
+ - lists
+ - cache
+ - timer
+
+Display
+ - screen
+ - scale
+ - rect
+
+Target
+ - sprite
+ - hats
+ - clones
+
+
+
+
+
+
+=================================================
 Event Model (per sprite):
 self.events = {
     "broadcast1": [func1, func2, ...],
@@ -20,6 +51,14 @@ class Block
  uuid
  parameters = {}
  code = ""
+
+{
+    
+}
+
+Queue item:
+
+
 
 [
     {
@@ -67,3 +106,41 @@ parse_script
  current: the current dict block
    - Only contains uid before parsing
    - Also contains parameters afterwards
+
+
+Parsing stages:
+  Queue parameters and substacks
+  Textify
+
+
+Parameters:
+ {
+
+ }
+
+Substack:
+[
+
+]
+
+
+=================================================
+Unique naming
+
+
+Already Named dict: {
+    "custom block proccode %s": ["customBlock", 1],
+    "greenFlag": [""]
+}
+
+Names List: [
+    "customBlock",
+    "greenFlag",
+    "greenFlag2"
+]
+
+
+
+iter = itertools.permutations([''] * 3 + list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 4)
+for i in iter:
+    print(''.join(i)) # A, B, C, ... AA, AB, AB, etc. 18278 possibilities
