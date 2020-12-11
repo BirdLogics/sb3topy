@@ -193,7 +193,7 @@ class Display:
         if self.fullscreen:
             info = pg.display.Info()
             self.size = (info.current_w // FS_SCALE,
-                              info.current_h // FS_SCALE)
+                         info.current_h // FS_SCALE)
         else:
             self.size = DISPLAY_SIZE
 
@@ -263,7 +263,7 @@ class BlockUtil:
         if event.key in KEY_MAP:
             self.key_event("any", True)
             self.key_event(KEY_MAP[event.key], True)
-        elif event.unicode: # TODO event.unicode doesn't exist for esc
+        elif event.unicode:  # TODO event.unicode doesn't exist for esc
             self.key_event("any", True)
             self.key_event(event.unicode.upper(), True)
         else:
@@ -535,9 +535,9 @@ class Target:
         costumes - A list of costume dicts
         sounds - A list of sound dicts
         costume - The intial costume #. Will be changed into a
-            dict from costumes by __init__
-        xpos, ypos, direction, size - Number attributes
-        hats - A list of aync functions which should be started
+            dict from costumes by Target.__init__
+        xpos, ypos, direction, size, visible
+        hats - A dict of aync functions which should be started
             upon certain events. Must be initialized in __init__
 
     In addition to these, the following are managed by Target:
@@ -563,6 +563,7 @@ class Target:
     xpos, ypos = 0, 0
     direction = 90
     size = 100
+    visible = True
 
     hats = None
 
@@ -619,7 +620,7 @@ class Target:
             # await self.recieve_event("clone_start")#, [], None)
 
         # Update the sprite rect, image, mask
-        self._update_image(util)
+        self.update(util)
 
     def recieve_event(self, name, threads, util):
         """Start an event"""
@@ -655,6 +656,7 @@ class Target:
 
     def update(self, util):
         """Clears the dirty flag by updating the sprite, rect and/or image"""
+        self.sprite.visible = self.visible
         if self.dirty == 1:
             # Hiden/Shown, needs redrawing
             self.sprite.dirty = 1
@@ -673,7 +675,7 @@ class Target:
         # The image is scaled to the display scale
         image = util.cache.get_costume(
             self.costume, self.size/100 * display.scale)
-        image = pg.transform.rotate(image, -self.direction)
+        image = pg.transform.rotate(image, 90-self.direction)
         self.sprite.mask = pg.mask.from_surface(image)
 
         if self.effects:
@@ -734,6 +736,10 @@ class Target:
     def set_direction(self, degrees):
         """Sets and wraps the direction"""
         self.direction = degrees - ((degrees + 179) // 360) * 360
+
+    def set_costume(self, costume):
+        """Sets the costume"""
+        self.costume = self.get_costume(costume)
 
     def get_costume(self, costume):
         """Gets a costume of name/number, or returns the current costume"""

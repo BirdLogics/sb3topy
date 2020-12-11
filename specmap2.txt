@@ -15,8 +15,8 @@ import engine
 # -r Means the Rectangle will need updating after running
 # -i Means the Image will need updating after running
 # -s Means the block has Substacks so dirty needs to be set
+# -c Means the block clears the dirty flag and accepts {DIRTY}
 # -y Means the block Yields after its substack
-# -c Means the block should be parsed as a custom block
 
 # -u Means any Updates need to be made before running [Unused]
 # Updates are normally performed right before redrawing the screen
@@ -79,16 +79,16 @@ self.xpos, self.ypos = other.xpos, other.ypos
 # motion_glidesecstoxy({SECS}, {X}, {Y})
 
 #: motion_changexby (DX) -r
-self.xpos += DX
+self.xpos += {DX}
 
 #: motion_setx (X) -r
-self.xpos = X
+self.xpos = {X}
 
 #: motion_changeyby (DY) -r
-self.ypos += DY
+self.ypos += {DY}
 
 #: motion_sety (Y) -r
-self.ypos = Y
+self.ypos = {Y}
 
 #: motion_ifonedgebounce () -i
 # motion_ifonedgebounce()
@@ -124,21 +124,20 @@ self.visible = 1
 self.visible = 0
 
 #: looks_switchcostumeto (COSTUME) -i
-self.costume = self.get_costume({COSTUME})
+self.set_costume({COSTUME})
 
 #: looks_nextcostume () -i
 next_costume = self.costume['number'] + 1
 if next_costume == len(self.costumes):
-    self.costume = self.costumes[0]
+    self.set_costume(0)
 else:
-    self.costume = self.costumes[next_costume]
+    self.set_costume(next_costume)
 
 #: looks_switchbackdropto (BACKDROP) -i
 self.costume = self.get_costume({BACKDROP})
-asyncio.create_task(util.send_event(
-    'onbackdrop_' + self.costume['name']))
+util.send_event('onbackdrop_' + self.costume['name'])
 
-#: looks_switchbackdroptoandwait (BACKDROP) -i
+#: looks_switchbackdroptoandwait (BACKDROP) -is
 self.costume = self.get_costume({BACKDROP})
 await util.send_event('onbackdrop_' + self.costume['name'])
 
@@ -148,8 +147,7 @@ if next_backdrop == len(self.costumes):
     self.costume = self.costumes[0]
 else:
     self.costume = self.costumes[next_backdrop]
-asyncio.create_task(util.send_event(
-    'onbackdrop_' + self.costume['name']))
+util.send_event('onbackdrop_' + self.costume['name']))
 
 #: looks_changeeffectby (EFFECT, CHANGE) -i
 self.change_effect({EFFECT}, {CHANGE})
@@ -200,19 +198,19 @@ self.costume[{NUMBER_NAME}]
 self.size
 
 #: sound_play (SOUND_MENU)
-# sound_play({SOUND_MENU})
+pass # sound_play({SOUND_MENU})
 
 #: sound_playuntildone (SOUND_MENU)
-# sound_playuntildone({SOUND_MENU})
+pass # sound_playuntildone({SOUND_MENU})
 
 #: sound_stopallsounds ()
-# sound_stopallsounds()
+pass # sound_stopallsounds()
 
 #: sound_changevolumeby (VOLUME)
-# sound_changevolumeby({VOLUME})
+pass # sound_changevolumeby({VOLUME})
 
 #: sound_setvolumeto (VOLUME)
-# sound_setvolumeto({VOLUME})
+pass # sound_setvolumeto({VOLUME})
 
 #: sound_volume ()
 0
@@ -284,14 +282,14 @@ broadcast_{BROADCAST_OPTION}
 #: event_broadcast (BROADCAST_INPUT)
 util.send_event('broadcast_{BROADCAST_INPUT}')
 
-#: event_broadcastandwait (BROADCAST_INPUT)
+#: event_broadcastandwait (BROADCAST_INPUT) -s
 await util.send_event('broadcast_{BROADCAST_INPUT}')
 
-#: control_wait (DURATION)
+#: control_wait (DURATION) -s
 await self.sleep({DURATION})
 
 #: control_repeat (TIMES, SUBSTACK) -sy
-for _ in range(TIMES):
+for _ in range({TIMES}):
 {SUBSTACK}
 
 #: control_forever (SUBSTACK) -sy
@@ -299,7 +297,7 @@ while True:
 {SUBSTACK}
 
 #: control_if (CONDITION, SUBSTACK) -s
-if CONDITION:
+if {CONDITION}:
 {SUBSTACK}
 
 #: control_if_else (CONDITION, SUBSTACK, SUBSTACK2) -s
@@ -308,7 +306,7 @@ if {CONDITION}:
 else:
 {SUBSTACK2}
 
-#: control_wait_until (CONDITION) -d
+#: control_wait_until (CONDITION) -s
 while not {CONDITION}:
     await self._yield()
 
@@ -316,6 +314,7 @@ while not {CONDITION}:
 while not {CONDITION}:
 {SUBSTACK}
 
+# TODO Stop options
 #: control_stop (STOP_OPTION)
 #? control_stop_{STOP_OPTION}
 return None

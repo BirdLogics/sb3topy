@@ -192,8 +192,8 @@ class Parser:
                 "\n    {"
                 f"\n        'name': \"{name}\","
                 f"\n        'path': \"{path}\","
-                f"\n        'scale': {scale},"
-                f"\n        'center': {center}"
+                f"\n        'center': {center},"
+                f"\n        'scale': {scale}"
                 "\n    },"
             )
         costumes = costumes + "\n]\n"
@@ -214,7 +214,10 @@ class Parser:
 
         # Put it all together
         return (
-            f"\ncostume = {target.get('currentCostume', 1) - 1}"
+            f"\ncostume = {target.get('currentCostume', 1) }"
+            f"\nxpos, ypos = {target.get('x', 0)}, {target.get('y', 0)}"
+            f"\ndirection = {target.get('direction', 90)}"
+            f"\nvisible = {target.get('visible', True)}"
             f"\n\n{costumes}"
             f"\n{sounds}"
         )
@@ -316,7 +319,7 @@ class Parser:
 
                         # Tell substacks if they need to yield
                         inp.startswith('SUBSTACK') and 'y' in blockmap['flags']
-                    )
+                    ).strip()
 
             # Use diffrent maps based on parameters
             if blockmap['switch']:
@@ -333,7 +336,7 @@ class Parser:
                 self.hats.setdefault(name, [])
                 names = self.hats[name]
                 if names:
-                    name = name + (code[-1] == '}' and '_') + str(len(names))
+                    name = name + ('_' if blockmap['code'][-1] == '}' else '') + str(len(names))
                 names.append(name)
 
                 # Create the code
@@ -403,6 +406,8 @@ class Parser:
 
         blockmap = self.specmap.get(block['opcode'])
 
+
+
         if block['opcode'] == "procedures_definition":
             mutation = blocks[block['inputs']['custom_block'][1]]['mutation']
 
@@ -421,135 +426,10 @@ class Parser:
         elif block['opcode'] == "argument_reporter_string_number":
             pass  # TODO Handle argument_reporter_string_number
 
-        elif 'c' in blockmap['flags']:  # TODO What is c flag for?
-            raise Exception("Unexpected custom block map flag.")
+        # elif 'c' in blockmap['flags']:  # TODO What is c flag for?
+        #     raise Exception("Unexpected custom block map flag.")
 
         return blockmap
-
-    def parse_script(self, block, blocks):
-        """Parses a script from the top block down"""
-        # block, blockmap, code
-
-        tree = []
-        self.queue = [(block, tree)]
-
-        block['inputs']['SUBSTACK'] = [2, block['next']]
-        block['next'] = None
-
-        while self.queue:
-            # block - the sb3 json block
-            # current - the parsed sb3 block
-            # node - the list current is appended to
-            # parameters - parsed inputs and fields
-
-            args = {}
-            block, node = self.queue.pop()
-            current = {'block': block, 'args': args,
-                       'opcode': block['opcode']}
-
-            # TODO arg validation from map
-
-            # Parse fields
-            for field, value in block['fields'].items():
-                args[field] = value[0]
-
-            # Parse inputs
-            for inp in block['inputs']:
-                args[inp] = self.parse_input(block, inp, blocks)
-
-            # Save the block if necesary
-            if not node is False:
-                node.append(current)
-
-            # Add the next block to the queue
-            if block['next']:
-                self.queue.append((blocks[block['next']], node))
-
-        # Container, key
-        self.queue = [(tree, 0)]
-        # [(tree, key) for key, _ in enumerate(tree)]
-
-        while self.queue:
-            node, key = self.queue[-1]
-            block = node[key]
-
-            # Check if the parameters are fully parsed
-            done = True
-            for name, value in block['args'].items():
-                # Check if this is a value or script
-                if isinstance(value, list):
-                    # Ensure each block has been parsed
-                    for key2, block2 in enumerate(value):
-                        if isinstance(block2, dict):
-                            # It hasn't, add to queue
-                            self.queue.append((value, key2))
-                            done = False
-                    if done:
-                        # Compile the parsed script into a single string
-                        block['args'][name] = '\n'.join(value)
-                else:
-                    pass  # print()
-
-            if done:
-                # Turn this block into a string
-                self.queue.pop(-1)
-
-                if block['opcode'] == 'procedures_prototype':
-                    print()
-
-                blockmap = self.specmap.get(block['opcode'])
-
-                if not blockmap:
-                    continue
-
-                # Check if a diffrent block should be used
-                if blockmap['switch']:
-                    blockmap = self.specmap.get(
-                        blockmap['switch'].format(**block['args']), blockmap)
-
-                code = blockmap['code']
-
-                # Hat blocks require special parsing
-                if blockmap['flags'] == 'h':
-                    name = clean_identifier(
-                        code.format(**block['args']))
-                    if name in self.hats:
-                        if code[-1] == '}':
-                            name = name + "_"
-                        self.hats.append(name)
-                        name = name + str(self.hats.count(name))
-                    code = f"async def {name}(self, util):{{SUBSTACK}}"
-
-                # Indent the parameter code properly
-                for name, value in block['args'].items():
-                    if name[:8] == 'SUBSTACK':
-                        block['args'][name] = textwrap.indent(
-                            value, '    ')
-
-                # Substitute in the parameters
-                code = code.format(**block['args'])
-
-                # Save the block
-                node[key] = code
-        return '\n' + tree[0] + textwrap.indent('\n'.join(tree[1:]), '    ')
-
-        # code = ""
-        # block = top_block
-        # blockmap = self.specmap.get(block["opcode"], ('', '', ''))
-
-        # if blockmap[1] == 'h':
-        #     line = blockmap[2].split('"')[3]
-        #     code = f"\n    async def {line}(self):\n"
-        #     if not block["next"]:
-        #         code = code + "        pass\n"
-
-        #     while block and block["next"]:
-        #         block = target["blocks"][block["next"]]
-        #         blockmap = self.specmap.get(block["opcode"], None)
-        #         if not blockmap:
-        #             continue
-
-        #         code = code + blockmap[2] + "\n"
 
     def parse_input(self, block, inp, blocks):
         """
@@ -592,13 +472,13 @@ class Parser:
         # Handle numbers
         if 4 <= value[0] <= 8:
             try:
-                value = float(value[0])
+                value = float(value[1])
                 if value.is_integer():
                     value = int(value)
             except ValueError:
-                value[1] = quote_string(value[1], '"')
+                value = quote_string(value[1], '"')
         elif 9 <= value[0] <= 10:
-            value[1] = quote_string(value[1], '"')
+            value = quote_string(value[1], '"')
 
         # Handle broadcast inputs
         elif value[0] == 11:
@@ -620,7 +500,8 @@ class Parser:
 
         return value, False
 
-    def parse_field(self, block, field):
+    @staticmethod
+    def parse_field(block, field):
         """Parses the field to ensure compatibility"""
         # TODO Lowercase some fields?
         if field in LOWER_FIELDS:
