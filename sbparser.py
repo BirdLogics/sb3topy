@@ -60,7 +60,7 @@ class Parser:
 
         # Parse the specmap file
         pattern = (
-            r"(?s)#: ?(\w+)(?# opcode) ?"
+            r"(?s)#: ?((?:\w|')+)(?# opcode) ?"
             r"(?:\(([\w, ]+)?\))?(?# args) ?"
             r"(?:-(\w+))?(?# flags)"
             r"(?:\n#\? ?([\w{}]+))?(?# switch)"
@@ -162,7 +162,7 @@ class Parser:
         top = top + textwrap.indent(self.parse_info(target), '    ')
 
         # Add the __init__ function
-        top = top + textwrap.indent(self.create_init(), '    ')
+        top = top + textwrap.indent(self.create_init(target), '    ')
 
         return top + code
 
@@ -222,7 +222,7 @@ class Parser:
             f"\n{sounds}"
         )
 
-    def create_init(self):
+    def create_init(self, target):
         """Creates the target __init__ saving hats"""
         code = "\ndef __init__(self, util):"
         code = code + "\n    self.hats = {"
@@ -231,7 +231,12 @@ class Parser:
             for name in names:
                 code = code + f"\n            self.{name},"
             code = code + "\n        ],"
-        code = code + "\n    }\n    super().__init__(util)\n"
+
+        code = code + (
+            "\n    }"
+            "\n    super().__init__(util)"
+            f"\n    self.sprite.layer = {int(target.get('layerOrder'))}\n"
+        ) # TODO Better layer parsing
 
         return code
 

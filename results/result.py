@@ -187,6 +187,7 @@ class Stage(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 0
 
     async def broadcast_Flash(self, util):
         if not (self.costume['number'] == "15"):
@@ -472,6 +473,7 @@ class title(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 5
 
     async def green_flag(self, util):
         self.set_effect('pixelate', 0)
@@ -561,8 +563,12 @@ class play(engine.Target):
                 self.green_flag,
                 self.green_flag1,
             ],
+            'sprite_clicked': [
+                self.sprite_clicked,
+            ],
         }
         super().__init__(util)
+        self.sprite.layer = 29
 
     async def green_flag(self, util):
         self.set_effect('pixelate', 0)
@@ -588,11 +594,27 @@ class play(engine.Target):
         self.set_dirty(3)
         await self.sleep(3)
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.xpos = -178
         self.ypos = -205
-        # motion_glidesecstoxy(1, -178, -15)
+        await self.glide(1, -178, -15)
         self.set_dirty(2)
+
+
+    async def sprite_clicked(self, util):
+        for _ in range(5):
+            self.change_effect('ghost', 10)
+            self.set_dirty(3)
+            await self.sleep(0.2)
+            await self._yield(0)
+        util.send_event('broadcast_Play')
+        for _ in range(5):
+            self.change_effect('ghost', 10)
+            self.set_dirty(3)
+            await self.sleep(0.2)
+            await self._yield(0)
+        self.visible = 0
+        self.set_dirty(1)
 
 
 
@@ -1048,6 +1070,7 @@ class Sprite3(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 4
 
     async def broadcast_Play(self, util):
         self.set_effect('ghost', 100)
@@ -1526,6 +1549,7 @@ class Sprite4(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 15
 
     async def broadcast_SoIMustEatTacos(self, util):
         self.visible = 0
@@ -1774,6 +1798,7 @@ class Sprite1(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 32
 
     async def broadcast_NowHesAngry(self, util):
         self.visible = 0
@@ -1785,7 +1810,7 @@ class Sprite1(engine.Target):
         self.ypos = -66
         self.set_costume('costume4')
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         await self.sleep(0.5)
         pass # sound_playuntildone('Crickets')
@@ -1807,7 +1832,7 @@ class Sprite1(engine.Target):
         self.ypos = -66
         self.set_costume('costume2')
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         await self.sleep(0.5)
         pass # sound_playuntildone('Crickets')
@@ -1879,6 +1904,7 @@ class Sprite5(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 30
 
     async def broadcast_Umm(self, util):
         self.visible = 0
@@ -1888,7 +1914,7 @@ class Sprite5(engine.Target):
     async def broadcast_MouthOpensDramatically(self, util):
         self.xpos = 66
         self.ypos = -5
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.visible = 1
         self.set_dirty(2)
 
@@ -2199,6 +2225,7 @@ class Sprite6(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 6
 
     async def broadcast_SoIMustEatTacos(self, util):
         self.size = 130
@@ -2327,6 +2354,7 @@ class Sprite7(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 31
 
     async def broadcast_ThirdTimeAwkward(self, util):
         self.visible = 0
@@ -2340,7 +2368,7 @@ class Sprite7(engine.Target):
         self.set_direction(120)
         self.set_costume('costume1')
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         for _ in range(10):
             await self.sleep(0.05)
@@ -2355,7 +2383,7 @@ class Sprite7(engine.Target):
         self.set_direction(120)
         self.set_costume('costume1')
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         for _ in range(10):
             await self.sleep(0.05)
@@ -2379,7 +2407,7 @@ class Sprite7(engine.Target):
         self.set_direction(120)
         self.set_costume('costume1')
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         await self.sleep(1)
         for _ in range(10):
@@ -2564,6 +2592,7 @@ class Sprite8(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 9
 
     async def broadcast_Running(self, util):
         self.set_direction(100)
@@ -2573,7 +2602,7 @@ class Sprite8(engine.Target):
         self.set_costume('costume21')
         self.visible = 1
         pass # sound_play('Arrrrrrgh')
-        # motion_glidesecstoxy(5, -112, 41)
+        await self.glide(5, -112, 41)
         util.send_event('broadcast_Lightning')
         self.set_dirty(3)
 
@@ -2648,7 +2677,7 @@ class Sprite8(engine.Target):
 
 
     async def broadcast_IsThisTheEnd(self, util):
-        # motion_glidesecstoxy(4, 44, -27)
+        await self.glide(4, 44, -27)
         util.send_event('broadcast_Kablammie')
         self.visible = 0
         self.set_dirty(2)
@@ -2704,6 +2733,7 @@ class Sprite11(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 3
 
     async def broadcast_Kablammie(self, util):
         self.visible = 0
@@ -2732,7 +2762,7 @@ class Sprite11(engine.Target):
         self.size = 116
         self.set_effect('ghost', 25)
         self.visible = 1
-        # looks_goforwardbackwardlayers(99)
+        self.change_layer(util, -99)
         self.set_costume('costume1')
         self.set_dirty(3)
         while True:
@@ -2848,6 +2878,7 @@ class Sprite9(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 16
 
     async def broadcast_Lightning(self, util):
         self.set_effect('brightness', 50)
@@ -3099,6 +3130,7 @@ class Sprite10(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 14
 
     async def broadcast_Kablammie(self, util):
         self.variables['UhOh'] = "0"
@@ -3190,6 +3222,7 @@ class Sprite15(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 23
 
     async def green_flag(self, util):
         self.visible = 0
@@ -3205,7 +3238,7 @@ class Sprite15(engine.Target):
         self.xpos = 0
         self.ypos = 0
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(2)
 
 
@@ -3266,6 +3299,7 @@ class Sprite12(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 19
 
     async def broadcast_Flash(self, util):
         self.set_effect('brightness', -10)
@@ -3507,6 +3541,7 @@ class Sprite13(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 24
 
     async def broadcast_Flash(self, util):
         self.set_effect('brightness', -10)
@@ -3530,7 +3565,7 @@ class Sprite13(engine.Target):
         self.set_costume('costume10')
         self.set_effect('brightness', -20)
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         await self.sleep(2)
         pass # sound_play('NowZeke')
@@ -3723,6 +3758,7 @@ class Sprite14(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 7
 
     async def broadcast_Flash(self, util):
         self.set_effect('brightness', -10)
@@ -3825,6 +3861,7 @@ class Sprite17(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 1
 
     async def broadcast_NowHesAngry(self, util):
         self.visible = 0
@@ -3941,6 +3978,7 @@ class Sprite18(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 2
 
     async def broadcast_WhatThe(self, util):
         self.visible = 0
@@ -4034,6 +4072,7 @@ class Sprite19(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 25
 
     async def broadcast_Flash(self, util):
         self.set_effect('brightness', -10)
@@ -4061,8 +4100,8 @@ class Sprite19(engine.Target):
         self.ypos = 0
         self.set_effect('brightness', -20)
         self.visible = 1
-        # looks_gotofrontback()
-        # looks_goforwardbackwardlayers(1)
+        self.front_layer(util)
+        self.change_layer(util, -1)
         self.set_dirty(3)
 
 
@@ -4106,6 +4145,7 @@ class Sprite20(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 26
 
     async def broadcast_Flash(self, util):
         self.set_effect('brightness', -10)
@@ -4128,7 +4168,7 @@ class Sprite20(engine.Target):
         self.ypos = -61
         self.set_effect('brightness', -20)
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
 
 
@@ -4333,6 +4373,7 @@ class Sprite21(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 8
 
     async def broadcast_HeyGuys(self, util):
         self.xpos = -133
@@ -4352,7 +4393,7 @@ class Sprite21(engine.Target):
         await self.sleep(1)
         self.set_costume('costume26')
         pass # sound_play('Dash')
-        # motion_glidesecstoxy(0.1, -39, 90)
+        await self.glide(0.1, -39, 90)
         self.visible = 0
         self.set_dirty(3)
         await self.sleep(2)
@@ -4477,6 +4518,7 @@ class Sprite22(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 27
 
     async def broadcast_Flash(self, util):
         self.set_effect('brightness', -10)
@@ -4501,19 +4543,19 @@ class Sprite22(engine.Target):
         self.set_costume('costume2')
         self.set_effect('brightness', -20)
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_direction(105)
-        # motion_glidesecstoxy(0.8, -132, -141)
+        await self.glide(0.8, -132, -141)
         self.set_direction(75)
-        # motion_glidesecstoxy(0.3, -209, -100)
+        await self.glide(0.3, -209, -100)
         pass # sound_play('MetalBang2')
         util.send_event('broadcast_Flash')
         self.set_dirty(3)
         await self.sleep(1)
         self.set_direction(105)
-        # motion_glidesecstoxy(0.8, -174, -34)
+        await self.glide(0.8, -174, -34)
         self.set_direction(85)
-        # motion_glidesecstoxy(0.3, -186, -12)
+        await self.glide(0.3, -186, -12)
         pass # sound_play('MetalBang3')
         self.set_dirty(3)
         await self.sleep(0.5)
@@ -4587,6 +4629,7 @@ class Sprite23(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 28
 
     async def green_flag(self, util):
         self.visible = 0
@@ -4600,7 +4643,7 @@ class Sprite23(engine.Target):
         self.set_effect('brightness', 0)
         self.set_costume('costume1')
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         for _ in range(100):
             await self.sleep(0.05)
@@ -4688,18 +4731,19 @@ class Sprite24(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 20
 
     async def broadcast_Credits(self, util):
         self.set_costume('costume1')
         self.xpos = 0
         self.ypos = -180
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         for _ in range(6):
             self.xpos = 0
             self.ypos = -200
-            # motion_glidesecstoxy(3, 0, 200)
+            await self.glide(3, 0, 200)
             next_costume = self.costume['number'] + 1
             if next_costume == len(self.costumes):
                 self.set_costume(0)
@@ -5163,6 +5207,7 @@ class Sprite25(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 10
 
     async def broadcast_ClickLoveIt(self, util):
         pass # sound_stopallsounds()
@@ -5171,7 +5216,7 @@ class Sprite25(engine.Target):
         self.xpos = 60
         self.ypos = -336
         pass # sound_play('whoosh')
-        # motion_glidesecstoxy(0.3, 60, -20)
+        await self.glide(0.3, 60, -20)
         self.set_dirty(3)
         await self.sleep(1)
         pass # sound_play('DidYouLikeThis')
@@ -5258,6 +5303,7 @@ class Sprite26(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 11
 
     async def broadcast_ClickLoveIt(self, util):
         self.set_costume('costume2')
@@ -5266,7 +5312,7 @@ class Sprite26(engine.Target):
         self.visible = 1
         self.set_dirty(3)
         await self.sleep(0.1)
-        # motion_glidesecstoxy(0.15, -97, -60)
+        await self.glide(0.15, -97, -60)
         self.set_dirty(2)
 
 
@@ -5363,6 +5409,7 @@ class Sprite27(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 12
 
     async def green_flag(self, util):
         self.visible = 0
@@ -5469,6 +5516,7 @@ class Sprite28(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 13
 
     async def green_flag(self, util):
         self.visible = 0
@@ -5575,6 +5623,7 @@ class Sprite29(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 21
 
     async def green_flag(self, util):
         self.visible = 0
@@ -5587,7 +5636,7 @@ class Sprite29(engine.Target):
         self.set_direction(-90)
         self.set_costume('troll-dance')
         self.visible = 1
-        # looks_gotofrontback()
+        self.front_layer(util)
         self.set_dirty(3)
         while True:
             await self.sleep(0.05)
@@ -5682,6 +5731,7 @@ class Sprite30(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 17
 
     async def green_flag(self, util):
         self.visible = 0
@@ -5788,6 +5838,7 @@ class Sprite31(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 18
 
     async def green_flag(self, util):
         self.visible = 0
@@ -5837,6 +5888,7 @@ class Sprite32(engine.Target):
             ],
         }
         super().__init__(util)
+        self.sprite.layer = 22
 
     async def green_flag(self, util):
         self.visible = 0

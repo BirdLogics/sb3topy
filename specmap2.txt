@@ -62,7 +62,7 @@ other = util.targets[{TOWARDS}]
 radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
 self.set_direction(math.degrees(radians))
 
-#: motion_pointtowards_mouse_
+#: motion_pointtowards'_mouse_'
 mouse = pg.mouse.get_pos()
 radians = math.atan2(self.xpos - mouse[0], self.ypos - mouse[1])
 self.set_direction(math.degrees(radians))
@@ -76,7 +76,7 @@ other = util.targets[{TO}]
 self.xpos, self.ypos = other.xpos, other.ypos
 
 #: motion_glidesecstoxy (SECS, X, Y) -r
-# motion_glidesecstoxy({SECS}, {X}, {Y})
+await self.glide({SECS}, {X}, {Y})
 
 #: motion_changexby (DX) -r
 self.xpos += {DX}
@@ -166,26 +166,26 @@ self.size = {SIZE}
 
 #: looks_gotofrontback (FRONT_BACK) -d
 #? looks_goto{FRONT_BACK}
-# looks_gotofrontback()
+pass # looks_gotofrontback()
 
-#: looks_gotofront ()
-# looks_gotofront()
+#: looks_goto'front' ()
+self.front_layer(util)
 
-#: looks_gotoback ()
-# looks_gotoback
+#: looks_goto'back' ()
+self.back_layer(util)
 
 # looks_gofowardsbackwardslayers (NUM) -d
-# looks_gofowardsbackwardslayers({NUM})
+pass # looks_gofowardsbackwardslayers(util, {NUM})
 
 #: looks_goforwardbackwardlayers (FORWARD_BACKWARD, NUM)
 #? looks_go{FORWARD_BACKWARD}layers
-# looks_goforwardbackwardlayers({NUM})
+pass # looks_goforwardbackwardlayers(util, {NUM})
 
-#: looks_gofowardlayers
-# looks_gofowardlayers()
+#: looks_go'foward'layers
+self.change_layer(util, {NUM})
 
-#: looks_gobackwardlayers
-# looks_gobackwardlayers()
+#: looks_go'backward'layers
+self.change_layer(util, -{NUM})
 
 # TODO Name/number field?
 #: looks_costumenumbername (NUMBER_NAME)
@@ -263,7 +263,7 @@ green_flag
 #: event_whenkeypressed (SUBSTACK, KEY_OPTION) -h
 key{KEY_OPTION}_pressed
 
-#: event_whenthisspritelicked (SUBSTACK) -h
+#: event_whenthisspriteclicked (SUBSTACK) -h
 sprite_clicked
 
 #: event_whenbackdropswitchesto (SUBSTACK, BACKDROP) -h

@@ -231,6 +231,7 @@ class BlockUtil:
     runtime = None
     cache = None
     stage = None
+    sprites = None
 
     def __init__(self, runtime):
         self.runtime = runtime
@@ -288,6 +289,24 @@ class BlockUtil:
         """Resets timer"""
         self._timer = time.monotonic()
 
+    def mouse_down(self, event):
+        """Checks if the mouse clicked a sprite"""
+        point = event.pos
+        sprites = self.sprites.sprites()
+        sprites.reverse()
+        for sprite in sprites:
+            offset = sprite.rect.topleft
+            offset = (point[0] - offset[0], point[1] - offset[1])
+            try:
+                if sprite.mask.get_at(offset):
+                    threads = []
+                    sprite.target.recieve_event(
+                        "sprite_clicked", threads, self)
+                    asyncio.gather(*threads)
+                    break
+            except IndexError:
+                pass
+
 
 class Runtime:
     """Container for everything needed to run the project"""
@@ -317,6 +336,7 @@ class Runtime:
             else:
                 self.util.targets[name] = target(self.util)
                 self.sprites.add(self.util.targets[name].sprite)
+        self.util.sprites = self.sprites
 
     def quit(self):
         """Ensures fullscreen is exited to return normal display resolution"""
@@ -343,6 +363,8 @@ class Runtime:
                     for target in self.util.targets.values():
                         target.dirty = 3
                     self.util.stage.dirty = 3
+                elif event.type == pg.MOUSEBUTTONDOWN:
+                    self.util.mouse_down(event)
 
             # Allow the threads to run
             dirty = False
@@ -694,7 +716,7 @@ class Target:
         self.sprite.rect = self.sprite.image.get_rect(
             center=(offset + display.scale *
                     pg.math.Vector2(self.xpos + STAGE_SIZE[0]//2,
-                                    self.ypos + STAGE_SIZE[1]//2)))
+                                    STAGE_SIZE[1]//2 - self.ypos)))
 
         # Move the rect by the stage offset
         self.sprite.rect.move_ip(*display.rect.topleft)
@@ -736,6 +758,20 @@ class Target:
     def set_direction(self, degrees):
         """Sets and wraps the direction"""
         self.direction = degrees - ((degrees + 179) // 360) * 360
+
+    async def glide(self, duration, endx, endy):
+        """Glides to a position"""
+        start_time = time.monotonic()
+        elapsed = 0
+        startx, starty = self.xpos, self.ypos
+        while elapsed < duration:
+            elapsed = time.monotonic() - start_time
+            frac = elapsed / duration
+            self.xpos = startx + frac*(endx - startx)
+            self.ypos = starty + frac*(endy - starty)
+            await self._yield(2)
+        self.xpos = endx
+        self.ypos = endy
 
     def set_costume(self, costume):
         """Sets the costume"""
@@ -823,6 +859,22 @@ class Target:
     def clear_effects(self):
         """Defaults all graphic effects to 0"""
         self.effects = {}
+
+    def change_layer(self, util, number):
+        """Moves number layers fowards"""
+        # TODO Layering diffrences
+        # Pygame has multiple sprites per layer
+        util.sprites.change_layer(
+            self.sprite,
+            util.sprites.get_layer_of_sprite(self.sprite) + number)
+
+    def front_layer(self, util):
+        """Moves the sprite to the front layer"""
+        util.sprites.move_to_front(self.sprite)
+
+    def back_layer(self, util):
+        """Moves the sprite to the back layer"""
+        util.sprites.move_to_bback(self.sprite)
 
 
 def main(sprites):

@@ -10,8 +10,8 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "externalTerminal"
-            //"justMyCode": false
+            "console": "externalTerminal",
+            "justMyCode": false
         },
         {
             "name": "Python: Current File (Integrated)",
