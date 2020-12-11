@@ -1,4 +1,3 @@
+**/__pycache__
 assets/*
-__pycache__
 results/engine.py
-results/__pycache__
