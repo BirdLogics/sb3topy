@@ -237,7 +237,7 @@ class Parser:
         code = code + (
             "\n    }"
             "\n    super().__init__(util)"
-            f"\n    self.sprite.layer = {int(target.get('layerOrder'))}\n"
+            f"\n    self.sprite._layer = {int(target.get('layerOrder'))}\n"
         )  # TODO Better layer parsing
 
         return code
