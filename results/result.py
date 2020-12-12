@@ -208,63 +208,63 @@ class Stage(engine.Target):
 
     async def broadcast_HeyGuys(self, util):
         self.set_effect('brightness', 0)
-        self.costume = self.get_costume('background15')
+        util.stage.costume = util.stage.get_costume('background15')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_SlowDownFolks(self, util):
         self.set_effect('brightness', -20)
-        self.costume = self.get_costume('background11')
+        util.stage.costume = util.stage.get_costume('background11')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
         for _ in range(10):
-            self.costume = self.get_costume('background11')
+            util.stage.costume = util.stage.get_costume('background11')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.01)
-            self.costume = self.get_costume('background12')
+            util.stage.costume = util.stage.get_costume('background12')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.01)
             await self._yield(0)
         for _ in range(10):
-            self.costume = self.get_costume('background11')
+            util.stage.costume = util.stage.get_costume('background11')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.05)
-            self.costume = self.get_costume('background12')
+            util.stage.costume = util.stage.get_costume('background12')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.05)
             await self._yield(0)
         util.send_event('broadcast_Flash')
         for _ in range(7):
-            self.costume = self.get_costume('background11')
+            util.stage.costume = util.stage.get_costume('background11')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.1)
-            self.costume = self.get_costume('background12')
+            util.stage.costume = util.stage.get_costume('background12')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.1)
             await self._yield(0)
         for _ in range(4):
-            self.costume = self.get_costume('background11')
+            util.stage.costume = util.stage.get_costume('background11')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.2)
-            self.costume = self.get_costume('background12')
+            util.stage.costume = util.stage.get_costume('background12')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.2)
             await self._yield(0)
         for _ in range(2):
-            self.costume = self.get_costume('background11')
+            util.stage.costume = util.stage.get_costume('background11')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.5)
-            self.costume = self.get_costume('background12')
+            util.stage.costume = util.stage.get_costume('background12')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.5)
@@ -273,37 +273,37 @@ class Stage(engine.Target):
 
 
     async def broadcast_Credits(self, util):
-        self.costume = self.get_costume('background16')
+        util.stage.costume = util.stage.get_costume('background16')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_ThirdTimeAwkward(self, util):
-        self.costume = self.get_costume('background1')
+        util.stage.costume = util.stage.get_costume('background1')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_IsThereATrend(self, util):
-        self.costume = self.get_costume('background1')
+        util.stage.costume = util.stage.get_costume('background1')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_ILoveTacos(self, util):
-        self.costume = self.get_costume('background2')
+        util.stage.costume = util.stage.get_costume('background2')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_EvenMoreAwkward(self, util):
-        self.costume = self.get_costume('background1')
+        util.stage.costume = util.stage.get_costume('background1')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_Play(self, util):
-        self.costume = self.get_costume('background1')
+        util.stage.costume = util.stage.get_costume('background1')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
         await self.sleep(3.5)
@@ -312,7 +312,7 @@ class Stage(engine.Target):
 
 
     async def broadcast_Awkward(self, util):
-        self.costume = self.get_costume('background2')
+        util.stage.costume = util.stage.get_costume('background2')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
@@ -320,48 +320,48 @@ class Stage(engine.Target):
     async def broadcast_NowHesAngry(self, util):
         self.variables['UhOh'] = "0"
         while not (self.variables['UhOh'] == "1"):
-            self.costume = self.get_costume('background3')
+            util.stage.costume = util.stage.get_costume('background3')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.07)
-            self.costume = self.get_costume('background6')
+            util.stage.costume = util.stage.get_costume('background6')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.07)
-            self.costume = self.get_costume('background4')
+            util.stage.costume = util.stage.get_costume('background4')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.07)
-            self.costume = self.get_costume('background5')
+            util.stage.costume = util.stage.get_costume('background5')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.07)
             await self._yield(0)
         while not (self.variables['UhOh'] == "0"):
-            self.costume = self.get_costume('background7')
+            util.stage.costume = util.stage.get_costume('background7')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.07)
-            self.costume = self.get_costume('background8')
+            util.stage.costume = util.stage.get_costume('background8')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.07)
-            self.costume = self.get_costume('background9')
+            util.stage.costume = util.stage.get_costume('background9')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.07)
-            self.costume = self.get_costume('background10')
+            util.stage.costume = util.stage.get_costume('background10')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
             await self.sleep(0.07)
             await self._yield(0)
-        self.costume = self.get_costume('background14')
+        util.stage.costume = util.stage.get_costume('background14')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_WhatThe(self, util):
-        self.costume = self.get_costume('background13')
+        util.stage.costume = util.stage.get_costume('background13')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
         await self.sleep(1)
@@ -369,19 +369,19 @@ class Stage(engine.Target):
 
 
     async def broadcast_SoIMustEatTacos(self, util):
-        self.costume = self.get_costume('background2')
+        util.stage.costume = util.stage.get_costume('background2')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_EvenMoreAwkward_1(self, util):
-        self.costume = self.get_costume('background1')
+        util.stage.costume = util.stage.get_costume('background1')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_WhereIsIt(self, util):
-        self.costume = self.get_costume('background12')
+        util.stage.costume = util.stage.get_costume('background12')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
         await self.sleep(1)
@@ -395,7 +395,7 @@ class Stage(engine.Target):
 
 
     async def broadcast_WitchDoctor(self, util):
-        self.costume = self.get_costume('background17')
+        util.stage.costume = util.stage.get_costume('background17')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
         while True:
@@ -1599,6 +1599,58 @@ class Sprite4(engine.Target):
     async def broadcast_ImGonnaEatIt(self, util):
         self.visible = 1
         pass # sound_setvolumeto(100)
+        other = util.targets['Sprite3']
+        self.xpos, self.ypos = other.xpos, other.ypos
+        self.set_costume('costume4')
+        self.set_dirty(3)
+        await self.sleep(0.5)
+        pass # sound_play('GonnaEatIt')
+        for _ in range(10):
+            await self.sleep(0.05)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+        await self.sleep(0.5)
+        util.send_event('broadcast_MouthOpensDramatically')
+        self.set_costume('costume15')
+        pass # sound_stopallsounds()
+        pass # sound_setvolumeto(50)
+        pass # sound_play('CarminaBurana')
+        self.set_dirty(3)
+        for _ in range(2):
+            await self.sleep(1.8)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+        await self.sleep(2.4)
+        pass # sound_stopallsounds()
+        pass # sound_setvolumeto(80)
+        pass # sound_playuntildone('DiscScratch1')
+        pass # sound_playuntildone('WAAAIT')
+        util.send_event('broadcast_Umm')
+        self.set_costume('costume18')
+        self.set_dirty(3)
+        await self.sleep(1)
+        pass # sound_play('whoosh')
+        self.set_costume('costume19')
+        self.set_dirty(3)
+        await self.sleep(0.05)
+        self.xpos += 10
+        self.set_costume('costume22')
+        self.set_dirty(3)
+        await self.sleep(0.05)
+        self.xpos += 10
+        self.set_costume('costume20')
+        self.set_dirty(3)
+        await self.sleep(1)
+        util.send_event('broadcast_Awkward')
+        self.visible = 0
         self.set_dirty(1)
 
 
@@ -2772,6 +2824,8 @@ class Sprite11(engine.Target):
                 self.set_costume(0)
             else:
                 self.set_costume(next_costume)
+            other = util.targets['Sprite8']
+            self.xpos, self.ypos = other.xpos, other.ypos
             await self._yield(3)
 
 
@@ -3913,9 +3967,17 @@ class Sprite17(engine.Target):
         self.set_dirty(1)
         while True:
             if (self.variables['Zeke1or2'] == "1"):
-                pass
+                other = util.targets['Sprite3']
+                self.xpos, self.ypos = other.xpos, other.ypos
+                self.change_layer(util, -99)
+                self.set_effect('ghost', 75)
+                self.set_dirty(3)
             if (self.variables['Zeke1or2'] == "2"):
-                pass
+                other = util.targets['Sprite4']
+                self.xpos, self.ypos = other.xpos, other.ypos
+                self.change_layer(util, -99)
+                self.set_effect('ghost', 75)
+                self.set_dirty(3)
             await self._yield(0)
 
 
@@ -3994,7 +4056,11 @@ class Sprite18(engine.Target):
         self.visible = 0
         self.set_dirty(1)
         while True:
-            await self._yield(0)
+            other = util.targets['Sprite1']
+            self.xpos, self.ypos = other.xpos, other.ypos
+            self.change_layer(util, -99)
+            self.set_effect('ghost', 75)
+            await self._yield(3)
 
 
     async def broadcast_IsThereATrend(self, util):

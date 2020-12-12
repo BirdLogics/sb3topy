@@ -42,11 +42,16 @@ WARP_TIME = 0.5
 
 STAGE_SIZE = (480, 360)
 DISPLAY_SIZE = (480, 360)
-DISPLAY_FLAGS = 0
+DISPLAY_FLAGS = pg.DOUBLEBUF | pg.HWSURFACE
 FS_SCALE = 1
 
 ASSETS_PATH = "./assets/"
 AUDIO_CHANNELS = 8
+
+DEBUG_ASYNC = True
+DEBUG_RECTS = False
+DEBUG_FPS = True
+
 
 KEY_MAP = {
     pg.K_SPACE: "space",
@@ -236,15 +241,21 @@ class BlockUtil:
     def __init__(self, runtime):
         self.runtime = runtime
         self.cache = AssetCache()
-        self.stage = Stage()  # TODO BlockUtil stage
 
-    def send_event(self, name):
+    def send_event(self, event):
         """Starts an event for all sprites"""
         threads = []
-        sprites = self.runtime.sprites.sprites()
+        sprites = self.sprites.sprites()
         sprites.reverse()
         for sprite in sprites:
-            sprite.target.recieve_event(name, threads, self)
+            sprite.target.recieve_event(event, threads, self)
+        self.stage.recieve_event(event, threads, self)
+        return asyncio.gather(*threads)
+
+    def send_event_to(self, event, target):
+        """Starts an event for a single target"""
+        threads = []
+        target.recieve_event(event, threads, self)
         return asyncio.gather(*threads)
 
     def key_event(self, key, state):
@@ -299,13 +310,11 @@ class BlockUtil:
             offset = (point[0] - offset[0], point[1] - offset[1])
             try:
                 if sprite.mask.get_at(offset):
-                    threads = []
-                    sprite.target.recieve_event(
-                        "sprite_clicked", threads, self)
-                    asyncio.gather(*threads)
-                    break
+                    self.send_event_to("sprite_clicked", sprite.target)
+                    return
             except IndexError:
                 pass
+        self.send_event_to("sprite_clicked", self.stage)
 
 
 class Runtime:
@@ -353,10 +362,12 @@ class Runtime:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     running = False
-                elif event.type == pg.KEYDOWN:
-                    self.util.key_down(event)
+                # elif event.type == pg.KEYDOWN:
+                #     self.util.key_down(event) # TODO When key pressed
                 elif event.type == pg.KEYUP:
-                    self.util.key_down(event)
+                    #self.util.key_down(event)
+                    if event.key == pg.K_F11:
+                        self.display.toggle_fullscreen()
                 elif event.type == pg.VIDEORESIZE:
                     self.display.size = (event.w, event.h)
                     self.display.setup_display()
@@ -388,15 +399,23 @@ class Runtime:
 
                 # Get the stage bg
                 bg_image = pg.Surface(self.display.size)
-                bg_image.fill((255, 255, 255))  # TODO Stage bg
-                # bg_image.blit(
-                #     self.util.stage.sprite.image,
-                #     (self.display.rect.x, self.display.rect.y))
+                bg_image.blit(
+                    self.util.stage.sprite.image,
+                    (self.display.rect.x, self.display.rect.y))
 
                 self.sprites.clear(self.display.screen, bg_image.convert())
                 self.sprites.draw(self.display.screen)
                 self.sprites.set_clip(self.display.rect)
+                if DEBUG_FPS:
+                    self.debug_fps()
 
+                pg.display.flip()
+            elif DEBUG_RECTS or DEBUG_FPS:
+                self.sprites.draw(self.display.screen)
+                if DEBUG_RECTS:
+                    self.debug_rects()
+                if DEBUG_FPS:
+                    self.debug_fps()
                 pg.display.flip()
             else:
                 pg.display.update(self.sprites.draw(self.display.screen))
@@ -404,6 +423,8 @@ class Runtime:
             # Limit the frame rate
             if not TURBO_MODE:
                 self.clock.tick(TARGET_FPS)
+            else:
+                self.clock.tick()
 
         pg.quit()
 
@@ -415,6 +436,26 @@ class Runtime:
                 any_dirty = True
                 target.update(self.util)
         return any_dirty
+
+    def debug_rects(self):
+        """Draws debug rects"""
+        for sprite in self.sprites:
+            if sprite.visible:
+                pg.draw.rect(self.display.screen,
+                             (255, 0, 0), sprite.rect, 1)
+        pg.draw.circle(self.display.screen, (0, 0, 255),
+                       self.display.rect.center, 4)
+        pg.draw.circle(self.display.screen, (0, 255, 255),
+                       (240+70, 180), 2)
+
+    def debug_fps(self):
+        """Draw debug fps"""
+        font = pg.font.Font(None, 28)
+        fps = "%.1f FPS" % self.clock.get_fps()
+        pg.draw.rect(self.display.screen, (0, 0, 0),
+                pg.Rect((5, 5), font.size(fps)))
+        self.display.screen.blit(font.render(
+            fps, True, (0, 100, 20)), (5, 5))
 
 
 class AssetCache:
@@ -463,7 +504,7 @@ class AssetCache:
         # Transparent
         ghost = effects.get('ghost', 0)
         if ghost:
-            ghost = 255 * ghost / 100
+            ghost = 255 - 255 * ghost / 100
             image.fill(
                 (255, 255, 255, ghost),
                 special_flags=pg.BLEND_RGBA_MULT)
@@ -656,11 +697,15 @@ class Target:
             image = cache.get_costume(costume, costume['scale'])
 
             # Calculate the rotation offset
-            if costume['center'] is None:
-                costume['offset'] = pg.math.Vector2(0, 0)
-            else:
-                center = pg.math.Vector2(image.get_size()) / 2
-                costume['offset'] = pg.math.Vector2(costume['center']) - center
+            center = pg.math.Vector2(image.get_size()) / 2
+            # if costume['center'] is None:
+            #     costume['offset'] = center
+            # else:
+            # Image center is pixels offset
+            costume['offset'] = pg.math.Vector2(costume['center'])
+            costume['offset'] *= -1
+            costume['offset'] += center
+            costume['offset'] /= costume['scale']
 
             # Save the index
             costume['number'] = index
@@ -694,6 +739,7 @@ class Target:
         """Updates and transforms the sprites image"""
         display = util.runtime.display
 
+        # TODO Rotation style support
         # The image is scaled to the display scale
         image = util.cache.get_costume(
             self.costume, self.size/100 * display.scale)
@@ -712,11 +758,10 @@ class Target:
         display = util.runtime.display
 
         # Rotate the rect properly
-        offset = self.costume['offset'].rotate(self.direction)
+        offset = (self.costume['offset']).rotate(self.direction-90)
         self.sprite.rect = self.sprite.image.get_rect(
-            center=(offset + display.scale *
-                    pg.math.Vector2(self.xpos + STAGE_SIZE[0]//2,
-                                    STAGE_SIZE[1]//2 - self.ypos)))
+            center=(display.scale*(offset + pg.math.Vector2(self.xpos + STAGE_SIZE[0]//2,
+                                                            STAGE_SIZE[1]//2 - self.ypos))))
 
         # Move the rect by the stage offset
         self.sprite.rect.move_ip(*display.rect.topleft)
@@ -772,6 +817,12 @@ class Target:
             await self._yield(2)
         self.xpos = endx
         self.ypos = endy
+
+    def move(self, steps):
+        """Moves steps in the current direction"""
+        radians = math.radians(90-self.direction)
+        self.xpos += steps * math.cos(radians)
+        self.ypos += steps * math.sin(radians)
 
     def set_costume(self, costume):
         """Sets the costume"""
@@ -882,7 +933,7 @@ def main(sprites):
     runtime = None
     try:
         runtime = Runtime(sprites)
-        asyncio.run(runtime.main_loop(), debug=True)
+        asyncio.run(runtime.main_loop(), debug=DEBUG_ASYNC)
     finally:
         if runtime:
             runtime.quit()

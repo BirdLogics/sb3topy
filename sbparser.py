@@ -16,6 +16,8 @@ OUTPUT_FOLDER = "results"
 
 LOWER_FIELDS = ('EFFECT')
 
+LOG_LEVEL = 20
+
 
 def clean_identifier(text):
     """Makes an identifier valid by stripping invalid characters.
@@ -236,7 +238,7 @@ class Parser:
             "\n    }"
             "\n    super().__init__(util)"
             f"\n    self.sprite.layer = {int(target.get('layerOrder'))}\n"
-        ) # TODO Better layer parsing
+        )  # TODO Better layer parsing
 
         return code
 
@@ -341,7 +343,9 @@ class Parser:
                 self.hats.setdefault(name, [])
                 names = self.hats[name]
                 if names:
-                    name = name + ('_' if blockmap['code'][-1] == '}' else '') + str(len(names))
+                    name = name + \
+                        ('_' if blockmap['code'][-1] ==
+                         '}' else '') + str(len(names))
                 names.append(name)
 
                 # Create the code
@@ -378,7 +382,8 @@ class Parser:
             # Verify that all expected parameters exist
             for name in blockmap['args']:
                 if name and not parameters.setdefault(name, ""):
-                    logging.info("Block '%s' missing '%s'", blockmap, name)
+                    logging.warning(
+                        "Block '%s' with opcode '%s' missing '%s'", block_id, block['opcode'], name)
             # parameters.keys() ^ blockmap['parameters']
 
             # Insert parameters into code
@@ -410,8 +415,6 @@ class Parser:
         # TODO Custom block support
 
         blockmap = self.specmap.get(block['opcode'])
-
-
 
         if block['opcode'] == "procedures_definition":
             mutation = blocks[block['inputs']['custom_block'][1]]['mutation']
@@ -516,7 +519,7 @@ class Parser:
 
 def main():
     """Main function"""
-    logging.basicConfig(format="[%(levelname)s] %(message)s", level=10)
+    logging.basicConfig(format="[%(levelname)s] %(message)s", level=LOG_LEVEL)
     parse = Parser(JSON_PATH)
     code = parse.parse()
 

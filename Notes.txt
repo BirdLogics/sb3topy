@@ -1,3 +1,17 @@
+TODO List
+Global variables
+Reverse initial layering
+Rotation styles
+Sounds
+When key pressed
+Custom blocks
+Clones
+Pen
+Variable reporters
+List reporters
+GUI
+EXE conversion
+
 classes
 
 Runtime

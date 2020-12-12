@@ -43,9 +43,7 @@ args[{VALUE}]
 {NAME}({PARAMETERS})
 
 #: motion_movesteps (STEPS) -r
-radians = math.radians(self.direction)
-self.xpos += {STEPS} * math.cos(radians)
-self.ypos += {STEPS} * math.sin(radians)
+self.move({STEPS})
 
 #: motion_turnright (DEGREES) -i
 self.set_direction(self.direction + {DEGREES})
@@ -71,7 +69,7 @@ self.set_direction(math.degrees(radians))
 self.xpos = {X}
 self.ypos = {Y}
 
-#: goto (TO) -r
+#: motion_goto (TO) -r
 other = util.targets[{TO}]
 self.xpos, self.ypos = other.xpos, other.ypos
 
@@ -134,19 +132,19 @@ else:
     self.set_costume(next_costume)
 
 #: looks_switchbackdropto (BACKDROP) -i
-self.costume = self.get_costume({BACKDROP})
+util.stage.costume = util.stage.get_costume({BACKDROP})
 util.send_event('onbackdrop_' + self.costume['name'])
 
 #: looks_switchbackdroptoandwait (BACKDROP) -is
-self.costume = self.get_costume({BACKDROP})
+util.stage.costume = util.stage.get_costume({BACKDROP})
 await util.send_event('onbackdrop_' + self.costume['name'])
 
 #: looks_nextbackdrop () -i
-next_backdrop = self.costume['number'] + 1
-if next_backdrop == len(self.costumes):
-    self.costume = self.costumes[0]
+next_backdrop = util.stage.costume['number'] + 1
+if next_backdrop == len(util.stage.costumes):
+    util.stage.costume = util.stage.costumes[0]
 else:
-    self.costume = self.costumes[next_backdrop]
+    util.stage.costume = util.stage.costumes[next_backdrop]
 util.send_event('onbackdrop_' + self.costume['name']))
 
 #: looks_changeeffectby (EFFECT, CHANGE) -i
@@ -383,35 +381,36 @@ util.timer()
 util.reset_timer()
 
 # TODO {OBJECT} Stage = _stage_
+# TODO Properties such 
 #: sensing_of (PROPERTY, OBJECT)
 #? sensing_{PROPERTY}_of
 util.targets[{OBJECT}].variables[{PROPERTY}]
 
-#: sensing_x position_of
+#: sensing_'x position'_of
 util.targets[{OBJECT}].xpos
 
-#: sensing_y position_of
+#: sensing_'y position'_of
 util.targets[{OBJECT}].ypos
 
-#: sensing_direction_of
+#: sensing_'direction'_of
 util.targets[{OBJECT}].direction
 
-#: sensing_costume #_of
+#: sensing_'costume #'_of
 util.targets[{OBJECT}].costume['number']
 
-#: sensing_costume name_of
+#: sensing_'costume name'_of
 util.targets[{OBJECT}].costume['name']
 
-#: sensing_size_of
+#: sensing_'size'_of
 util.targets[{OBJECT}].size
 
-#: sensing_volume_of
+#: sensing_'volume'_of
 util.targets[{OBJECT}].volume
 
-#: sensing_backdrop #_of
+#: sensing_'backdrop #'_of
 util.targets[{OBJECT}].costume['number']
 
-#: sensing_backdrop name_of
+#: sensing_'backdrop name'_of
 util.targets[{OBJECT}].costume['name']
 
 #: sensing_current (CURRENT_MENU)
