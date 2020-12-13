@@ -196,22 +196,22 @@ self.costume[{NUMBER_NAME}]
 self.size
 
 #: sound_play (SOUND_MENU)
-pass # sound_play({SOUND_MENU})
+self.sounds.play({SOUND_MENU})
 
-#: sound_playuntildone (SOUND_MENU)
-pass # sound_playuntildone({SOUND_MENU})
+#: sound_playuntildone (SOUND_MENU) -s
+await self.sounds.play({SOUND_MENU})
 
 #: sound_stopallsounds ()
-pass # sound_stopallsounds()
+self.sounds.stop_all(util)
 
 #: sound_changevolumeby (VOLUME)
-pass # sound_changevolumeby({VOLUME})
+self.sounds.change_volume({VOLUME})
 
 #: sound_setvolumeto (VOLUME)
-pass # sound_setvolumeto({VOLUME})
+self.sounds.set_volume({VOLUME})
 
 #: sound_volume ()
-0
+self.sounds.volume
 
 # TODO Verify pen opcodes
 #: pen_clear ()

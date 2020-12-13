@@ -35,7 +35,7 @@ import pygame as pg
 
 USERNAME = ""
 
-TARGET_FPS = 30
+TARGET_FPS = 31
 TURBO_MODE = False
 WORK_TIME = 1 / 60
 WARP_TIME = 0.5
@@ -365,7 +365,7 @@ class Runtime:
                 # elif event.type == pg.KEYDOWN:
                 #     self.util.key_down(event) # TODO When key pressed
                 elif event.type == pg.KEYUP:
-                    #self.util.key_down(event)
+                    # self.util.key_down(event)
                     if event.key == pg.K_F11:
                         self.display.toggle_fullscreen()
                 elif event.type == pg.VIDEORESIZE:
@@ -453,7 +453,7 @@ class Runtime:
         font = pg.font.Font(None, 28)
         fps = "%.1f FPS" % self.clock.get_fps()
         pg.draw.rect(self.display.screen, (0, 0, 0),
-                pg.Rect((5, 5), font.size(fps)))
+                     pg.Rect((5, 5), font.size(fps)))
         self.display.screen.blit(font.render(
             fps, True, (0, 100, 20)), (5, 5))
 
@@ -714,12 +714,7 @@ class Target:
             self.costumes_dict[costume['name']] = costume
 
         # Parse sounds
-        for asset in self.sounds:
-            # Load the sound
-            asset['sound'] = cache.get_sound(asset['path'])
-
-            # Add the asset to the dict
-            self.sounds_dict[asset['name']] = asset
+        self.sounds = Sounds(cache, self.sounds, 100)
 
     def update(self, util):
         """Clears the dirty flag by updating the sprite, rect and/or image"""
@@ -839,16 +834,6 @@ class Target:
         except IndexError:
             return self.costume
 
-    def play_sound(self, sound):
-        """Plays a sound"""
-        # TODO Better sound parity?
-        # A sound cannot be played twice at the same time
-        # by a sprite and its clones. Need a currently
-        # playing list and a way to make a task wait for
-        # the sound to finish. Need a shared list of currently
-        # playing sounds?
-        sound.play()
-
     def distance_to(self, other):
         """Calculate the distance to another target"""
         return math.sqrt((self.xpos - other.xpos)**2 + (self.ypos - other.ypos)**2)
@@ -926,6 +911,82 @@ class Target:
     def back_layer(self, util):
         """Moves the sprite to the back layer"""
         util.sprites.move_to_bback(self.sprite)
+
+
+class Sounds:
+    """
+    Handles sounds for a sprite
+    
+        sounds - A dict referencing sounds (pg.mixer.Sound) by name
+        sound_list - Used to reference sounds by number
+        volume - The current volume. If set directly, currently playing
+            channels will not update. Use set_volume to update them.
+
+
+        _channels - A dict with in use sound channels as keys and waiting
+            tasks as values. The channels are kept so the volume can be
+            adjusted and the tasks are there to be canceled.
+    """
+
+    def __init__(self, cache, sounds, volume):
+        self.sounds = {}
+        self.sound_list = []
+
+        for asset in sounds:
+            self.sounds[asset['name']] = cache.get_sound(asset['path'])
+            self.sound_list.append(self.sounds[asset['name']])
+        self._channels = {}
+        self.set_volume(volume)
+
+    def set_volume(self, volume):
+        """Sets the volume and updates it for playing sounds"""
+        self.volume = max(0, min(100, volume))
+        for channel in self._channels:
+            channel.set_volume(self.volume / 100)
+
+    def change_volume(self, volume):
+        """Changes and updates the volume by an amount"""
+        self.set_volume(self.volume + volume)
+
+    def play(self, name):
+        """Plays the sound and returns an awaitable."""
+        # Get the sound from name or number
+        sound = self.sounds.get(name)
+        if not sound:
+            try:
+                name = round(float(name)) - 1
+                if 0 < name < len(self.sound_list):
+                    sound = self.sound_list[name]
+                else:
+                    sound = self.sound_list[0]
+            except ValueError:
+                pass
+            except OverflowError: # round(Infinity)
+                pass
+        if sound:
+            channel = pg.mixer.find_channel()
+            if channel:
+                return asyncio.ensure_future(self._handle_channel(sound, channel))
+        return asyncio.sleep(0)
+
+    async def _handle_channel(self, sound, channel):
+        """Saves the channel and waits for it to finish"""
+        delay = sound.get_length()
+        channel.set_volume(self.volume / 100)
+        self._channels[channel] = asyncio.sleep(delay)
+        channel.play(sound)
+        await self._channels[channel]
+        self._channels.pop(channel)
+
+    def stop_all(self, util):
+        """Stops all sounds for all sprites"""
+        for target in util.targets.values():
+            target.sounds.stop()
+
+    def stop(self):
+        """Stops all channels for just this sprite"""
+        for channel in self._channels:
+            channel.stop()
 
 
 def main(sprites):
