@@ -916,12 +916,11 @@ class Target:
 class Sounds:
     """
     Handles sounds for a sprite
-    
+
         sounds - A dict referencing sounds (pg.mixer.Sound) by name
         sound_list - Used to reference sounds by number
         volume - The current volume. If set directly, currently playing
             channels will not update. Use set_volume to update them.
-
 
         _channels - A dict with in use sound channels as keys and waiting
             tasks as values. The channels are kept so the volume can be
@@ -961,7 +960,7 @@ class Sounds:
                     sound = self.sound_list[0]
             except ValueError:
                 pass
-            except OverflowError: # round(Infinity)
+            except OverflowError:  # round(Infinity)
                 pass
         if sound:
             channel = pg.mixer.find_channel()
@@ -973,20 +972,22 @@ class Sounds:
         """Saves the channel and waits for it to finish"""
         delay = sound.get_length()
         channel.set_volume(self.volume / 100)
-        self._channels[channel] = asyncio.sleep(delay)
+        self._channels[channel] = asyncio.ensure_future(asyncio.sleep(delay))
         channel.play(sound)
         await self._channels[channel]
         self._channels.pop(channel)
 
-    def stop_all(self, util):
+    @staticmethod
+    def stop_all(util):
         """Stops all sounds for all sprites"""
         for target in util.targets.values():
             target.sounds.stop()
 
     def stop(self):
-        """Stops all channels for just this sprite"""
-        for channel in self._channels:
+        """Stops sounds for just this sprite"""
+        for channel, task in self._channels.items():
             channel.stop()
+            task.cancel()
 
 
 def main(sprites):
