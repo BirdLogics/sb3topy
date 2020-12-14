@@ -18,6 +18,8 @@ LOWER_FIELDS = ('EFFECT')
 
 LOG_LEVEL = 20
 
+CAST_NUMBERS = True
+
 
 def clean_identifier(text):
     """Makes an identifier valid by stripping invalid characters.
@@ -87,6 +89,7 @@ class Parser:
             "\nimport random"
             "\nimport time"
             "\n\nimport engine"
+            "\nfrom engine import Value"
         )
 
         # Identifier names
@@ -353,13 +356,15 @@ class Parser:
             else:
                 code = blockmap['code']
 
-            # Indent any substacks
+            # Indent any substacks, and cast numbers
             for name, value in parameters.items():
                 if name[:8] == 'SUBSTACK':
                     if value:
                         parameters[name] = textwrap.indent(value, '    ')
                     else:
                         parameters[name] = "    pass"
+                elif CAST_NUMBERS:
+                    parameters[name] = f"Value({value})"
 
             # Dirty must be saved before substack blocks run
             if 's' in blockmap['flags'] and dirty:
@@ -381,9 +386,11 @@ class Parser:
 
             # Verify that all expected parameters exist
             for name in blockmap['args']:
-                if name and not parameters.setdefault(name, ""):
+                if name and name not in parameters:
+                    parameters['name'] = ""
                     logging.warning(
-                        "Block '%s' with opcode '%s' missing '%s'", block_id, block['opcode'], name)
+                        "Block '%s' with opcode '%s' missing '%s'",
+                        block_id, block['opcode'], name)
             # parameters.keys() ^ blockmap['parameters']
 
             # Insert parameters into code
