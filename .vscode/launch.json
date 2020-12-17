@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "externalTerminal",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Python: Current File (Integrated)",
@@ -26,6 +26,15 @@
             "request": "launch",
             "program": "${file}",
             "console": "internalConsole"
-        }
+        },
+        {
+            "name": "Python: Profiler",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "externalTerminal",
+            "justMyCode": true,
+            "pythonArgs": ["-m", "cProfile", "-o", "profiler.log"]
+        },
     ]
 }
