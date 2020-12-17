@@ -11,12 +11,13 @@ import engine
 #pylint: disable=all
 
 # flags:
-# -d Means the sprite will become Dirty after running
-# -r Means the Rectangle will need updating after running
-# -i Means the Image will need updating after running
-# -s Means the block has Substacks so dirty needs to be set
-# -c Means the block clears the dirty flag and accepts {DIRTY}
-# -y Means the block Yields after its substack
+# -d1 Means the sprite will become Dirty after running
+# -d2 Means the Rectangle will need updating after running
+# -d3 Means the Image will need updating after running
+# -s1 Means that dirty must be Set before running the block
+# -s2 Means the block accepts and Sets {DIRTY}
+# -y  Means the block should Yield after its substack
+# -h  Means the block is a Hat and requires special parsing
 
 # -u Means any Updates need to be made before running [Unused]
 # Updates are normally performed right before redrawing the screen
@@ -24,145 +25,141 @@ import engine
 # need to update the sprite(s) themself. For example, the 
 # is_touching function will update this and all checked sprites.
 
-# The -s flag uses this
+# Expression to use for -s1
 #: special_dirty
 self.set_dirty({DIRTY})
 
-# The -y flag uses this
-# _yield sets dirty
+# Expression to use for -y
 #: special_yield
 await self._yield({DIRTY})
 
-#: procedures_definition (NAME, PARAMETERS, SUBSTACK)
+#: procedures_definition (string NAME, list PARAMETERS, stack SUBSTACK)
 async def {NAME}(self, {PARAMETERS}):{SUBSTACK}
 
-# argument_reporter_string_number (VALUE)
+#: any argument_reporter_string_number (any VALUE)
 args[{VALUE}]
 
-#: procedures_call (NAME, PARAMETERS) -c
+#: procedures_call (string NAME, list PARAMETERS)
 {NAME}({PARAMETERS})
 
-#: motion_movesteps (STEPS) -r
+#: motion_movesteps (float STEPS) -d2
 self.move({STEPS})
 
-#: motion_turnright (DEGREES) -i
+#: motion_turnright (float DEGREES) -d3
 self.set_direction(self.direction + {DEGREES})
 
-#: motion_turnleft (DEGREES) -i
+#: motion_turnleft (float DEGREES) -d3
 self.set_direction(self.direction - DEGREES)
 
-#: motion_pointindirection (DIRECTION) -i
+#: motion_pointindirection (float DIRECTION) -d3
 self.set_direction({DIRECTION})
 
-#: motion_pointtowards (TOWARDS) -i
-#? motion_pointtowards{TOWARDS}
-other = util.targets[{TOWARDS}]
-radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
-self.set_direction(math.degrees(radians))
+#: motion_pointtowards (string TOWARDS) -d3
+self.point_towards({TOWARDS})
 
-#: motion_pointtowards'_mouse_'
-mouse = pg.mouse.get_pos()
-radians = math.atan2(self.xpos - mouse[0], self.ypos - mouse[1])
-self.set_direction(math.degrees(radians))
+# other = util.targets[{TOWARDS}]
+# radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
+# self.set_direction(math.degrees(radians))
 
-#: motion_gotoxy (X, Y) -r
+#: motion_gotoxy (float X, float Y) -d2
 self.xpos = {X}
 self.ypos = {Y}
 
-#: motion_goto (TO) -r
-other = util.targets[{TO}]
-self.xpos, self.ypos = other.xpos, other.ypos
+#: motion_goto (string TO) -d2
+self.goto({TO})
 
-#: motion_glidesecstoxy (SECS, X, Y) -r
+#: motion_glidesecstoxy (float SECS, float X, float Y) -d2
 await self.glide({SECS}, {X}, {Y})
 
-#: motion_changexby (DX) -r
+# TODO Glide to target?
+
+#: motion_changexby (float DX) -d2
 self.xpos += {DX}
 
-#: motion_setx (X) -r
+#: motion_setx (float X) -d2
 self.xpos = {X}
 
-#: motion_changeyby (DY) -r
+#: motion_changeyby (float DY) -d2
 self.ypos += {DY}
 
-#: motion_sety (Y) -r
+#: motion_sety (float Y) -d2
 self.ypos = {Y}
 
-#: motion_ifonedgebounce () -i
+#: motion_ifonedgebounce () -d3
 # motion_ifonedgebounce()
 
-#: motion_setrotationstyle (STYLE) -i
+#: motion_setrotationstyle (string STYLE) -d3
 self.rotation_style = {STYLE}
 
-#: motion_xposition ()
+#: float motion_xposition ()
 self.xpos
 
-#: motion_yposition ()
+#: float motion_yposition ()
 self.ypos
 
-#: motion_direction ()
+#: float motion_direction ()
 self.direction
 
-#: looks_sayforsecs (MESSAGE, SECS)
+#: looks_sayforsecs (string MESSAGE, float SECS)
 # looks_sayforsecs({MESSAGE}, {SECS})
 
-#: looks_say (MESSAGE)
+#: looks_say (string MESSAGE)
 # looks_say({MESSAGE})
 
-#: looks_thinkforsecs (MESSAGE, SECS)
+#: looks_thinkforsecs (string MESSAGE, float SECS)
 # looks_thinkforsecs({MESSAGE, SECS})
 
-#: looks_think (MESSAGE)
+#: looks_think (string MESSAGE)
 # looks_think({MESSAGE})
 
-#: looks_show () -d
+#: looks_show () -d1
 self.visible = 1
 
-#: looks_hide () -d
+#: looks_hide () -d1
 self.visible = 0
 
-#: looks_switchcostumeto (COSTUME) -i
+#: looks_switchcostumeto (any COSTUME) -d3
 self.set_costume({COSTUME})
 
-#: looks_nextcostume () -i
+#: looks_nextcostume () -d3
 next_costume = self.costume['number'] + 1
 if next_costume == len(self.costumes):
     self.set_costume(0)
 else:
     self.set_costume(next_costume)
 
-#: looks_switchbackdropto (BACKDROP) -i
+#: looks_switchbackdropto (any BACKDROP) -d3
 util.stage.costume = util.stage.get_costume({BACKDROP})
 util.send_event('onbackdrop_' + self.costume['name'])
 
-#: looks_switchbackdroptoandwait (BACKDROP) -is
+#: looks_switchbackdroptoandwait (any BACKDROP) -d3s1
 util.stage.costume = util.stage.get_costume({BACKDROP})
 await util.send_event('onbackdrop_' + self.costume['name'])
 
-#: looks_nextbackdrop () -i
+#: looks_nextbackdrop () -d3
 next_backdrop = util.stage.costume['number'] + 1
 if next_backdrop == len(util.stage.costumes):
     util.stage.costume = util.stage.costumes[0]
 else:
     util.stage.costume = util.stage.costumes[next_backdrop]
-util.send_event('onbackdrop_' + self.costume['name']))
+util.send_event('onbackdrop_' + self.costume['name'])
 
-#: looks_changeeffectby (EFFECT, CHANGE) -i
+#: looks_changeeffectby (string EFFECT, float CHANGE) -d3
 self.change_effect({EFFECT}, {CHANGE})
 
-#: looks_seteffectto (EFFECT, VALUE) -i
+#: looks_seteffectto (string EFFECT, float VALUE) -d3
 self.set_effect({EFFECT}, {VALUE})
 
-#: looks_cleargraphiceffects () -i
+#: looks_cleargraphiceffects () -d3
 self.clear_effects()
 
-#: looks_changesizeby (CHANGE) -i
+#: looks_changesizeby (float CHANGE) -d3
 self.size += {CHANGE}
 
-#: looks_setsizeto (SIZE) -i
+#: looks_setsizeto (float SIZE) -d3
 self.size = {SIZE}
 
-#: looks_gotofrontback (FRONT_BACK) -d
+#: looks_gotofrontback (string FRONT_BACK) -d1
 #? looks_goto{FRONT_BACK}
 pass # looks_gotofrontback()
 
@@ -172,10 +169,11 @@ self.front_layer(util)
 #: looks_goto'back' ()
 self.back_layer(util)
 
-# looks_gofowardsbackwardslayers (NUM) -d
+# Note, decimal behavior is off
+# looks_gofowardsbackwardslayers (int NUM) -d1
 pass # looks_gofowardsbackwardslayers(util, {NUM})
 
-#: looks_goforwardbackwardlayers (FORWARD_BACKWARD, NUM)
+#: looks_goforwardbackwardlayers (field FORWARD_BACKWARD, int NUM) -d1
 #? looks_go{FORWARD_BACKWARD}layers
 pass # looks_goforwardbackwardlayers(util, {NUM})
 
@@ -186,31 +184,31 @@ self.change_layer(util, {NUM})
 self.change_layer(util, -{NUM})
 
 # TODO Name/number field?
-#: looks_costumenumbername (NUMBER_NAME)
+#: any looks_costumenumbername (field NUMBER_NAME)
 self.costume[{NUMBER_NAME}]
 
-#: looks_backdropnumbername (NUMBER_NAME)
+#: any looks_backdropnumbername (field NUMBER_NAME)
 self.costume[{NUMBER_NAME}]
 
-#: looks_size ()
-self.size
+#: int looks_size ()
+round(self.size)
 
-#: sound_play (SOUND_MENU)
+#: sound_play (any SOUND_MENU)
 self.sounds.play({SOUND_MENU})
 
-#: sound_playuntildone (SOUND_MENU) -s
+#: sound_playuntildone (any SOUND_MENU) -s1
 await self.sounds.play({SOUND_MENU})
 
 #: sound_stopallsounds ()
 self.sounds.stop_all(util)
 
-#: sound_changevolumeby (VOLUME)
+#: sound_changevolumeby (float VOLUME) 
 self.sounds.change_volume({VOLUME})
 
-#: sound_setvolumeto (VOLUME)
+#: sound_setvolumeto (float VOLUME) 
 self.sounds.set_volume({VOLUME})
 
-#: sound_volume ()
+#: float sound_volume ()
 self.sounds.volume
 
 # TODO Verify pen opcodes
@@ -234,147 +232,141 @@ self.sounds.volume
 # pen_down()
 
 # TODO Pen shade color menu
-#: pen_changePenHueBy (HUE)
+#: pen_changePenHueBy (float HUE)
 # pen_changePenHueBy({HUE})
 
-#: pen_setPenHueToNumber (HUE)
+#: pen_setPenHueToNumber (float HUE)
 # pen_setPenHueToNumber({HUE})
 
-#: pen_changePenShadeBy (SHADE)
+#: pen_changePenShadeBy (float SHADE)
 # pen_changePenShadeBy({SHADE})
 
-#: pen_setPenShadeToNumber (SHADE)
+#: pen_setPenShadeToNumber (float SHADE)
 # pen_setPenShadeToNumber({SHADE})
 
-#: pen_changePenSizeBy (SIZE)
+#: pen_changePenSizeBy (float SIZE)
 # pen_changePenSizeBy({SIZE})
 
-#: pen_setPenSizeTo (SIZE)
+#: pen_setPenSizeTo (float SIZE)
 # pen_setPenSizeTo({SIZE})
 
-#: pen_setPenColorToColor (COLOR)
+#: pen_setPenColorToColor (float COLOR)
 # pen_setPenColorToColor({COLOR})
 
-#: event_whenflagclicked (SUBSTACK) -h
+#: event_whenflagclicked (stack SUBSTACK) -h
 green_flag
 
-#: event_whenkeypressed (SUBSTACK, KEY_OPTION) -h
+#: event_whenkeypressed (stack SUBSTACK, string KEY_OPTION) -h
 key{KEY_OPTION}_pressed
 
-#: event_whenthisspriteclicked (SUBSTACK) -h
+#: event_whenthisspriteclicked (stack SUBSTACK) -h
 sprite_clicked
 
-#: event_whenbackdropswitchesto (SUBSTACK, BACKDROP) -h
+#: event_whenbackdropswitchesto (stack SUBSTACK, string BACKDROP) -h
 onbackdrop_{BACKDROP}
 
-#: event_whengreaterthan (SUBSTACK, WHENGREATERTHANMENU, VALUE) -h
+#: event_whengreaterthan (stack SUBSTACK, field WHENGREATERTHANMENU, float VALUE) -h
 #? event_whengreaterthan_{WHENGREATERTHANMENU}
 event_whengreaterthan
 
 if not {VALUE} > util.timer:
     return
 
-#: event_whenbroadcastreceived (SUBSTACK, BROADCAST_OPTION) -h
-broadcast_{BROADCAST_OPTION}
+#: event_whenbroadcastreceived (stack SUBSTACK, field BROADCAST_OPTION) -h
+{BROADCAST_OPTION}
 
-#: event_broadcast (BROADCAST_INPUT)
-util.send_event('broadcast_{BROADCAST_INPUT}')
+#: event_broadcast (string BROADCAST_INPUT)
+util.send_event({BROADCAST_INPUT})
 
-#: event_broadcastandwait (BROADCAST_INPUT) -s
-await util.send_event('broadcast_{BROADCAST_INPUT}')
+#: event_broadcastandwait (string BROADCAST_INPUT) -s1
+await util.send_event({BROADCAST_INPUT})
 
-#: control_wait (DURATION) -s
+#: control_wait (float DURATION) -s1
 await self.sleep({DURATION})
 
-#: control_repeat (TIMES, SUBSTACK) -sy
+#: control_repeat (intR TIMES, stack SUBSTACK) -s1y
 for _ in range({TIMES}):
 {SUBSTACK}
 
-#: control_forever (SUBSTACK) -sy
+#: control_forever (stack SUBSTACK) -s1y
 while True:
 {SUBSTACK}
 
-#: control_if (CONDITION, SUBSTACK) -s
+#: control_if (bool CONDITION, stack SUBSTACK) -s1
 if {CONDITION}:
 {SUBSTACK}
 
-#: control_if_else (CONDITION, SUBSTACK, SUBSTACK2) -s
+#: control_if_else (bool CONDITION, stack SUBSTACK, stack SUBSTACK2) -s1
 if {CONDITION}:
 {SUBSTACK}
 else:
 {SUBSTACK2}
 
-#: control_wait_until (CONDITION) -s
+#: control_wait_until (bool CONDITION) -s1
 while not {CONDITION}:
     await self._yield()
 
-#: control_repeat_until (CONDITION, SUBSTACK) -sy
+#: control_repeat_until (bool CONDITION, stack SUBSTACK) -s1y
 while not {CONDITION}:
 {SUBSTACK}
 
 # TODO Stop options
-#: control_stop (STOP_OPTION)
+#: control_stop (field STOP_OPTION)
 #? control_stop_{STOP_OPTION}
 return None
 
 # TODO Clones
-#: control_start_as_clone (SUBSTACK) -h
+#: control_start_as_clone (stack SUBSTACK) -h
 clone_start
 
-#: control_create_clone_of (CLONE_OPTION)
+#: control_create_clone_of (string CLONE_OPTION)
 # control_create_clone_of({CLONE_OPTION})
 
 #: control_delete_this_clone ()
 # control_delete_this_clone()
 
-#: sensing_touchingobject (TOUCHINGOBJECTMENU) -u
-#? sensing_touching{TOUCHINGOBJECTMENU}
-self.get_touching(util, util.targets[{TOUCHINGOBJECTMENU}])
-
-#: sensing_touching_mouse_
-self.get_touching_point(util, pg.mouse.get_pos())
+#: bool sensing_touchingobject (field TOUCHINGOBJECTMENU) -u
+#? sensing_touching
+self.get_touching(util, {TOUCHINGOBJECTMENU})
 
 # TODO Color detection?
-#: sensing_touchingcolor (COLOR) -u
+#: bool sensing_touchingcolor (color COLOR) -u
 False
 
-#: sensing_coloristouchingcolor (COLOR, COLOR2) -u
+#: bool sensing_coloristouchingcolor (color COLOR, color COLOR2) -u
 False
 
-#: sensing_distanceto (DISTANCETOMENU)
-#? sensing_distanceto{DISTANCETOMENU}
-self.distance_to(util.targets[{DISTANCETOMENU}])
-
-#: sensing_distanceto_mouse_
-self.distance_to_point(pg.mouse.get_pos())
+#: float sensing_distanceto (field DISTANCETOMENU)
+self.distance_to({DISTANCETOMENU})
 
 # TODO sensing_askandwait
-#: sensing_askandwait (QUESTION)
+#: sensing_askandwait (string QUESTION)
 answer = input({QUESTION})
 
 #: sensing_answer
 answer
 
-#: sensing_keypressed (KEY_OPTION)
-util.get_key({KEY_OPTION})
+#: bool sensing_keypressed (field KEY_OPTION)
+util.get_key(string {KEY_OPTION})
 
-#: sensing_mousedown ()
+#: bool sensing_mousedown ()
 pg.mouse.get_pressed()[0]
 
-#: sensing_mousex ()
+# TODO Mouse stage coords
+#: int sensing_mousex ()
 pg.mouse.get_pos()[0]
 
-#: sensing_mousey ()
+#: int sensing_mousey ()
 pg.mouse.get_pos()[1]
 
-#: sensing_loudness ()
+#: int sensing_loudness ()
 0
 
-#: sensing_loud ()
+#: bool sensing_loud ()
 False
 
 # TODO timer
-#: sensing_timer ()
+#: float sensing_timer ()
 util.timer()
 
 #: sensing_resettimer ()
@@ -382,125 +374,126 @@ util.reset_timer()
 
 # TODO {OBJECT} Stage = _stage_
 # TODO Properties such 
-#: sensing_of (PROPERTY, OBJECT)
+#: any sensing_of (field PROPERTY, field OBJECT)
 #? sensing_{PROPERTY}_of
 util.targets[{OBJECT}].variables[{PROPERTY}]
 
-#: sensing_'x position'_of
+#: float sensing_'x position'_of
 util.targets[{OBJECT}].xpos
 
-#: sensing_'y position'_of
+#: float sensing_'y position'_of
 util.targets[{OBJECT}].ypos
 
-#: sensing_'direction'_of
+#: float sensing_'direction'_of
 util.targets[{OBJECT}].direction
 
-#: sensing_'costume #'_of
+#: int sensing_'costume #'_of
 util.targets[{OBJECT}].costume['number']
 
-#: sensing_'costume name'_of
+#: string sensing_'costume name'_of
 util.targets[{OBJECT}].costume['name']
 
-#: sensing_'size'_of
-util.targets[{OBJECT}].size
+#: int sensing_'size'_of
+round(util.targets[{OBJECT}].size)
 
-#: sensing_'volume'_of
+#: float sensing_'volume'_of
 util.targets[{OBJECT}].volume
 
-#: sensing_'backdrop #'_of
-util.targets[{OBJECT}].costume['number']
+#: int sensing_'backdrop #'_of
+round(util.targets[{OBJECT}].costume['number'])
 
-#: sensing_'backdrop name'_of
+#: string sensing_'backdrop name'_of
 util.targets[{OBJECT}].costume['name']
 
-#: sensing_current (CURRENT_MENU)
+#: int sensing_current (field CURRENT_MENU)
 #? sensing_current_{CURRENT_MENU}
 0
 
-#: sensing_current_year
+#: sensing_current_'year'
 time.localtime()['tm_year']
 
-#: sensing_current_month
+#: sensing_current_'month'
 time.localtime()['tm_month']
 
-#: sensing_current_date
+#: sensing_current_'date'
 time.localtime()['tm_mday']
 
-#: sensing_current_day of week
+#: sensing_current_'day of week'
 (time.localtime()['tm_wday'] + 2)
 
-#: sensing_current_hour
+#: sensing_current_'hour'
 time.localtime()['tm_hour']
 
-#: sensing_current_minute
+#: sensing_current_'minute'
 time.localtime()['tm_min']
 
-#: sensing_current_second
+#: sensing_current_'second'
 time.localtime()['tm_sec']
 
 # TODO Diffrent epoches?
-#: sensing_dayssince2000 ()
+#: float sensing_dayssince2000 ()
 (time.time() / 86400 - 10957)
 
-#: sensing_username ()
+#: string sensing_username ()
 engine.USERNAME
 
-#: operator_add (NUM1, NUM2)
+#: float operator_add (float NUM1, float NUM2)
 ({NUM1} + {NUM2})
 
-#: operator_subtract (NUM1, NUM2)
+#: float operator_subtract (float NUM1, float NUM2)
 ({NUM1} - {NUM2})
 
-#: operator_multiply (NUM1, NUM2)
+#: float operator_multiply (float NUM1, float NUM2)
 ({NUM1} * {NUM2})
 
-#: operator_divide (NUM1, NUM2)
+#: float operator_divide (float NUM1, float NUM2)
 ({NUM1} / {NUM2})
 
 # TODO Decimal random
-#: operator_random (FROM, TO)
+#: float operator_random (float FROM, float TO)
 random.randint({FROM}, {TO})
 
 # TODO String num '123' comparison
-#: operator_lt (OPERAND1, OPERAND2)
+#: bool operator_lt (bool OPERAND1, bool OPERAND2)
 ({OPERAND1} < {OPERAND2})
 
-#: operator_equals (OPERAND1, OPERAND2)
+#: bool operator_equals (bool OPERAND1, bool OPERAND2)
 ({OPERAND1} == {OPERAND2})
 
-#: operator_gt (OPERAND1, OPERAND2)
+#: bool operator_gt (bool OPERAND1, bool OPERAND2)
 ({OPERAND1} > {OPERAND2})
 
-#: operator_and (OPERAND1, OPERAND2)
+#: bool operator_and (bool OPERAND1, bool OPERAND2)
 ({OPERAND1} and {OPERAND2})
 
-#: operator_or (OPERAND1, OPERAND2)
+#: bool operator_or (bool OPERAND1, bool OPERAND2)
 ({OPERAND1} or {OPERAND2})
 
-#: operator_not (OPERAND)
+#: bool operator_not (bool OPERAND)
 not {OPERAND}
 
 # TODO Limited length join
-#: operator_join (STRING1, STRING2)
-(str({STRING1}) + str({STRING2}))
+#: string operator_join (string STRING1, string STRING2)
+({STRING1} + {STRING2})
 
-#: operator_letter_of (LETTER, STRING)
+#: string operator_letter_of (intF LETTER, STRING)
 str({STRING})[{LETTER}]
 
-#: operator_length (STRING)
-len({STRING})
+#: int operator_length (string STRING)
+len(str({STRING}))
 
-#: operator_mod (NUM1, NUM2)
+#: float operator_mod (float NUM1, float NUM2)
 ({NUM1} % {NUM2})
 
-#: operator_round (NUM)
+#: int operator_round (float NUM)
 round({NUM})
 
-#: operator_mathop (OPERATOR, NUM)
+#: float operator_mathop (string OPERATOR, float NUM)
 #? operator_mathop_{OPERATOR}
-{NUM}
+number({NUM})
 
-#: data_variable (VARIABLE)
+# TODO Rethink variables? Parameter types.
+#: any data_variable (field VARIABLE)
 self.variables[{VARIABLE}]
 
 #: data_setvariableto (VARIABLE, VALUE)
@@ -511,93 +504,50 @@ self.variables[{VARIABLE}] += {VALUE}
 
 # TODO Variable monitors
 #: data_showvariable (VARIABLE)
-# data_showvariable({VARIABLE})
+pass # data_showvariable({VARIABLE})
 
 #: data_hidevariable (VARIABLE)
-# data_hidevariable({VARIABLE})
+pass # data_hidevariable({VARIABLE})
 
-# TODO Single character join
-#: data_listcontents (LIST)
-' '.join(self.lists[{LIST}])
+# TODO List class
+# Should support first, last, rand index
 
-# TODO List item limit
-#: data_addtolist (ITEM, LIST)
+#: string data_listcontents (field LIST)
+str(self.lists[{LIST}])
+
+#: data_addtolist (any ITEM, field LIST)
 self.lists[{LIST}].append({ITEM})
 
-#: data_deleteoflist (INDEX, LIST)
-#? data_delete{INDEX}oflist
-self.lists[{LIST}].pop({INDEX} - 1)
+#: data_deleteoflist (any INDEX, field LIST)
+self.lists[{LIST}].delete({INDEX})
 
-#: data_deletefirstoflist
-self.lists[{LIST}].pop(0)
+#: data_deletealloflist (field LIST)
+self.lists[{LIST}].delete_all()
 
-#: data_deletelastoflist
-self.lists[{LIST}].pop()
+#: data_insertatlist (any ITEM, any INDEX, field LIST)
+self.lists[{LIST}].insert({INDEX}, {ITEM})
 
-#: data_deleterandomoflist
-self.lists[{LIST}].pop(random.randrange(
-    len(self.lists[{LIST}])))
+#: data_replaceitemoflist (any INDEX, field LIST, any ITEM)
+self.lists[{LIST}][{INDEX}] = {ITEM}
 
-#: data_deletealloflist (LIST)
-self.lists[{LIST}] = []
-
-#: data_insertatlist (ITEM, INDEX, LIST)
-#? data_insertat{INDEX}list
-self.lists[{LIST}].insert({INDEX} - 1, {ITEM})
-
-#: data_insertatfirstlist
-self.lists[{LIST}].insert(0, {ITEM})
-
-#: data_insertatlastlist
-self.lists[{LIST}].append({ITEM})
-
-#: data_insertatrandomlist
-self.lists[{LIST}].insert(random.randrange(
-    len(self.lists[{LIST}])), {ITEM})
-
-#: data_replaceitemoflist (INDEX, LIST, ITEM)
-#? data_replace{INDEX}itemoflist
-self.lists[{LIST}][{INDEX} - 1] = {ITEM}
-
-#: data_replacefirstitemoflist
-self.lists[{LIST}][0] = {ITEM}
-
-#: data_replacelastitemoflist
-self.lists[{LIST}][-1] = {ITEM}
-
-#: data_replacerandomitemoflist
-self.lists[{LIST}][random.randrange(
-    len(self.lists[{LIST}]))] = {ITEM}
-
-#: data_itemoflist (INDEX, LIST)
-#? data_item{INDEX}oflist
+#: any data_itemoflist (any INDEX, field LIST)
 self.lists[{LIST}][{INDEX} - 1]
 
-#: data_itemfirstoflist
-self.lists[{LIST}][0]
-
-#: data_itemlastoflist
-self.lists[{LIST}][-1]
-
-#: data_itemrandomoflist
-self.lists[{LIST}][random.randrange(
-    len(self.lists[{LIST}]))]
-
-#: data_itemnumoflist (LIST, ITEM)
+#: int data_itemnumoflist (field LIST, any ITEM)
 self.lists[{LIST}].index({ITEM})
 
-#: data_lengthoflist (LIST)
+#: int data_lengthoflist (field LIST)
 len(self.lists[{LIST}])
 
-#: data_listcontainsitem (LIST, ITEM)
+#: bool data_listcontainsitem (field LIST, any ITEM)
 {ITEM} in self.lists[{LIST}]
 
 # TODO List monitors
-#: data_showlist (LIST)
-# data_showlist({LIST})
+#: data_showlist (field LIST)
+self.lists[{LISTS}].show()
 
-#: data_hidelist (LIST)
-# data_hidelist({LIST})
+#: data_hidelist (field LIST)
+self.lists[{LISTS}].hide()
 
 
 if __name__ == '__main__':

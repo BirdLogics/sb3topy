@@ -340,7 +340,7 @@ class Runtime:
 
         # Initialize targets
         for name, target in targets.items():
-            if name == "Stage":
+            if name == "SpriteStage":
                 self.util.stage = target(self.util)
             else:
                 self.util.targets[name] = target(self.util)
@@ -988,6 +988,93 @@ class Sounds:
         for channel, task in self._channels.items():
             channel.stop()
             task.cancel()
+
+
+class Value:
+    """Handles casting a value as necesary"""
+
+    def __init__(self, value):
+        self.value = value
+
+    def __lt__(self, other):
+        return self.value < other
+
+    def __le__(self, other):
+        return self.value <= other
+
+    def __eq__(self, other):
+        return str(self.value) == str(other)
+
+    def __ne__(self, other):
+        return str(self.value) != str(other)
+
+    def __gt__(self, other):
+        return self.value > other
+
+    def __ge__(self, other):
+        return self.value >= other
+
+    def __bool__(self):
+        return bool(self.value)
+
+    def __add__(self, other):
+        return self.to_number(self.value) + self.to_number(other)
+
+    def __sub__(self, other):
+        return self.to_number(self.value) - self.to_number(other)
+
+    def __mul__(self, other):
+        return self.to_number(self.value) * self.to_number(other)
+
+    def __truediv__(self, other):
+        return self.to_number(self.value) / self.to_number(other)
+
+    def __mod__(self, other):
+        return self.to_number(self.value) % self.to_number(other)
+
+    def __pow__(self, other):
+        return pow(self.to_number(self.value), self.to_number(other))
+
+    def __iadd__(self, other):
+        self.value = self.to_number(self.value) + self.to_number(other)
+
+    def __isub__(self, other):
+        self.value = self.to_number(self.value) + self.to_number(other)
+
+    def __index__(self):
+        try:
+            return int(self)
+        except ValueError:
+            return 0
+        except OverflowError:
+            return 0
+
+    @staticmethod
+    def to_number(value):
+        """Attempts to cast a value to a number"""
+        if isinstance(value, str):
+            try:
+                value = float(value)
+                if value.is_integer():
+                    value = int(value)
+            except ValueError:
+                return 0
+        if value == float('NaN'):
+            return 0
+        return value
+
+def number(value):
+    """Attempts to cast a value to a number"""
+    if isinstance(value, str):
+        try:
+            value = float(value)
+            if value.is_integer():
+                value = int(value)
+        except ValueError:
+            return 0
+    if value == float('NaN'):
+        return 0
+    return value
 
 
 def main(sprites):

@@ -12,134 +12,73 @@ List reporters
 GUI
 EXE conversion
 
-classes
-
-Runtime
- - display
- - util
- - stage
- - sprites
-
-BlockUtil
- - down_keys
- - targets
- - variables
- - lists
- - cache
- - timer
-
-Display
- - screen
- - scale
- - rect
-
-Target
- - sprite
- - hats
- - clones
-
-
-
-
-
-
-=================================================
-Event Model (per sprite):
-self.events = {
-    "broadcast1": [func1, func2, ...],
-    "green_flag": [func3, func4, ...]
-}
-
-specmap.py
- Contains code to be copied by generator
-engine.py
- Contains files to be used by generated scripts
-parser.py
- Parses sb3 and generates python
-
-Parser
-Parses into this format:
-
-class Block
- opcode
- uuid
- parameters = {}
- code = ""
-
-{
-    
-}
-
-Queue item:
-
-
-
-[
-    {
-        "opcode": "greenflagclicked",
-        "uuid": "asfidfdskjnakjnasdkjfnlskjd",
-        "parameters": {
-            "SUBSTACK": [
-                {
-                    "opcode": "motion_move",
-                    "uuid": "mbkmkmzkxmalcxzvmkl",
-                    "parameters": {
-                        "STEPS": 10
-                    }
-                },
-                {
-                    "opcode": "control_repeattimes",
-                    "uuid"; "dajdfslslvcvxz",
-                    "parameters": {
-                        "TIMES": 10,
-                        "SUBSTACK": [ // List= indent, dict= no indent? No longer could detect using SUBSTACK
-                            {
-                                "opcode": "motion_rotatecw",
-                                "uuid": "kjfandskjfnds",
-                                "parameters": {
-                                    "DEGREES": 5
-                                },
-                                "code": "self.direction += DEGREES"
-                            }
-                        ]
-                    },
-                    "code": "for _ in range(TIMES):\n    SUBSTACK" // re.sub(" +(SUBSTACK)", SUBSTACK, indented_code)
-                }
-            ]
-        }
-    }
-]
-
-green_flag
-move 10
-repeat 10
- rotate 5
-
-
-parse_script
- current: the current dict block
-   - Only contains uid before parsing
-   - Also contains parameters afterwards
-
-
-Parsing stages:
-  Queue parameters and substacks
-  Textify
-
-
-Parameters:
- {
-
- }
-
-Substack:
-[
-
-]
-
+Options to add:
+FPS, Turbo, Warp time, Work time
+Allow fullscreen, Allow fullscreen
+Safe operators, Cast values
+Mixer settings
+DirtySprite timing treshold
 
 =================================================
 Unique naming
+
+
+Target Names
+Target Functions
+    Event handlers
+    Custom blocks
+Target variables
+Target lists
+
+A target has:
+    Functions
+    Variables
+    Lists
+
+{
+    General_Identifier: 
+    (
+        Iterator, # a-z, used to add items to included dict
+        {
+            Original_Identifier:
+                (
+                    Iterator # 1-3 # Used to create additional unique names
+                    Modified_Identifier
+                )
+            }
+        }
+    )
+}
+
+broadcast@1
+broadcast1
+{
+    "broadcast1":
+    (
+        iterator,
+        {
+            "broadcast@1": (iterator, "broadcast1"),
+            "broadcast1: (iterator, "broadcast1_A")
+        }
+    )
+}
+
+
+general_identifiers = {
+    identifier: iterator_az
+}
+
+specific_identifiers = {
+    identifier: (cleaned, iterator_19)
+}
+
+modified_identifiers = {ident1, ident2, ...}
+
+# Step 1, check if in specific_identifier
+# If not, combine cleaned and iterator_az
+# Step 2, combine modified and iterator_19
+# Step 3, verify not in modified_identifiers
+
 
 
 Already Named dict: {
@@ -153,18 +92,19 @@ Names List: [
     "greenFlag2"
 ]
 
-
-
 iter = itertools.permutations([''] * 3 + list("ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 4)
 for i in iter:
     print(''.join(i)) # A, B, C, ... AA, AB, AB, etc. 18278 possibilities
 
 
-Key for input types
+
+
+=================================================
+Input Types
 
 [1, Value] Wrapper for other values
 [2, BlockId] Substack, condition
-[3, Value1, Value2] Input covered /w blocks
+[3, Value1, Value2] Input covered /w block(s)
 
 [4, Float] Most numbers
 [5, UFloat] Time wait
@@ -177,3 +117,5 @@ Key for input types
 [11, Name, BroadcastId] Broadcast blocks
 [12, Name, VariableId, (x), (y)] Variable reporter
 [13, Name, VariableId, (x), (y)]
+
+=================================================

@@ -7,9 +7,10 @@ import random
 import time
 
 import engine
+from engine import Value
 
-class Stage(engine.Target):
-    costume = 0
+class SpriteStage(engine.Target):
+    costume = 1
     xpos, ypos = 0, 0
     direction = 90
     visible = True
@@ -17,103 +18,97 @@ class Stage(engine.Target):
     costumes = [
         {
             'name': "background1",
-            'path': "a9bdb6e689dcd1dbddb29e477369f4fe.png",
+            'path': "1af373d3b7464a8af1a32fd051effbec.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background2",
-            'path': "3103857d11c5c7b4ccdd29f0e15caf2c.png",
+            'path': "8a95ad28c2e25e18cdbde76a45120cd0.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background3",
-            'path': "b46d1394b6390795a596d7158e182a3a.png",
-            'center': (480, 360),
-            'scale': 2
-        },
-        {
-            'name': "background6",
-            'path': "dfd9852750f9348b0b856ec1166acdd7.png",
+            'path': "f5394526f852ccd2567876b395894d59.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background4",
-            'path': "a14d0ac914b8571b8e0d6e7ca0637ba6.png",
+            'path': "485017a18ddf105e236e49576a65d641.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background5",
-            'path': "8e69cd3670561737c5975467a396f9fb.png",
+            'path': "1c0a59735c5cf80ce6528bb5b4b9b2de.png",
+            'center': (480, 360),
+            'scale': 2
+        },
+        {
+            'name': "background6",
+            'path': "cce512cf9af05a32a0a430a7530e7446.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background7",
-            'path': "5e5ba93008e6b8c54981a377ae47144f.png",
+            'path': "a81f62d19ecdde6630f76586c9bf51ff.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background8",
-            'path': "1118769c1e5133f8da8ce82a979bcd7d.png",
+            'path': "d9abdbe9f8f77601cd8819d27c8cd990.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background9",
-            'path': "843fd2b329d9c52abab17260e2bf5110.png",
+            'path': "2a3fd57cdaa3eab75dc1b2812aa4ec0b.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background10",
-            'path': "b20cd7c9e738b20575684238c08f5ab1.png",
+            'path': "3ed5ddd1d0f241b317fb0b0bf7786eb1.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background11",
-            'path': "b647096d3aa89de0914385d406292500.png",
+            'path': "f29e86bad9c5bbe3eef9a10366bd740e.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background12",
-            'path': "2214ebfba188303ff2c6172b1569e0a5.png",
+            'path': "d4910d9b756d9c26077a286f414eda1b.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background13",
-            'path': "3fac25252f477bc111bc19c8e65e9e06.png",
+            'path': "10797d2fc54ab59ae4f3b8e602c089b1.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background14",
-            'path': "95dd092a0fc4032bfa202715db043715.png",
+            'path': "c4271d5fe4fbdab4a97c06ebdbd9d16a.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background15",
-            'path': "5ad86dce54c0950fb2392207e4e8b4ad.png",
+            'path': "f58f0661c83b2f3a288b59d8492df24d.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "background16",
-            'path': "797b03bdb8cf6ccfc30c0692d533d998.png",
-            'center': (480, 360),
-            'scale': 2
-        },
-        {
-            'name': "background17",
-            'path': "13acf40fcbcd9463222708eed62bebf8.png",
+            'path': "27c13f6c916f1f59c49d853e57bf3346.png",
             'center': (480, 360),
             'scale': 2
         },
@@ -121,334 +116,237 @@ class Stage(engine.Target):
 
     sounds = [
         {
-            'name': "NewSMBClip",
-            'path': "06727c62d7ecf79f1db865e2f2e8f8cb.wav"
+            'name': "RFClip1",
+            'path': "e0292660634aee44d7e3eacf33d9af08.wav"
         },
         {
-            'name': "WitchDoctorClip",
-            'path': "8b97a61ea2607280f63a6ed427d63d45.wav"
+            'name': "Swoosh",
+            'path': "d9ca82a22e133716ca9627a1e71cd39a.wav"
         },
     ]
 
     def __init__(self, util):
         self.hats = {
-            'broadcast_Flash': [
-                self.broadcast_Flash,
+            'broadcast_WheresMyTaco': [
+                self.broadcast_WheresMyTaco,
             ],
-            'broadcast_HeyGuys': [
-                self.broadcast_HeyGuys,
+            'broadcast_Drrr': [
+                self.broadcast_Drrr,
             ],
-            'broadcast_SlowDownFolks': [
-                self.broadcast_SlowDownFolks,
-            ],
-            'broadcast_Credits': [
-                self.broadcast_Credits,
-            ],
-            'broadcast_ThirdTimeAwkward': [
-                self.broadcast_ThirdTimeAwkward,
-            ],
-            'broadcast_IsThereATrend': [
-                self.broadcast_IsThereATrend,
-            ],
-            'broadcast_ILoveTacos': [
-                self.broadcast_ILoveTacos,
-            ],
-            'broadcast_EvenMoreAwkward': [
-                self.broadcast_EvenMoreAwkward,
-                self.broadcast_EvenMoreAwkward_1,
+            'broadcast_IsHeDead': [
+                self.broadcast_IsHeDead,
             ],
             'broadcast_Play': [
                 self.broadcast_Play,
-            ],
-            'broadcast_Awkward': [
-                self.broadcast_Awkward,
-            ],
-            'broadcast_NowHesAngry': [
-                self.broadcast_NowHesAngry,
-            ],
-            'broadcast_WhatThe': [
-                self.broadcast_WhatThe,
-            ],
-            'broadcast_SoIMustEatTacos': [
-                self.broadcast_SoIMustEatTacos,
-            ],
-            'broadcast_WhereIsIt': [
-                self.broadcast_WhereIsIt,
+                self.broadcast_Play1,
             ],
             'green_flag': [
                 self.green_flag,
             ],
-            'broadcast_WitchDoctor': [
-                self.broadcast_WitchDoctor,
-                self.broadcast_WitchDoctor_1,
+            'broadcast_ThatGuy': [
+                self.broadcast_ThatGuy,
             ],
-            'broadcast_Lightning': [
-                self.broadcast_Lightning,
+            'broadcast_OhBoy': [
+                self.broadcast_OhBoy,
+                self.broadcast_OhBoy1,
             ],
         }
         super().__init__(util)
         self.sprite._layer = 0
 
-    async def broadcast_Flash(self, util):
-        if not (self.costume['number'] == "15"):
-            self.set_effect('brightness', -10)
-            self.set_dirty(3)
-            await self.sleep(0.01)
-            self.set_effect('brightness', -20)
-            self.set_dirty(3)
-            await self.sleep(0.1)
-            self.set_effect('brightness', -10)
-            self.set_dirty(3)
-            await self.sleep(0.3)
-            for _ in range(10):
-                await self.sleep(0.01)
-                self.change_effect('brightness', -1)
-                await self._yield(3)
-
-
-    async def broadcast_HeyGuys(self, util):
-        self.set_effect('brightness', 0)
+    async def broadcast_WheresMyTaco(self, util):
         util.stage.costume = util.stage.get_costume('background15')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
-    async def broadcast_SlowDownFolks(self, util):
-        self.set_effect('brightness', -20)
-        util.stage.costume = util.stage.get_costume('background11')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-        for _ in range(10):
-            util.stage.costume = util.stage.get_costume('background11')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.01)
-            util.stage.costume = util.stage.get_costume('background12')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.01)
-            await self._yield(0)
-        for _ in range(10):
-            util.stage.costume = util.stage.get_costume('background11')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.05)
-            util.stage.costume = util.stage.get_costume('background12')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.05)
-            await self._yield(0)
-        util.send_event('broadcast_Flash')
-        for _ in range(7):
-            util.stage.costume = util.stage.get_costume('background11')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.1)
-            util.stage.costume = util.stage.get_costume('background12')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.1)
-            await self._yield(0)
-        for _ in range(4):
-            util.stage.costume = util.stage.get_costume('background11')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.2)
-            util.stage.costume = util.stage.get_costume('background12')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.2)
-            await self._yield(0)
-        for _ in range(2):
-            util.stage.costume = util.stage.get_costume('background11')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.5)
-            util.stage.costume = util.stage.get_costume('background12')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.5)
-            await self._yield(0)
-        util.send_event('broadcast_Flash')
-
-
-    async def broadcast_Credits(self, util):
+    async def broadcast_Drrr(self, util):
         util.stage.costume = util.stage.get_costume('background16')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
-    async def broadcast_ThirdTimeAwkward(self, util):
-        util.stage.costume = util.stage.get_costume('background1')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-
-
-    async def broadcast_IsThereATrend(self, util):
-        util.stage.costume = util.stage.get_costume('background1')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-
-
-    async def broadcast_ILoveTacos(self, util):
-        util.stage.costume = util.stage.get_costume('background2')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-
-
-    async def broadcast_EvenMoreAwkward(self, util):
-        util.stage.costume = util.stage.get_costume('background1')
+    async def broadcast_IsHeDead(self, util):
+        util.stage.costume = util.stage.get_costume('background15')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
     async def broadcast_Play(self, util):
+        self.variables['uhoh'] = 0
+        while not (self.variables['UhOh'] == 1):
+            util.stage.costume = util.stage.get_costume('background2')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            util.stage.costume = util.stage.get_costume('background3')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            util.stage.costume = util.stage.get_costume('background4')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            util.stage.costume = util.stage.get_costume('background5')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            await self._yield(0)
+
+        for _ in range(5):
+            util.stage.costume = util.stage.get_costume('background2')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            util.stage.costume = util.stage.get_costume('background3')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            util.stage.costume = util.stage.get_costume('background4')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            util.stage.costume = util.stage.get_costume('background5')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            await self._yield(0)
+
+        for _ in range(2):
+            util.stage.costume = util.stage.get_costume('background2')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.1)
+            util.stage.costume = util.stage.get_costume('background3')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.1)
+            util.stage.costume = util.stage.get_costume('background4')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.1)
+            util.stage.costume = util.stage.get_costume('background5')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.1)
+            await self._yield(0)
+
+        util.stage.costume = util.stage.get_costume('background4')
+        util.send_event('onbackdrop_' + self.costume['name'])
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        util.stage.costume = util.stage.get_costume('background5')
+        util.send_event('onbackdrop_' + self.costume['name'])
+        self.set_dirty(3)
+
+        await self.sleep(1)
         util.stage.costume = util.stage.get_costume('background1')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
-        await self.sleep(3.5)
-        self.sounds.set_volume(33)
-        self.sounds.play('NewSMBClip')
 
 
-    async def broadcast_Awkward(self, util):
+    async def broadcast_Play1(self, util):
+        await self.sleep(3)
+        self.sounds.set_volume(30)
+        await self.sounds.play('RFClip1')
+
+
+    async def green_flag(self, util):
         util.stage.costume = util.stage.get_costume('background2')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
-    async def broadcast_NowHesAngry(self, util):
-        self.variables['UhOh'] = "0"
-        while not (self.variables['UhOh'] == "1"):
+    async def broadcast_ThatGuy(self, util):
+        while not (self.variables['UhOh'] == 0):
+            util.stage.costume = util.stage.get_costume('background2')
+            util.send_event('onbackdrop_' + self.costume['name'])
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
             util.stage.costume = util.stage.get_costume('background3')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
-            await self.sleep(0.07)
-            util.stage.costume = util.stage.get_costume('background6')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.07)
+
+            await self.sleep(0.05)
             util.stage.costume = util.stage.get_costume('background4')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
-            await self.sleep(0.07)
+
+            await self.sleep(0.05)
             util.stage.costume = util.stage.get_costume('background5')
             util.send_event('onbackdrop_' + self.costume['name'])
             self.set_dirty(3)
-            await self.sleep(0.07)
+
+            await self.sleep(0.05)
             await self._yield(0)
-        while not (self.variables['UhOh'] == "0"):
-            util.stage.costume = util.stage.get_costume('background7')
+
+        self.sounds.play('Swoosh')
+        util.stage.costume = util.stage.get_costume('background7')
+        util.send_event('onbackdrop_' + self.costume['name'])
+        self.set_dirty(3)
+
+        for _ in range(5):
+            await self.sleep(0.06)
+            next_backdrop = util.stage.costume['number'] + 1
+            if next_backdrop == len(util.stage.costumes):
+                util.stage.costume = util.stage.costumes[0]
+            else:
+                util.stage.costume = util.stage.costumes[next_backdrop]
             util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.07)
-            util.stage.costume = util.stage.get_costume('background8')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.07)
-            util.stage.costume = util.stage.get_costume('background9')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.07)
-            util.stage.costume = util.stage.get_costume('background10')
-            util.send_event('onbackdrop_' + self.costume['name'])
-            self.set_dirty(3)
-            await self.sleep(0.07)
-            await self._yield(0)
+            await self._yield(3)
+
+        await self.sleep(0.1)
+        util.send_event('broadcast_FemaleScream')
+        util.stage.costume = util.stage.get_costume('background13')
+        util.send_event('onbackdrop_' + self.costume['name'])
+        self.set_dirty(3)
+
+
+    async def broadcast_OhBoy(self, util):
         util.stage.costume = util.stage.get_costume('background14')
         util.send_event('onbackdrop_' + self.costume['name'])
         self.set_dirty(3)
 
 
-    async def broadcast_WhatThe(self, util):
-        util.stage.costume = util.stage.get_costume('background13')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-        await self.sleep(1)
-        util.send_event('broadcast_Flash')
-
-
-    async def broadcast_SoIMustEatTacos(self, util):
-        util.stage.costume = util.stage.get_costume('background2')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-
-
-    async def broadcast_EvenMoreAwkward_1(self, util):
-        util.stage.costume = util.stage.get_costume('background1')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-
-
-    async def broadcast_WhereIsIt(self, util):
-        util.stage.costume = util.stage.get_costume('background12')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-        await self.sleep(1)
-        util.send_event('broadcast_Flash')
-
-
-    async def green_flag(self, util):
-        self.variables['Dark'] = "0"
-        self.clear_effects()
-        self.set_dirty(3)
-
-
-    async def broadcast_WitchDoctor(self, util):
-        util.stage.costume = util.stage.get_costume('background17')
-        util.send_event('onbackdrop_' + self.costume['name'])
-        self.set_dirty(3)
-        while True:
-            await self.sleep(0.1)
-            self.change_effect('color', 10)
-            await self._yield(3)
-
-
-    async def broadcast_WitchDoctor_1(self, util):
-        while True:
-            await self.sounds.play('WitchDoctorClip')
+    async def broadcast_OhBoy1(self, util):
+        for _ in range(30):
+            await self.sleep(0.01)
+            self.sounds.change_volume(-1)
             await self._yield(0)
 
 
-    async def broadcast_Lightning(self, util):
-        self.set_effect('brightness', 50)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', 0)
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        self.set_effect('brightness', 30)
-        self.set_dirty(3)
-        await self.sleep(0.3)
-        for _ in range(30):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
 
 
-
-class title(engine.Target):
-    costume = 2
+class Sprite_title(engine.Target):
+    costume = 1
     xpos, ypos = 0, 0
     direction = 90
     visible = True
 
     costumes = [
         {
-            'name': "costume1",
-            'path': "2ef224532430544b62a7725a592e4ab8.png",
-            'center': (480, 360),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "6198baa69c42985d5eeaa4930706111f.png",
+            'name': "costume4",
+            'path': "3d1622671c37d48f120a5eb33e610b40.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "costume3",
-            'path': "c9061b829c9fa2edf23b52b3030411ab.png",
+            'path': "4b13524cd79f87e7b7bdeec970409e6a.png",
             'center': (480, 360),
             'scale': 2
         },
@@ -456,8 +354,8 @@ class title(engine.Target):
 
     sounds = [
         {
-            'name': "TheBeginningClip",
-            'path': "0d24f6607ebfbe3f88487369bfb07585.wav"
+            'name': "SandstormClip",
+            'path': "40541aa7dc0d745b7865e752ba25c9f4.wav"
         },
     ]
 
@@ -473,28 +371,42 @@ class title(engine.Target):
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 5
+        self.sprite._layer = 16
 
     async def green_flag(self, util):
-        self.set_effect('pixelate', 0)
+        self.set_costume('costume2')
+        self.variables['menu'] = 1
         self.set_dirty(3)
-        while not (self.variables['Menu'] == "0"):
-            await self.sleep(5)
-            for _ in range(5):
-                self.change_effect('pixelate', 20)
-                self.set_dirty(3)
-                await self.sleep(0.01)
-                await self._yield(0)
-            for _ in range(5):
-                self.change_effect('pixelate', -20)
-                self.set_dirty(3)
-                await self.sleep(0.01)
-                await self._yield(0)
+
+        while not (self.variables['Menu'] == 0):
+            await self.sleep(0.1)
+            self.set_costume('costume3')
+            self.set_dirty(3)
+
+            await self.sleep(0.1)
+            self.set_costume('costume4')
+            await self._yield(3)
+
+
+
+    async def broadcast_Play(self, util):
+        self.variables['menu'] = 0
+        self.front_layer(util)
+        self.change_layer(util, -2)
+        for _ in range(10):
+            self.sounds.change_volume(-10)
+            self.change_effect('ghost', 10)
+            self.set_dirty(3)
+
+            await self.sleep(0.2)
             await self._yield(0)
+
+        self.sounds.stop_all(util)
+        self.visible = 0
+        self.set_dirty(1)
 
 
     async def green_flag1(self, util):
-        self.variables['Menu'] = "1"
         self.set_effect('brightness', -100)
         self.xpos = 0
         self.ypos = 0
@@ -502,48 +414,52 @@ class title(engine.Target):
         self.set_effect('ghost', 0)
         self.visible = 1
         self.set_dirty(3)
+
         await self.sleep(1)
         for _ in range(10):
             self.change_effect('brightness', 10)
             self.set_dirty(3)
+
             await self.sleep(0.1)
             await self._yield(0)
-        while not (self.variables['Menu'] == "0"):
-            await self.sounds.play('TheBeginningClip')
+
+        while not (self.variables['Menu'] == 0):
+            await self.sounds.play('SandstormClip')
             await self._yield(0)
 
-
-    async def broadcast_Play(self, util):
-        self.variables['Menu'] = "0"
-        for _ in range(10):
-            self.sounds.change_volume(-10)
-            self.change_effect('ghost', 10)
-            self.set_dirty(3)
-            await self.sleep(0.2)
-            await self._yield(0)
-        self.sounds.stop_all(util)
-        self.visible = 0
-        self.set_dirty(1)
 
 
     async def green_flag2(self, util):
-        self.set_costume('costume2')
+        self.set_effect('pixelate', 0)
+        self.variables['menu'] = 1
         self.set_dirty(3)
-        while not (self.variables['Menu'] == "0"):
-            await self.sleep(0.1)
-            self.set_costume('costume3')
-            self.set_dirty(3)
-            await self.sleep(0.1)
-            self.set_costume('costume2')
-            await self._yield(3)
+
+        while not (self.variables['Menu'] == 0):
+            await self.sleep(5)
+            for _ in range(5):
+                self.change_effect('pixelate', 20)
+                self.set_dirty(3)
+
+                await self.sleep(0.01)
+                await self._yield(0)
+
+            for _ in range(5):
+                self.change_effect('pixelate', -20)
+                self.set_dirty(3)
+
+                await self.sleep(0.01)
+                await self._yield(0)
+
+            await self._yield(0)
 
 
 
-class play(engine.Target):
+
+class Sprite_play(engine.Target):
     costume = 0
     xpos, ypos = -178, -15
     direction = 90
-    visible = False
+    visible = True
 
     costumes = [
         {
@@ -559,39 +475,43 @@ class play(engine.Target):
 
     def __init__(self, util):
         self.hats = {
+            'sprite_clicked': [
+                self.sprite_clicked,
+            ],
             'green_flag': [
                 self.green_flag,
                 self.green_flag1,
             ],
-            'sprite_clicked': [
-                self.sprite_clicked,
-            ],
         }
         super().__init__(util)
-        self.sprite._layer = 29
+        self.sprite._layer = 25
 
-    async def green_flag(self, util):
-        self.set_effect('pixelate', 0)
-        self.set_dirty(3)
-        while not (self.variables['Menu'] == "0"):
-            await self.sleep(5)
-            for _ in range(5):
-                self.change_effect('pixelate', 20)
-                self.set_dirty(3)
-                await self.sleep(0.01)
-                await self._yield(0)
-            for _ in range(5):
-                self.change_effect('pixelate', -20)
-                self.set_dirty(3)
-                await self.sleep(0.01)
-                await self._yield(0)
+    async def sprite_clicked(self, util):
+        for _ in range(5):
+            self.change_effect('ghost', 10)
+            self.set_dirty(3)
+
+            await self.sleep(0.2)
             await self._yield(0)
 
+        util.send_event('broadcast_Play')
+        self.front_layer(util)
+        for _ in range(5):
+            self.change_effect('ghost', 10)
+            self.set_dirty(3)
 
-    async def green_flag1(self, util):
+            await self.sleep(0.2)
+            await self._yield(0)
+
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def green_flag(self, util):
         self.visible = 0
         self.size = 70
         self.set_dirty(3)
+
         await self.sleep(3)
         self.visible = 1
         self.front_layer(util)
@@ -601,2164 +521,371 @@ class play(engine.Target):
         self.set_dirty(2)
 
 
-    async def sprite_clicked(self, util):
-        for _ in range(5):
-            self.change_effect('ghost', 10)
-            self.set_dirty(3)
-            await self.sleep(0.2)
+    async def green_flag1(self, util):
+        self.set_effect('pixelate', 0)
+        self.set_dirty(3)
+
+        while not (self.variables['Menu'] == 0):
+            await self.sleep(5)
+            for _ in range(5):
+                self.change_effect('pixelate', 20)
+                self.set_dirty(3)
+
+                await self.sleep(0.01)
+                await self._yield(0)
+
+            for _ in range(5):
+                self.change_effect('pixelate', -20)
+                self.set_dirty(3)
+
+                await self.sleep(0.01)
+                await self._yield(0)
+
             await self._yield(0)
-        util.send_event('broadcast_Play')
-        for _ in range(5):
-            self.change_effect('ghost', 10)
-            self.set_dirty(3)
-            await self.sleep(0.2)
-            await self._yield(0)
-        self.visible = 0
-        self.set_dirty(1)
 
 
 
-class Sprite3(engine.Target):
-    costume = 68
-    xpos, ypos = 20, -60
+
+class SpriteSprite1(engine.Target):
+    costume = 30
+    xpos, ypos = -84, -57
     direction = 90
     visible = False
 
     costumes = [
         {
             'name': "costume1",
-            'path': "1bd1f273007870cbc4fc013b14874a82.png",
-            'center': (112, 290),
+            'path': "cc5d1382cbe467a146ef4b47b18085f0.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume2",
-            'path': "a63f1b6cdbd6778c474f7c2ec2f9e46f.png",
-            'center': (112, 290),
+            'path': "e01f59cce380c719cfc6f1c7cfcf82ca.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume3",
-            'path': "3988f5f8a5ba5eeb6bb2608472517617.png",
-            'center': (112, 290),
+            'path': "98a936924fc896b8aadac1e607a99f31.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume4",
-            'path': "b335761d88315b7f2d8b53f8a3b9f767.png",
-            'center': (114, 290),
+            'path': "1051b2e653cbefd3ed31c697cf272eec.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume5",
-            'path': "7a666ee7a957f6b44e115c7c65f6bbd0.png",
-            'center': (112, 290),
+            'path': "d6fc19c45e458be95f7e6a99692af873.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume6",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume13",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
+            'path': "c55d3d74cc0f5b9800b5cd0f23cc7c17.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume7",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
+            'path': "661fb4136edd0b4e7557ed07a14d5ea5.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume8",
-            'path': "68220ed38a14b957e71cdc0f1d359925.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume14",
-            'path': "68220ed38a14b957e71cdc0f1d359925.png",
-            'center': (112, 290),
+            'path': "c55d3d74cc0f5b9800b5cd0f23cc7c17.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume9",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume15",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
+            'path': "c626545ca7f0a7ca80a6ce02ced4f18d.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume10",
-            'path': "106f245e9dda216243831dabcd344ad5.png",
-            'center': (112, 290),
+            'path': "fb3e6a4a7e2791a88681a4529bac9ba5.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume11",
-            'path': "3f324689623c96163a4218e95b01dc55.png",
-            'center': (112, 290),
+            'path': "620841c4df4a43f07e16e0f49ac272d8.png",
+            'center': (186, 250),
+            'scale': 2
+        },
+        {
+            'name': "costume12",
+            'path': "2bde90d58050c16c123a29f28cb782ab.png",
+            'center': (186, 250),
+            'scale': 2
+        },
+        {
+            'name': "costume13",
+            'path': "98a936924fc896b8aadac1e607a99f31.png",
+            'center': (186, 250),
+            'scale': 2
+        },
+        {
+            'name': "costume14",
+            'path': "1051b2e653cbefd3ed31c697cf272eec.png",
+            'center': (186, 250),
+            'scale': 2
+        },
+        {
+            'name': "costume15",
+            'path': "1051b2e653cbefd3ed31c697cf272eec.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume16",
-            'path': "3988f5f8a5ba5eeb6bb2608472517617.png",
-            'center': (112, 290),
+            'path': "c626545ca7f0a7ca80a6ce02ced4f18d.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume17",
-            'path': "7a666ee7a957f6b44e115c7c65f6bbd0.png",
-            'center': (112, 290),
+            'path': "c626545ca7f0a7ca80a6ce02ced4f18d.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume18",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
+            'path': "1bf236791441904cd17bc52a1bfbd0e1.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume19",
-            'path': "3988f5f8a5ba5eeb6bb2608472517617.png",
-            'center': (112, 290),
+            'path': "661fb4136edd0b4e7557ed07a14d5ea5.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume20",
-            'path': "70a4687235890503e924ae1c2e986637.png",
-            'center': (112, 290),
+            'path': "fb3e6a4a7e2791a88681a4529bac9ba5.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume21",
-            'path': "374c74321aa97c82ff1860ae1a42005b.png",
-            'center': (112, 290),
+            'path': "c626545ca7f0a7ca80a6ce02ced4f18d.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume22",
-            'path': "f36c4555557c18174f675ec2e5fccb4e.png",
-            'center': (112, 290),
+            'path': "661fb4136edd0b4e7557ed07a14d5ea5.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume23",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume24",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume25",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
+            'path': "20dbdbb02b02951d7f7b36670bafa25b.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume26",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
+            'path': "20dbdbb02b02951d7f7b36670bafa25b.png",
+            'center': (186, 250),
+            'scale': 2
+        },
+        {
+            'name': "costume24",
+            'path': "1051b2e653cbefd3ed31c697cf272eec.png",
+            'center': (186, 250),
+            'scale': 2
+        },
+        {
+            'name': "costume25",
+            'path': "c626545ca7f0a7ca80a6ce02ced4f18d.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume27",
-            'path': "3988f5f8a5ba5eeb6bb2608472517617.png",
-            'center': (112, 290),
+            'path': "8bab36736003a995a16d8f8e045e884d.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume28",
-            'path': "3988f5f8a5ba5eeb6bb2608472517617.png",
-            'center': (112, 290),
+            'path': "981e33571a2060572dc02ce2da80232f.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume29",
-            'path': "374c74321aa97c82ff1860ae1a42005b.png",
-            'center': (112, 290),
+            'path': "c516a6cf1e8de5844f8d59d5ab1702e4.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume30",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
+            'path': "f6e9ffb8ab42f3a29bdbfcdf03fc43c9.png",
+            'center': (186, 250),
             'scale': 2
         },
         {
             'name': "costume31",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume32",
-            'path': "ffbd0461f1f8a156f963ed1f914847e2.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume33",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume34",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume35",
-            'path': "3f10b273f8b1513b67794dc308906a1c.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume36",
-            'path': "f36c4555557c18174f675ec2e5fccb4e.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume37",
-            'path': "3988f5f8a5ba5eeb6bb2608472517617.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume38",
-            'path': "70a4687235890503e924ae1c2e986637.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume39",
-            'path': "70a4687235890503e924ae1c2e986637.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume41",
-            'path': "70a4687235890503e924ae1c2e986637.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume40",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume42",
-            'path': "7443233cf65d67b7e85c3434814f3df7.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume43",
-            'path': "56c4e8c0183c1646b187e931e0022aa2.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume46",
-            'path': "56c4e8c0183c1646b187e931e0022aa2.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume47",
-            'path': "56c4e8c0183c1646b187e931e0022aa2.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume45",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume48",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume49",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume54",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume50",
-            'path': "3f10b273f8b1513b67794dc308906a1c.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume51",
-            'path': "7a666ee7a957f6b44e115c7c65f6bbd0.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume52",
-            'path': "70a4687235890503e924ae1c2e986637.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume53",
-            'path': "374c74321aa97c82ff1860ae1a42005b.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume55",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume56",
-            'path': "56c4e8c0183c1646b187e931e0022aa2.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume57",
-            'path': "3663d7f27b1b9bdd070fcf64ae21acfd.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume58",
-            'path': "374c74321aa97c82ff1860ae1a42005b.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume59",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume60",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume61",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume62",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume63",
-            'path': "a89d9f294177f68d676c087a596d4990.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume64",
-            'path': "3988f5f8a5ba5eeb6bb2608472517617.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume65",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume66",
-            'path': "279f3f7ba9295ab745be8180c628a034.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume67",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume68",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume69",
-            'path': "a4cb93275fdad304ddbc655aa75b85e4.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume71",
-            'path': "c9ad37ee17652fc9444d934ff6b71ed1.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume70",
-            'path': "0fc961259c3bcfd9ef903bd5f8a70a50.png",
-            'center': (112, 290),
+            'path': "f9c5d955abda283b86dd3007210eb570.png",
+            'center': (186, 250),
             'scale': 2
         },
     ]
 
     sounds = [
         {
-            'name': "TheTaco",
-            'path': "974378b0dd0111b396f2ad636a4845d3.wav"
+            'name': "DidntSeeThatOne",
+            'path': "fdeaef5122f8e36c645a55629d7687f6.wav"
         },
         {
-            'name': "ThePerfectCombin",
-            'path': "a1471d4cb7955179714fec8bec6fd8e6.wav"
+            'name': "HaHaHa",
+            'path': "2656b69baf708ba93c3a970d2da5fdf3.wav"
         },
         {
-            'name': "Cheese",
-            'path': "4cd92fda24987d125eb82caf22d8e01d.wav"
+            'name': "Piff",
+            'path': "1b59efcfa3b640a8c8fd7233b9b30833.wav"
         },
         {
-            'name': "Substances",
-            'path': "13404a53a0a09c82bfa087d744c0862a.wav"
+            'name': "DidntSeeThatOne1",
+            'path': "d70fc4f6cfe913ffe470d6f3b0bbb2cd.wav"
+        },
+        {
+            'name': "HaHaHa1",
+            'path': "8a8a144bf71b14ddd5b45f496f7fa707.wav"
         },
     ]
 
     def __init__(self, util):
         self.hats = {
-            'broadcast_Play': [
-                self.broadcast_Play,
+            'broadcast_Kablammie': [
+                self.broadcast_Kablammie,
+            ],
+            'broadcast_Hiya': [
+                self.broadcast_Hiya,
+            ],
+            'broadcast_HaHaHa': [
+                self.broadcast_HaHaHa,
             ],
             'green_flag': [
                 self.green_flag,
+            ],
+            'broadcast_Play': [
+                self.broadcast_Play,
+            ],
+            'broadcast_Piff': [
+                self.broadcast_Piff,
             ],
         }
         super().__init__(util)
         self.sprite._layer = 4
 
+    async def broadcast_Kablammie(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_Hiya(self, util):
+        self.size = 75
+        self.xpos = -84
+        self.ypos = -57
+        self.visible = 1
+        self.set_dirty(3)
+
+
+    async def broadcast_HaHaHa(self, util):
+        self.set_costume('costume31')
+        await self.glide(2, -126, 5)
+        self.set_dirty(3)
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
     async def broadcast_Play(self, util):
-        self.set_effect('ghost', 100)
-        self.xpos = -180
-        self.ypos = -60
-        self.set_costume('costume3')
-        self.visible = 1
-        self.set_dirty(3)
-        for _ in range(5):
-            self.change_effect('ghost', -20)
-            self.set_dirty(3)
-            await self.sleep(0.2)
-            await self._yield(0)
-        for _ in range(10):
-            for _ in range(5):
-                await self.sleep(0.01)
-                self.xpos += 2
-                await self._yield(2)
-            self.set_costume('costume4')
-            self.ypos += 3
-            self.set_dirty(3)
-            for _ in range(5):
-                await self.sleep(0.01)
-                self.xpos += 2
-                await self._yield(2)
-            self.set_costume('costume3')
-            self.ypos += -3
-            await self._yield(3)
-        self.set_costume('costume5')
-        self.sounds.play('TheTaco')
-        self.set_dirty(3)
-        for _ in range(10):
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.5)
-        self.sounds.play('ThePerfectCombin')
-        for _ in range(25):
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.2)
-        self.sounds.play('Cheese')
-        for _ in range(5):
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.2)
-        self.sounds.play('Substances')
-        for _ in range(24):
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.5)
-        util.send_event('broadcast_ImGonnaEatIt')
-        await self.sleep(0.01)
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite4(engine.Target):
-    costume = 19
-    xpos, ypos = 40, -60
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "1bd1f273007870cbc4fc013b14874a82.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "a63f1b6cdbd6778c474f7c2ec2f9e46f.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "5ff1fff8d7a88aea4b101775895363fb.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume4",
-            'path': "9f2c153172d2d808d5948241c80094ec.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume5",
-            'path': "b3cd721641c8a02696d98c795e9d6b6d.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume6",
-            'path': "9f2c153172d2d808d5948241c80094ec.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume7",
-            'path': "f2f2a6793ab057db7138b02e0a22413a.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume8",
-            'path': "3cea93484db13fdabab46cfd91e3753e.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume9",
-            'path': "7530542f1854dbcb04603ce5f9a646ab.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume10",
-            'path': "b3cd721641c8a02696d98c795e9d6b6d.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume11",
-            'path': "ad2ebf37e139b0841b933abadfa469bb.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume12",
-            'path': "7530542f1854dbcb04603ce5f9a646ab.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume13",
-            'path': "7354a47e24f70d12d5f304e82e9068f3.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume14",
-            'path': "f2f2a6793ab057db7138b02e0a22413a.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume15",
-            'path': "1b9fa172bd4c541712d3669d079f2e15.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume16",
-            'path': "1a457e81e5627e456aa0e35fbd09b42e.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume17",
-            'path': "c465d2e8bdbfe65e086fb2df014146c6.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume18",
-            'path': "b9b5cc2eea32caacb0cff8087e5f2c24.png",
-            'center': (112, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume19",
-            'path': "1deb8cb09813eacda255ae91bf5b736e.png",
-            'center': (112, 278),
-            'scale': 2
-        },
-        {
-            'name': "costume20",
-            'path': "dfe31c63e254bdb27a4d1f472428d48d.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume21",
-            'path': "a6cd054868f94322538e313df10544b0.png",
-            'center': (236, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume22",
-            'path': "81efcb16197ff4cb7a90bf647f0c3308.png",
-            'center': (236, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume23",
-            'path': "33faa2f7c690e6fdc063cb38604769fc.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume41",
-            'path': "33faa2f7c690e6fdc063cb38604769fc.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume24",
-            'path': "853250ac942832d9be387a96416f1b75.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume25",
-            'path': "a431933896ac28d119f45797821d0d42.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume36",
-            'path': "a431933896ac28d119f45797821d0d42.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume26",
-            'path': "282c59208f1a2b148aa7426224c69e20.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume27",
-            'path': "bfc70f871d87182f8646f0bcdfbe795b.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume37",
-            'path': "bfc70f871d87182f8646f0bcdfbe795b.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume43",
-            'path': "13e3c776895c02009f65cb6cdca21d07.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume28",
-            'path': "282c59208f1a2b148aa7426224c69e20.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume29",
-            'path': "f5d898af621681a0484a20a160a55434.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume30",
-            'path': "bfc70f871d87182f8646f0bcdfbe795b.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume31",
-            'path': "a431933896ac28d119f45797821d0d42.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume38",
-            'path': "a431933896ac28d119f45797821d0d42.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume32",
-            'path': "47ac902aa08b5b51464a2576bd309652.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume39",
-            'path': "47ac902aa08b5b51464a2576bd309652.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume40",
-            'path': "47ac902aa08b5b51464a2576bd309652.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume45",
-            'path': "47ac902aa08b5b51464a2576bd309652.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume46",
-            'path': "9d23f370f5d6496619f22720b0f30eeb.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume33",
-            'path': "282c59208f1a2b148aa7426224c69e20.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume55",
-            'path': "282c59208f1a2b148aa7426224c69e20.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume34",
-            'path': "853250ac942832d9be387a96416f1b75.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume42",
-            'path': "853250ac942832d9be387a96416f1b75.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume44",
-            'path': "9033b35f165e8c40861e0fced4ccf3b2.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume35",
-            'path': "f5d898af621681a0484a20a160a55434.png",
-            'center': (236, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume47",
-            'path': "cc92b0293990094fe3df4710734d1209.png",
-            'center': (228, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume48",
-            'path': "067e68e7a4a47e40279ec5b373d26fdd.png",
-            'center': (228, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume52",
-            'path': "9117c25cb014d8683415fb1d557e14d0.png",
-            'center': (228, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume50",
-            'path': "0ead5bcfa3b02459de37db21288f0750.png",
-            'center': (228, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume51",
-            'path': "bf75827f4e8faf6388339af1e1ba6986.png",
-            'center': (228, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume53",
-            'path': "12c417c42146859ee580ded2fe78d41e.png",
-            'center': (228, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume54",
-            'path': "9117c25cb014d8683415fb1d557e14d0.png",
-            'center': (228, 290),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-        {
-            'name': "GonnaEatIt",
-            'path': "dc4bbc629249ddf7765bbd320a56ae4f.wav"
-        },
-        {
-            'name': "CarminaBurana",
-            'path': "28c2261fae1a6a05b96d6d1110aff3a4.wav"
-        },
-        {
-            'name': "WAAAIT",
-            'path': "3e3d5f61491bfecba87345f992062025.wav"
-        },
-        {
-            'name': "whoosh",
-            'path': "6394551b397c5a9669d02786b4d8e91d.wav"
-        },
-        {
-            'name': "DiscScratch1",
-            'path': "6be738764383696b4e066d680abb00e1.wav"
-        },
-        {
-            'name': "WhyCantIEatIt",
-            'path': "72b7596613d30a9a8c3c5787ef22ada7.wav"
-        },
-        {
-            'name': "No",
-            'path': "f06a3ad3e043fa8e8d2125058cc7af75.wav"
-        },
-        {
-            'name': "P",
-            'path': "053cfdca74be25ecbc5dae7f9bcd3614.wav"
-        },
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_SoIMustEatTacos': [
-                self.broadcast_SoIMustEatTacos,
-            ],
-            'broadcast_No': [
-                self.broadcast_No,
-            ],
-            'broadcast_ThirdTimeAwkward': [
-                self.broadcast_ThirdTimeAwkward,
-            ],
-            'broadcast_EvenMoreAwkward': [
-                self.broadcast_EvenMoreAwkward,
-            ],
-            'broadcast_ImGonnaEatIt': [
-                self.broadcast_ImGonnaEatIt,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_WhyCantIEatIt': [
-                self.broadcast_WhyCantIEatIt,
-            ],
-            'broadcast_IsThereATrend': [
-                self.broadcast_IsThereATrend,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 15
-
-    async def broadcast_SoIMustEatTacos(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_No(self, util):
-        self.set_costume('costume48')
-        self.set_dirty(3)
-        await self.sleep(0.08)
-        self.set_costume('costume52')
-        self.sounds.play('P')
-        self.set_dirty(3)
-        await self.sleep(1)
-        self.sounds.play('No')
-        next_costume = self.costume['number'] + 1
-        if next_costume == len(self.costumes):
-            self.set_costume(0)
-        else:
-            self.set_costume(next_costume)
-        self.set_costume('costume50')
-        self.set_dirty(3)
-        for _ in range(3):
-            await self.sleep(0.1)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(2)
-        util.send_event('broadcast_NowHesAngry')
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_ThirdTimeAwkward(self, util):
-        self.visible = 1
-        self.set_dirty(1)
-
-
-    async def broadcast_EvenMoreAwkward(self, util):
-        self.visible = 1
-        self.set_dirty(1)
-
-
-    async def broadcast_ImGonnaEatIt(self, util):
-        self.visible = 1
-        self.sounds.set_volume(100)
-        other = util.targets['Sprite3']
-        self.xpos, self.ypos = other.xpos, other.ypos
-        self.set_costume('costume4')
-        self.set_dirty(3)
-        await self.sleep(0.5)
-        self.sounds.play('GonnaEatIt')
-        for _ in range(10):
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.5)
-        util.send_event('broadcast_MouthOpensDramatically')
-        self.set_costume('costume15')
-        self.sounds.stop_all(util)
-        self.sounds.set_volume(50)
-        self.sounds.play('CarminaBurana')
-        self.set_dirty(3)
-        for _ in range(2):
-            await self.sleep(1.8)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(2.4)
-        self.sounds.stop_all(util)
-        self.sounds.set_volume(80)
-        await self.sounds.play('DiscScratch1')
-        await self.sounds.play('WAAAIT')
-        util.send_event('broadcast_Umm')
-        self.set_costume('costume18')
-        self.set_dirty(3)
-        await self.sleep(1)
-        self.sounds.play('whoosh')
-        self.set_costume('costume19')
-        self.set_dirty(3)
-        await self.sleep(0.05)
-        self.xpos += 10
-        self.set_costume('costume22')
-        self.set_dirty(3)
-        await self.sleep(0.05)
-        self.xpos += 10
-        self.set_costume('costume20')
-        self.set_dirty(3)
-        await self.sleep(1)
-        util.send_event('broadcast_Awkward')
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_WhyCantIEatIt(self, util):
-        self.sounds.play('WhyCantIEatIt')
-        self.set_costume('costume23')
-        self.set_dirty(3)
-        for _ in range(24):
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.5)
-        util.send_event('broadcast_ILoveTacos')
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_IsThereATrend(self, util):
-        self.set_costume('costume47')
-        self.visible = 1
-        self.set_dirty(3)
-
-
-
-class Sprite1(engine.Target):
-    costume = 2
-    xpos, ypos = -148, -57
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "191afa828fa6236158a7152515e70d1e.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "ab16af524d6db75684aa0112acff9db6.png",
-            'center': (202, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "2bd5adfc1abf5d3a83d5955fe4ad4a83.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume4",
-            'path': "38dfeec1fe76b31aa7a4f81f60cb1e93.png",
-            'center': (202, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume5",
-            'path': "42f9e8339bb382221a7f8e9a38329c2a.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume6",
-            'path': "130c5721d3613f4db2d4e28276afd3ea.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume7",
-            'path': "6492407f7ea9c56caa1ce629542a35d2.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume8",
-            'path': "d50fe6b9b4be8f80571826897e9164f6.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume9",
-            'path': "c1bc418bf403cd7f451c2646d0d9e3a2.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume10",
-            'path': "013da338eb05711d619df643b4245ec8.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume11",
-            'path': "837581a941a7a3d5db056ff422bc830d.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume12",
-            'path': "a1fb58f2ee31021497a5c36daa82ecae.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume13",
-            'path': "0c18d8cb3658e4bf26f5d60494608f6d.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume14",
-            'path': "b1b4e11170e8f6134cc4463434ee7d9b.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume15",
-            'path': "130c5721d3613f4db2d4e28276afd3ea.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume16",
-            'path': "41f4e4a1489f3a3947a055160ba624fd.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume17",
-            'path': "d50fe6b9b4be8f80571826897e9164f6.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume18",
-            'path': "6492407f7ea9c56caa1ce629542a35d2.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume19",
-            'path': "e4765f211bad3139ceca57ab9822d836.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-        {
-            'name': "costume20",
-            'path': "86bddeb730ed57ff689542bc097d3c4e.png",
-            'center': (100, 258),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-        {
-            'name': "StepOnGrass",
-            'path': "a5315d37dfa4b2ac66ed6793f38ea4d1.wav"
-        },
-        {
-            'name': "GiveMeTheTaco",
-            'path': "6e57606dfc3c945c9283c9ad8a353710.wav"
-        },
-        {
-            'name': "Crickets",
-            'path': "f4e767071648efe324789bcb3b88c038.wav"
-        },
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_NowHesAngry': [
-                self.broadcast_NowHesAngry,
-            ],
-            'broadcast_ThirdTimeAwkward': [
-                self.broadcast_ThirdTimeAwkward,
-            ],
-            'broadcast_ILoveTacos': [
-                self.broadcast_ILoveTacos,
-            ],
-            'broadcast_EvenMoreAwkward': [
-                self.broadcast_EvenMoreAwkward,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_IsThereATrend': [
-                self.broadcast_IsThereATrend,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 32
-
-    async def broadcast_NowHesAngry(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_ThirdTimeAwkward(self, util):
-        self.xpos = -129
-        self.ypos = -66
-        self.set_costume('costume4')
-        self.visible = 1
-        self.front_layer(util)
-        self.set_dirty(3)
-        await self.sleep(0.5)
-        await self.sounds.play('Crickets')
-        self.sounds.play('StepOnGrass')
-        self.xpos = -148
-        self.ypos = -57
-        self.set_costume('costume3')
-        util.send_event('broadcast_IsThereATrend')
-        self.set_dirty(3)
-
-
-    async def broadcast_ILoveTacos(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_EvenMoreAwkward(self, util):
-        self.xpos = -129
-        self.ypos = -66
+        self.size = 100
         self.set_costume('costume2')
         self.visible = 1
-        self.front_layer(util)
+        self.xpos = 151
+        self.ypos = 5
         self.set_dirty(3)
+
+        await self.sleep(5)
+        self.sounds.play('DidntSeeThatOne1')
+        self.set_costume('costume3')
+        self.set_dirty(3)
+
+        for _ in range(23):
+            await self.sleep(0.05)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
         await self.sleep(0.5)
-        await self.sounds.play('Crickets')
-        self.sounds.play('StepOnGrass')
-        self.xpos = -148
-        self.ypos = -57
-        self.set_costume('costume3')
+        self.sounds.play('HaHaHa1')
+        self.set_costume('costume28')
         self.set_dirty(3)
-        await self.sleep(1)
-        util.send_event('broadcast_WhyCantIEatIt')
 
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_IsThereATrend(self, util):
-        self.sounds.play('StepOnGrass')
-        self.xpos = -148
-        self.ypos = -57
-        self.set_costume('costume3')
-        self.set_dirty(3)
-        await self.sleep(1)
-        self.set_costume('costume6')
-        self.sounds.play('GiveMeTheTaco')
-        self.set_dirty(3)
-        for _ in range(14):
-            await self.sleep(0.06)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(1)
-        util.send_event('broadcast_No')
-
-
-
-class Sprite5(engine.Target):
-    costume = 0
-    xpos, ypos = 66, -5
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume2",
-            'path': "41fb1754f0428a2c0f1be78ffbad556d.png",
-            'center': (52, 36),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_Umm': [
-                self.broadcast_Umm,
-            ],
-            'broadcast_MouthOpensDramatically': [
-                self.broadcast_MouthOpensDramatically,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 30
-
-    async def broadcast_Umm(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_MouthOpensDramatically(self, util):
-        self.xpos = 66
-        self.ypos = -5
-        self.front_layer(util)
-        self.visible = 1
-        self.set_dirty(2)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite6(engine.Target):
-    costume = 30
-    xpos, ypos = -96, -40
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "57c6ec48b886cd092ada961516119772.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "82ad19c185f725b229ba55474947661f.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume4",
-            'path': "90ca80e98343ec3406b0cbab79bb5a1b.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume5",
-            'path': "157c8121e5c2e6744aaab6ff911aaac0.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume6",
-            'path': "f2e9208319b9a8393c2a5fe3f929270d.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume7",
-            'path': "aef49094dc838ef4a064e19a660d233a.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume8",
-            'path': "3453c8717a7ff60e8a741171d1e8bf99.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume9",
-            'path': "e3f9c3cfe49a038d184cccfb5be5ed92.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume10",
-            'path': "48534cfa5d19896ba70efa422fdc3bf6.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume11",
-            'path': "ce6433d91265c6f03d1f9af89408b2ad.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume12",
-            'path': "aef49094dc838ef4a064e19a660d233a.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume13",
-            'path': "853890d69b1db573ed442df6fbc280bd.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume14",
-            'path': "3da96479609e2927d5e4a878fe90f5bf.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume15",
-            'path': "a6a49c2592954933daf6bcdd24831119.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume16",
-            'path': "021f567149fca555bb90979d4fdea61f.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume17",
-            'path': "889f9bb84bba294b07524bc7754075c2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume18",
-            'path': "3453c8717a7ff60e8a741171d1e8bf99.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume19",
-            'path': "e3f9c3cfe49a038d184cccfb5be5ed92.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume20",
-            'path': "48534cfa5d19896ba70efa422fdc3bf6.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume21",
-            'path': "3da96479609e2927d5e4a878fe90f5bf.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume22",
-            'path': "a6a49c2592954933daf6bcdd24831119.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume23",
-            'path': "3453c8717a7ff60e8a741171d1e8bf99.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume25",
-            'path': "9b1eff3d40aad90eb9684b9f6b460a81.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume26",
-            'path': "3c0d5a573050e6088aba9610f186b35b.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume27",
-            'path': "7f8b47c37bb4c2d2be499141f2a095cb.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume28",
-            'path': "c2c62d3265dc64b1c47ba6f02dfce246.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume29",
-            'path': "8f08c789b80bbe1b8d1d094cec0a1212.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume30",
-            'path': "c789cf971cf599e5a77a2e4beb591e56.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume31",
-            'path': "75dce02e47282d061269a66a1a1d7ac7.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume32",
-            'path': "1c275ba4cea354ad212224fe66369c62.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume33",
-            'path': "4ec28f8fa5b8d63280bafb96ff8227f4.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume34",
-            'path': "3c0d5a573050e6088aba9610f186b35b.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume45",
-            'path': "224795c199c5cf3b455bb7f5fa5470d0.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume35",
-            'path': "acee023a8dc8f66ab66f52ef3caab8b7.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume37",
-            'path': "3c0d5a573050e6088aba9610f186b35b.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume38",
-            'path': "4ec28f8fa5b8d63280bafb96ff8227f4.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume39",
-            'path': "8f08c789b80bbe1b8d1d094cec0a1212.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume44",
-            'path': "4ec28f8fa5b8d63280bafb96ff8227f4.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume46",
-            'path': "4ec28f8fa5b8d63280bafb96ff8227f4.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume40",
-            'path': "7f8b47c37bb4c2d2be499141f2a095cb.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume41",
-            'path': "c2c62d3265dc64b1c47ba6f02dfce246.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume47",
-            'path': "c3fe503ff5973f4e31708b86e4b7fc99.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume43",
-            'path': "4ec28f8fa5b8d63280bafb96ff8227f4.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-        {
-            'name': "ILoveTacos",
-            'path': "196bf76f87105187896bf6e10f6cf000.wav"
-        },
-        {
-            'name': "SoIMustEatTacos",
-            'path': "fabb1d8fc222a42beca18f66604fab84.wav"
-        },
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_SoIMustEatTacos': [
-                self.broadcast_SoIMustEatTacos,
-            ],
-            'broadcast_EvenMoreAwkward': [
-                self.broadcast_EvenMoreAwkward,
-            ],
-            'broadcast_Awkward': [
-                self.broadcast_Awkward,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_ILoveTacos': [
-                self.broadcast_ILoveTacos,
-            ],
-            'broadcast_ThirdTimeAwkward': [
-                self.broadcast_ThirdTimeAwkward,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 6
-
-    async def broadcast_SoIMustEatTacos(self, util):
-        self.size = 130
-        self.xpos = -96
-        self.ypos = -40
-        self.set_costume('costume26')
-        self.visible = 1
-        self.sounds.play('SoIMustEatTacos')
-        self.set_dirty(3)
-        for _ in range(7):
-            await self.sleep(0.09)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
         await self.sleep(0.1)
-        for _ in range(3):
-            await self.sleep(0.09)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.07)
-        for _ in range(9):
-            await self.sleep(0.08)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(4)
-        util.send_event('broadcast_IsThereATrend')
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_EvenMoreAwkward(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_Awkward(self, util):
-        self.size = 130
-        self.xpos = -96
-        self.ypos = -40
-        self.set_costume('costume4')
-        self.visible = 1
+        self.set_costume('costume29')
         self.set_dirty(3)
 
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_ILoveTacos(self, util):
-        self.size = 130
-        self.xpos = -96
-        self.ypos = -40
-        self.set_costume('costume6')
-        self.visible = 1
-        self.sounds.play('ILoveTacos')
-        self.set_dirty(3)
-        for _ in range(17):
-            await self.sleep(0.09)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.5)
-        util.send_event('broadcast_ThirdTimeAwkward')
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_ThirdTimeAwkward(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite7(engine.Target):
-    costume = 0
-    xpos, ypos = 76, -92
-    direction = 130
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "30bdf4d9da96413afec7c7539d96292f.png",
-            'center': (120, 146),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_ThirdTimeAwkward': [
-                self.broadcast_ThirdTimeAwkward,
-            ],
-            'broadcast_ILoveTacos': [
-                self.broadcast_ILoveTacos,
-            ],
-            'broadcast_Awkward': [
-                self.broadcast_Awkward,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_SoIMustEatTacos': [
-                self.broadcast_SoIMustEatTacos,
-            ],
-            'broadcast_IsThereATrend': [
-                self.broadcast_IsThereATrend,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 31
-
-    async def broadcast_ThirdTimeAwkward(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_ILoveTacos(self, util):
-        self.size = 186
-        self.xpos = 76
-        self.ypos = -92
-        self.set_direction(120)
-        self.set_costume('costume1')
-        self.visible = 1
-        self.front_layer(util)
-        self.set_dirty(3)
-        for _ in range(10):
-            await self.sleep(0.05)
-            self.set_direction(self.direction + 1)
-            await self._yield(3)
-
-
-    async def broadcast_Awkward(self, util):
-        self.size = 186
-        self.xpos = 76
-        self.ypos = -92
-        self.set_direction(120)
-        self.set_costume('costume1')
-        self.visible = 1
-        self.front_layer(util)
-        self.set_dirty(3)
-        for _ in range(10):
-            await self.sleep(0.05)
-            self.set_direction(self.direction + 1)
-            await self._yield(3)
-        await self.sleep(2)
-        util.send_event('broadcast_EvenMoreAwkward')
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_SoIMustEatTacos(self, util):
-        self.size = 186
-        self.xpos = 76
-        self.ypos = -92
-        self.set_direction(120)
-        self.set_costume('costume1')
-        self.visible = 1
-        self.front_layer(util)
-        self.set_dirty(3)
-        await self.sleep(1)
-        for _ in range(10):
-            await self.sleep(0.05)
-            self.set_direction(self.direction + 1)
-            await self._yield(3)
-
-
-    async def broadcast_IsThereATrend(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite8(engine.Target):
-    costume = 17
-    xpos, ypos = -67, 23
-    direction = 100
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "df3db9623cdefc7eaec2072363ef0507.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "941fd91fc7decc66d4344ef8925f9be2.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "1371db0d6d2fdb8b77d68bbe81b8745a.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume4",
-            'path': "9380057577500642e060459451383119.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume5",
-            'path': "3563cda96eb029f79ded9441b8316a15.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume6",
-            'path': "9e9536f77d8e354bd67d040f0d4b65eb.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume7",
-            'path': "05dd071555be301db651967e3b21601e.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume18",
-            'path': "05dd071555be301db651967e3b21601e.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume8",
-            'path': "1371db0d6d2fdb8b77d68bbe81b8745a.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume19",
-            'path': "1371db0d6d2fdb8b77d68bbe81b8745a.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume9",
-            'path': "941fd91fc7decc66d4344ef8925f9be2.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume16",
-            'path': "1371db0d6d2fdb8b77d68bbe81b8745a.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume20",
-            'path': "1371db0d6d2fdb8b77d68bbe81b8745a.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume17",
-            'path': "941fd91fc7decc66d4344ef8925f9be2.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume12",
-            'path': "1d1caaf136313f587f6d29e15b27a59d.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume13",
-            'path': "c6240cdc536afc8bb281bcc4a9aed1d4.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume14",
-            'path': "2f420230828f1afae129d3c80e2be706.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume15",
-            'path': "39d1984909aa3109e1874614e94d2122.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-        {
-            'name': "costume21",
-            'path': "e81ea96be82bc915a2958e40797db1fe.png",
-            'center': (252, 290),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-        {
-            'name': "GIVEMETHETACO",
-            'path': "c89907bbca6e570dcc9f643f6b78de58.wav"
-        },
-        {
-            'name': "Intense",
-            'path': "50074debdbf98e1bc4ff02962451d061.wav"
-        },
-        {
-            'name': "Arrrrrrgh",
-            'path': "9c4df806e575a68fbc779fe043d97f02.wav"
-        },
-        {
-            'name': "Lightning",
-            'path': "bc4fea116f6795e0bbe03983dcdf370b.wav"
-        },
-        {
-            'name': "Lightning1",
-            'path': "f7a85705e4eda971b4222115915947b6.wav"
-        },
-        {
-            'name': "Lightning2",
-            'path': "79f46530d1f720f112bb17934e267c37.wav"
-        },
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_Running': [
-                self.broadcast_Running,
-            ],
-            'broadcast_NowHesAngry': [
-                self.broadcast_NowHesAngry,
-                self.broadcast_NowHesAngry_1,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_Lightning': [
-                self.broadcast_Lightning,
-            ],
-            'broadcast_IsThisTheEnd': [
-                self.broadcast_IsThisTheEnd,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 9
-
-    async def broadcast_Running(self, util):
-        self.set_direction(100)
-        self.xpos = -148
-        self.ypos = -68
-        self.size = 59
-        self.set_costume('costume21')
-        self.visible = 1
-        self.sounds.play('Arrrrrrgh')
-        await self.glide(5, -112, 41)
-        util.send_event('broadcast_Lightning')
-        self.set_dirty(3)
-
-
-    async def broadcast_NowHesAngry(self, util):
-        self.sounds.play('Intense')
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_NowHesAngry_1(self, util):
-        self.xpos = -105
-        self.ypos = -53
-        self.size = 116
-        self.visible = 1
-        self.set_costume('costume2')
-        util.send_event('broadcast_Lightning')
-        self.set_dirty(3)
-        for _ in range(5):
-            await self.sleep(0.09)
-            self.ypos += 2
-            self.xpos += 1
-            await self._yield(2)
-        self.sounds.set_volume(500)
-        self.sounds.play('GIVEMETHETACO')
-        self.set_costume('costume2')
-        self.set_dirty(3)
-        for _ in range(16):
-            await self.sleep(0.08)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            self.ypos += 2
-            self.xpos += 1
-            await self._yield(3)
-        for _ in range(12):
-            await self.sleep(0.09)
-            self.ypos += 2
-            self.xpos += 1
-            await self._yield(2)
-        util.send_event('broadcast_Lightning')
-        for _ in range(5):
-            await self.sleep(0.09)
-            self.ypos += 2
-            self.xpos += 1
-            await self._yield(2)
-        util.send_event('broadcast_OhNo')
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_Lightning(self, util):
-        self.sounds.play(random.randint(4, 6))
-        self.set_effect('brightness', 50)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', 0)
-        self.set_dirty(3)
         await self.sleep(0.1)
-        self.set_effect('brightness', 30)
+        self.set_costume('costume28')
         self.set_dirty(3)
-        await self.sleep(0.3)
-        for _ in range(30):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
+
+        await self.sleep(0.1)
+        self.set_costume('costume29')
+        self.set_dirty(3)
+
+        await self.sleep(0.1)
+        self.set_costume('costume28')
+        self.set_dirty(3)
+
+        await self.sleep(0.03)
+        self.set_costume('costume29')
+        self.set_dirty(3)
+
+        await self.sleep(0.03)
+        self.set_costume('costume28')
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        util.send_event('broadcast_HaHaHa')
 
 
-    async def broadcast_IsThisTheEnd(self, util):
-        await self.glide(4, 44, -27)
-        util.send_event('broadcast_Kablammie')
+    async def broadcast_Piff(self, util):
+        self.sounds.play('Piff')
+        await self.glide(0.1, -233, 5)
         self.visible = 0
         self.set_dirty(2)
 
 
 
-class Sprite11(engine.Target):
+class SpriteSprite2(engine.Target):
     costume = 0
-    xpos, ypos = -67, 23
+    xpos, ypos = -87, -39
     direction = 90
     visible = False
 
     costumes = [
         {
             'name': "costume1",
-            'path': "99046765854aa1df6c58bf47eef52e67.png",
-            'center': (330, 318),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "158fc9c3de52bf12314a60621368a9a6.png",
-            'center': (302, 334),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "e119ec93c1c3b65bda55741803196a14.png",
-            'center': (350, 330),
+            'path': "b389d214bf6c1aa5560f7217e325270c.png",
+            'center': (18, 34),
             'scale': 2
         },
     ]
@@ -2771,17 +898,117 @@ class Sprite11(engine.Target):
             'broadcast_Kablammie': [
                 self.broadcast_Kablammie,
             ],
-            'broadcast_Running': [
-                self.broadcast_Running,
+            'broadcast_Hiya': [
+                self.broadcast_Hiya,
+            ],
+            'broadcast_HaHaHa': [
+                self.broadcast_HaHaHa,
             ],
             'green_flag': [
                 self.green_flag,
             ],
-            'broadcast_OhNo': [
-                self.broadcast_OhNo,
+            'broadcast_Play': [
+                self.broadcast_Play,
             ],
-            'broadcast_NowHesAngry': [
-                self.broadcast_NowHesAngry,
+            'broadcast_Piff': [
+                self.broadcast_Piff,
+            ],
+        }
+        super().__init__(util)
+        self.sprite._layer = 15
+
+    async def broadcast_Kablammie(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_Hiya(self, util):
+        self.size = 75
+        self.xpos = -87
+        self.ypos = -39
+        self.visible = 1
+        self.set_dirty(3)
+
+
+    async def broadcast_HaHaHa(self, util):
+        await self.glide(2, -131, 31)
+        self.set_dirty(2)
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_Play(self, util):
+        self.size = 100
+        self.visible = 1
+        self.front_layer(util)
+        self.change_layer(util, -3)
+        self.xpos = 146
+        self.ypos = 31
+        self.set_direction(90)
+        self.set_dirty(3)
+
+        while True:
+            for _ in range(9):
+                await self.sleep(0.01)
+                self.set_direction(self.direction + 10)
+                await self._yield(3)
+
+            for _ in range(9):
+                await self.sleep(0.01)
+                self.set_direction(self.direction + -10)
+                await self._yield(3)
+
+            await self._yield(0)
+
+
+
+    async def broadcast_Piff(self, util):
+        await self.glide(0.1, -243, 31)
+        self.visible = 0
+        self.set_dirty(2)
+
+
+
+class SpriteSprite4(engine.Target):
+    costume = 0
+    xpos, ypos = -131, -41
+    direction = 60
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume1",
+            'path': "a3ad85b64165eb33c45a6ee9b96ed73c.png",
+            'center': (150, 62),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_Kablammie': [
+                self.broadcast_Kablammie,
+            ],
+            'broadcast_Hiya': [
+                self.broadcast_Hiya,
+            ],
+            'broadcast_HaHaHa': [
+                self.broadcast_HaHaHa,
+            ],
+            'green_flag': [
+                self.green_flag,
+            ],
+            'broadcast_Play': [
+                self.broadcast_Play,
+            ],
+            'broadcast_Piff': [
+                self.broadcast_Piff,
             ],
         }
         super().__init__(util)
@@ -2792,10 +1019,17 @@ class Sprite11(engine.Target):
         self.set_dirty(1)
 
 
-    async def broadcast_Running(self, util):
-        self.size = 59
+    async def broadcast_Hiya(self, util):
+        self.size = 75
+        self.xpos = -131
+        self.ypos = -41
         self.visible = 1
         self.set_dirty(3)
+
+
+    async def broadcast_HaHaHa(self, util):
+        await self.glide(2, -192, 27)
+        self.set_dirty(2)
 
 
     async def green_flag(self, util):
@@ -2803,200 +1037,101 @@ class Sprite11(engine.Target):
         self.set_dirty(1)
 
 
-    async def broadcast_OhNo(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_NowHesAngry(self, util):
-        self.xpos = -105
-        self.ypos = -53
-        self.size = 116
-        self.set_effect('ghost', 25)
+    async def broadcast_Play(self, util):
+        self.size = 100
         self.visible = 1
         self.change_layer(util, -99)
-        self.set_costume('costume1')
+        self.xpos = 90
+        self.ypos = 27
+        self.set_direction(90)
         self.set_dirty(3)
+
         while True:
-            await self.sleep(0.1)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            other = util.targets['Sprite8']
-            self.xpos, self.ypos = other.xpos, other.ypos
-            await self._yield(3)
+            for _ in range(9):
+                await self.sleep(0.01)
+                self.set_direction(self.direction + -10)
+                await self._yield(3)
+
+            for _ in range(9):
+                await self.sleep(0.01)
+                self.set_direction(self.direction + 10)
+                await self._yield(3)
+
+            await self._yield(0)
 
 
 
-class Sprite9(engine.Target):
+    async def broadcast_Piff(self, util):
+        await self.glide(0.1, -312, 27)
+        self.visible = 0
+        self.set_dirty(2)
+
+
+
+class SpriteSprite3(engine.Target):
     costume = 1
-    xpos, ypos = 89, -90
+    xpos, ypos = -108, -115
     direction = 90
     visible = False
 
     costumes = [
         {
             'name': "costume1",
-            'path': "f8832d08f0fc8f88ef26d2bbf0404cfc.png",
-            'center': (106, 322),
+            'path': "5d5dab7178b277d34f773d9af5071dff.png",
+            'center': (160, 98),
             'scale': 2
         },
         {
             'name': "costume2",
-            'path': "801a7fbe13d50e4609b0ffb0af1e599f.png",
-            'center': (106, 322),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "801a7fbe13d50e4609b0ffb0af1e599f.png",
-            'center': (96, 322),
-            'scale': 2
-        },
-        {
-            'name': "costume4",
-            'path': "d609af5833c732796840791df60e0421.png",
-            'center': (278, 206),
-            'scale': 2
-        },
-        {
-            'name': "costume5",
-            'path': "f985262954fa747ec697e62ddba5d8f4.png",
-            'center': (272, 322),
-            'scale': 2
-        },
-        {
-            'name': "costume6",
-            'path': "24262e36bceb6bfd9236a56114d3a15c.png",
-            'center': (272, 322),
-            'scale': 2
-        },
-        {
-            'name': "costume7",
-            'path': "0eeed6187ece48d03356e048d52de5ed.png",
-            'center': (272, 360),
-            'scale': 2
-        },
-        {
-            'name': "costume8",
-            'path': "3877aae28c7df737b6e8821952fb5acb.png",
-            'center': (272, 360),
+            'path': "be4e84c556a493b35a4affaea99e12ba.png",
+            'center': (160, 98),
             'scale': 2
         },
     ]
 
     sounds = [
-        {
-            'name': "GIVEMETHETACO",
-            'path': "c89907bbca6e570dcc9f643f6b78de58.wav"
-        },
-        {
-            'name': "Intense",
-            'path': "50074debdbf98e1bc4ff02962451d061.wav"
-        },
-        {
-            'name': "Piff",
-            'path': "1b59efcfa3b640a8c8fd7233b9b30833.wav"
-        },
-        {
-            'name': "whoosh",
-            'path': "6394551b397c5a9669d02786b4d8e91d.wav"
-        },
-        {
-            'name': "ShortScream",
-            'path': "ab66262ea60f9764ca61785e4ce1179f.wav"
-        },
     ]
 
     def __init__(self, util):
         self.hats = {
-            'broadcast_Lightning': [
-                self.broadcast_Lightning,
+            'broadcast_Kablammie': [
+                self.broadcast_Kablammie,
             ],
-            'broadcast_IsThisTheEnd': [
-                self.broadcast_IsThisTheEnd,
+            'broadcast_Hiya': [
+                self.broadcast_Hiya,
+            ],
+            'broadcast_HaHaHa': [
+                self.broadcast_HaHaHa,
             ],
             'green_flag': [
                 self.green_flag,
             ],
-            'broadcast_OhNo': [
-                self.broadcast_OhNo,
+            'broadcast_Play': [
+                self.broadcast_Play,
             ],
-            'broadcast_Running': [
-                self.broadcast_Running,
-            ],
-            'broadcast_Kablammie': [
-                self.broadcast_Kablammie,
+            'broadcast_Piff': [
+                self.broadcast_Piff,
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 16
+        self.sprite._layer = 14
 
-    async def broadcast_Lightning(self, util):
-        self.set_effect('brightness', 50)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', 0)
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        self.set_effect('brightness', 30)
-        self.set_dirty(3)
-        await self.sleep(0.3)
-        for _ in range(30):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
+    async def broadcast_Kablammie(self, util):
+        self.visible = 0
+        self.set_dirty(1)
 
 
-    async def broadcast_IsThisTheEnd(self, util):
-        self.sounds.play('whoosh')
-        self.set_direction(105)
+    async def broadcast_Hiya(self, util):
+        self.size = 75
+        self.xpos = -108
+        self.ypos = -115
+        self.visible = 1
         self.set_dirty(3)
-        for _ in range(4):
-            await self.sleep(0.07)
-            self.ypos += 1
-            self.set_costume('costume7')
-            self.set_dirty(3)
-            await self.sleep(0.07)
-            self.ypos += -1
-            self.set_costume('costume8')
-            self.xpos += 4
-            await self._yield(3)
-        self.sounds.play('ShortScream')
-        for _ in range(4):
-            await self.sleep(0.07)
-            self.ypos += 1
-            self.set_costume('costume7')
-            self.set_dirty(3)
-            await self.sleep(0.07)
-            self.ypos += -1
-            self.set_costume('costume8')
-            self.xpos += -2
-            await self._yield(3)
-        for _ in range(3):
-            for _ in range(4):
-                await self.sleep(0.07)
-                self.ypos += 1
-                self.set_costume('costume7')
-                self.set_dirty(3)
-                await self.sleep(0.07)
-                self.ypos += -1
-                self.set_costume('costume8')
-                self.xpos += 4
-                await self._yield(3)
-            for _ in range(4):
-                await self.sleep(0.07)
-                self.ypos += 1
-                self.set_costume('costume7')
-                self.set_dirty(3)
-                await self.sleep(0.07)
-                self.ypos += -1
-                self.set_costume('costume8')
-                self.xpos += -2
-                await self._yield(3)
-            await self._yield(0)
+
+
+    async def broadcast_HaHaHa(self, util):
+        await self.glide(2, -163, -77)
+        self.set_dirty(2)
 
 
     async def green_flag(self, util):
@@ -3004,96 +1139,562 @@ class Sprite9(engine.Target):
         self.set_dirty(1)
 
 
-    async def broadcast_OhNo(self, util):
-        self.set_effect('ghost', 0)
-        self.xpos = 89
-        self.ypos = -90
-        self.set_direction(90)
-        self.size = 116
-        self.set_costume('costume2')
+    async def broadcast_Play(self, util):
+        self.size = 100
         self.visible = 1
+        self.set_costume('costume1')
+        self.front_layer(util)
+        self.change_layer(util, -4)
+        self.xpos = 115
+        self.ypos = -77
         self.set_dirty(3)
-        for _ in range(15):
+
+        while True:
             await self.sleep(0.01)
-            self.set_direction(self.direction + 1)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
             await self._yield(3)
+
+
+
+    async def broadcast_Piff(self, util):
+        await self.glide(0.1, -290, -78)
+        self.visible = 0
+        self.set_dirty(2)
+
+
+
+class SpriteSprite5(engine.Target):
+    costume = 12
+    xpos, ypos = -48, -39
+    direction = 90
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume2",
+            'path': "c78a0195eb1ef3578d4468c29dba927f.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "1ccec7b5278bbd76086adfd3c3ef88c4.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume4",
+            'path': "494c5b5a55bccea07abad8d84e16a49c.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume5",
+            'path': "fc0fd836e39a565eae541c2f63bba69a.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume6",
+            'path': "494c5b5a55bccea07abad8d84e16a49c.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume7",
+            'path': "b5f9c6cc1658093ddde223b1d06f08ad.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume8",
+            'path': "f3b1465c715f7baabfd1956b12e5f78d.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume9",
+            'path': "6d3e11da96465c5ce057d3fbcdf1c94d.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume10",
+            'path': "1ccec7b5278bbd76086adfd3c3ef88c4.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume11",
+            'path': "e5264186e7e891798d6ff947606cd8bc.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume12",
+            'path': "aafeb64732f775e426c86eec7628053d.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume13",
+            'path': "c31023e281080d2c41ae76aedf2bcbd4.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+        {
+            'name': "costume14",
+            'path': "16b3e96643204811875ba6f75140087c.png",
+            'center': (252, 290),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+        {
+            'name': "GiveItBack",
+            'path': "b50990168f091aa5324593a8b7fa7ce5.wav"
+        },
+        {
+            'name': "Hiya",
+            'path': "211d58b810aeeb0f7ea36e0632e35f4b.wav"
+        },
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_Hiya': [
+                self.broadcast_Hiya,
+            ],
+            'green_flag': [
+                self.green_flag,
+            ],
+            'broadcast_HaHaHa': [
+                self.broadcast_HaHaHa,
+            ],
+        }
+        super().__init__(util)
+        self.sprite._layer = 5
+
+    async def broadcast_Hiya(self, util):
+        self.size = 75
+        self.xpos = 147
+        self.ypos = 76
+        self.set_costume('costume12')
+        self.visible = 1
+        self.sounds.play('Hiya')
+        self.set_costume('costume12')
+        self.set_dirty(3)
+
+        await self.sleep(0.1)
+        self.set_costume('costume13')
+        self.set_dirty(3)
+
         await self.sleep(1)
-        for _ in range(10):
-            self.set_costume('costume3')
-            self.set_dirty(3)
-            await self.sleep(0.01)
-            self.set_costume('costume2')
-            self.set_dirty(3)
-            await self.sleep(0.01)
-            await self._yield(0)
-        util.send_event('broadcast_Lightning')
-        for _ in range(10):
-            self.set_costume('costume3')
-            self.set_dirty(3)
-            await self.sleep(0.01)
-            self.set_costume('costume2')
-            self.set_dirty(3)
-            await self.sleep(0.01)
-            await self._yield(0)
-        self.xpos = 170
-        self.ypos = -86
-        self.sounds.play('Piff')
-        self.set_direction(90)
-        self.set_effect('ghost', 50)
+        await self.glide(0.1, 44, 6)
+        self.set_costume('costume14')
+        await self.glide(0.1, -48, -39)
+        util.send_event('broadcast_Kablammie')
+        self.visible = 0
+        self.set_dirty(3)
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_HaHaHa(self, util):
+        self.size = 100
+        self.set_costume('costume3')
+        self.xpos = 351
+        self.ypos = 102
+        self.visible = 1
+        await self.glide(2, 94, 49)
+        self.sounds.play('GiveItBack')
+        self.set_dirty(3)
+
+        for _ in range(6):
+            await self.sleep(0.08)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+        await self.sleep(1.7)
+        self.set_costume('costume10')
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        util.send_event('broadcast_Piff')
+        await self.sleep(0.5)
+        await self.glide(0.3, -352, 43)
+        self.visible = 0
+        self.set_dirty(2)
+
+        await self.sleep(1)
+        util.send_event('broadcast_WaitForMe')
+
+
+
+class SpriteSprite6(engine.Target):
+    costume = 16
+    xpos, ypos = -44, -38
+    direction = 90
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume2",
+            'path': "f6153efd16da2f4e3212a77ae5c024c9.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "89a03b2339a009a67896fff989ec69b6.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume13",
+            'path': "3dcda32dc74e295783fd36ef5c9a0a92.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume5",
+            'path': "7ddea87554e338d70e0f417f48803860.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume6",
+            'path': "4782005bdf507de65124de895271d3e9.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume7",
+            'path': "89a03b2339a009a67896fff989ec69b6.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume8",
+            'path': "b758130351b57df6aee730cb6da7ba23.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume10",
+            'path': "42c4fff5fd40fc01caf71741e22c82e5.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume11",
+            'path': "d2e40d038b06db5672bfc04b6f4c860d.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume12",
+            'path': "3bdd3c79619842e52c39956911d7a4d5.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume14",
+            'path': "8dce9c7916eb2305045705c11bcacd08.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume15",
+            'path': "33f08042c151bf1b0c499f87a1864dee.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume16",
+            'path': "7a596eed71271c2f712636b62b6d9f4c.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume17",
+            'path': "9629cf894e20a05c716b37d88af13bc9.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume18",
+            'path': "b42307b901b2ecf76cae138b51c66e48.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume19",
+            'path': "c09a37c64b10b053cc62ef4f383cb88a.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+        {
+            'name': "costume20",
+            'path': "7a1606426226e76ffcfcf1014a6d1130.png",
+            'center': (214, 282),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+        {
+            'name': "WaitForMe",
+            'path': "c7e24253ffd0987fb94795abd7bab29f.wav"
+        },
+        {
+            'name': "ShortScream",
+            'path': "ab66262ea60f9764ca61785e4ce1179f.wav"
+        },
+        {
+            'name': "Whee",
+            'path': "a210e1b5f30c11d7fd22e3665d5b93ad.wav"
+        },
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_Whee': [
+                self.broadcast_Whee,
+            ],
+            'broadcast_WaitForMe': [
+                self.broadcast_WaitForMe,
+                self.broadcast_WaitForMe1,
+            ],
+            'green_flag': [
+                self.green_flag,
+            ],
+            'broadcast_Waaah': [
+                self.broadcast_Waaah,
+            ],
+            'broadcast_ThatGuy': [
+                self.broadcast_ThatGuy,
+            ],
+        }
+        super().__init__(util)
+        self.sprite._layer = 7
+
+    async def broadcast_Whee(self, util):
+        self.sounds.play('Whee')
+        self.set_costume('costume16')
+        self.set_dirty(3)
+
+        await self.sleep(0.01)
+        self.set_costume('costume17')
+        self.set_dirty(3)
+
+
+    async def broadcast_WaitForMe(self, util):
+        self.set_costume('costume3')
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        self.sounds.play('WaitForMe')
         self.set_costume('costume4')
         self.set_dirty(3)
-        for _ in range(5):
-            await self.sleep(0.08)
-            self.change_effect('ghost', 10)
+
+        for _ in range(8):
+            await self.sleep(0.1)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
             await self._yield(3)
+
         await self.sleep(1)
-        self.variables['UhOh'] = "1"
-        util.send_event('broadcast_Running')
+        util.send_event('broadcast_Hiya')
+        self.visible = 0
+        self.set_dirty(1)
 
 
-    async def broadcast_Running(self, util):
-        self.set_direction(75)
-        self.xpos = 89
-        self.ypos = -90
-        self.size = 59
-        self.set_effect('ghost', 0)
-        self.set_costume('costume5')
+    async def broadcast_WaitForMe1(self, util):
+        self.size = 100
+        self.xpos = 280
+        self.ypos = -62
+        self.visible = 1
+        await self.glide(4, 41, -61)
         self.set_dirty(3)
-        for _ in range(4):
-            for _ in range(4):
-                await self.sleep(0.07)
-                self.ypos += 1
-                self.set_costume('costume6')
-                self.set_dirty(3)
-                await self.sleep(0.07)
-                self.ypos += -1
-                self.set_costume('costume5')
-                self.xpos += 3
-                await self._yield(3)
-            for _ in range(4):
-                await self.sleep(0.07)
-                self.ypos += 1
-                self.set_costume('costume6')
-                self.set_dirty(3)
-                await self.sleep(0.07)
-                self.ypos += -1
-                self.set_costume('costume5')
-                self.xpos += -3
-                await self._yield(3)
-            await self._yield(0)
-        util.send_event('broadcast_IsThisTheEnd')
 
 
-    async def broadcast_Kablammie(self, util):
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_Waaah(self, util):
+        self.size = 75
+        self.xpos = 259
+        self.ypos = -68
+        self.set_costume('costume14')
+        self.sounds.play('ShortScream')
+        self.visible = 1
+        await self.glide(0.2, 12, -63)
+        self.visible = 0
+        self.set_dirty(3)
+
+        await self.sleep(2)
+        util.send_event('broadcast_Whee')
+        self.set_costume('costume15')
+        self.visible = 1
+        await self.glide(0.3, 259, -68)
+        self.visible = 0
+        self.set_dirty(3)
+
+
+    async def broadcast_ThatGuy(self, util):
+        self.size = 100
+        self.xpos = -44
+        self.ypos = -38
+        self.set_costume('costume20')
+        self.visible = 1
+        self.set_dirty(3)
+
+        await self.sleep(3)
+        self.variables['uhoh'] = 0
         self.visible = 0
         self.set_dirty(1)
 
 
 
-class Sprite10(engine.Target):
+class SpriteSprite7(engine.Target):
     costume = 0
-    xpos, ypos = 99, -51
-    direction = -61
+    xpos, ypos = -16, -115
+    direction = -90
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume1",
+            'path': "81277b17aba06ae53d04625218eed612.png",
+            'center': (160, 98),
+            'scale': 2
+        },
+        {
+            'name': "costume2",
+            'path': "3f3ab3849e8b75fd3f668287d116372e.png",
+            'center': (160, 98),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_Whee': [
+                self.broadcast_Whee,
+            ],
+            'broadcast_Hiya': [
+                self.broadcast_Hiya,
+            ],
+            'broadcast_WaitForMe': [
+                self.broadcast_WaitForMe,
+                self.broadcast_WaitForMe1,
+            ],
+            'green_flag': [
+                self.green_flag,
+            ],
+            'broadcast_Waaah': [
+                self.broadcast_Waaah,
+            ],
+            'broadcast_ThatGuy': [
+                self.broadcast_ThatGuy,
+            ],
+        }
+        super().__init__(util)
+        self.sprite._layer = 17
+
+    async def broadcast_Whee(self, util):
+        self.set_direction(-90)
+        self.visible = 1
+        await self.glide(0.3, 263, -130)
+        self.visible = 0
+        self.set_dirty(3)
+
+
+    async def broadcast_Hiya(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_WaitForMe(self, util):
+        self.set_costume('costume1')
+        self.set_dirty(3)
+
+        while True:
+            await self.sleep(0.01)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+
+
+    async def broadcast_WaitForMe1(self, util):
+        self.xpos = 298
+        self.ypos = -145
+        self.set_direction(90)
+        self.size = 100
+        self.visible = 1
+        self.front_layer(util)
+        await self.glide(4, 34, -146)
+        self.set_dirty(3)
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_Waaah(self, util):
+        self.size = 75
+        self.xpos = 263
+        self.ypos = -130
+        self.visible = 1
+        await self.glide(0.2, 16, -130)
+        self.visible = 0
+        self.set_dirty(3)
+
+
+    async def broadcast_ThatGuy(self, util):
+        self.size = 100
+        self.xpos = -16
+        self.ypos = -115
+        self.front_layer(util)
+        self.visible = 1
+        self.set_dirty(3)
+
+        await self.sleep(3)
+        self.visible = 0
+        self.set_dirty(1)
+
+
+
+class SpriteSprite10(engine.Target):
+    costume = 3
+    xpos, ypos = -80, -45
+    direction = -7
     visible = False
 
     costumes = [
@@ -3184,57 +1785,43 @@ class Sprite10(engine.Target):
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 14
+        self.sprite._layer = 6
 
     async def broadcast_Kablammie(self, util):
-        self.variables['UhOh'] = "0"
-        self.xpos = -152
-        self.ypos = -28
-        self.size = 57
-        self.sounds.stop_all(util)
-        self.set_effect('ghost', 0)
+        self.variables['uhoh'] = 1
+        self.xpos = -80
+        self.ypos = -45
         self.visible = 1
-        self.set_effect('brightness', 0)
-        self.set_dirty(3)
-        for _ in range(10):
-            self.variables['#'] = random.randint(1, 12)
-            self.sounds.play(self.variables['#'])
-            self.set_direction(self.direction + random.randint(-30, 30))
+        self.set_dirty(2)
+
+        for _ in range(25):
+            self.sounds.play(random.randint(1, 12))
             next_costume = self.costume['number'] + 1
             if next_costume == len(self.costumes):
                 self.set_costume(0)
             else:
                 self.set_costume(next_costume)
+            self.set_direction(self.direction + random.randint(-360, 360))
             self.set_dirty(3)
+
             await self.sleep(0.1)
-            self.xpos += 50
-            await self._yield(2)
-        util.send_event('broadcast_SlowDownFolks')
-        self.xpos = 99
-        self.ypos = -51
-        self.set_effect('brightness', -20)
-        self.set_costume('costume1')
-        self.size = 134
-        self.set_dirty(3)
-        for _ in range(4):
-            for _ in range(12):
-                self.variables['#'] = random.randint(1, 12)
-                self.sounds.play(self.variables['#'])
-                self.set_direction(self.direction + random.randint(-30, 30))
-                next_costume = self.costume['number'] + 1
-                if next_costume == len(self.costumes):
-                    self.set_costume(0)
-                else:
-                    self.set_costume(next_costume)
-                self.set_dirty(3)
-                await self.sleep(0.1)
-                await self._yield(0)
             await self._yield(0)
-        util.send_event('broadcast_NowZeke')
-        for _ in range(10):
-            await self.sleep(0.01)
-            self.change_effect('ghost', 10)
-            await self._yield(3)
+
+        util.send_event('broadcast_Waaah')
+        for _ in range(25):
+            self.sounds.play(random.randint(1, 12))
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            self.set_direction(self.direction + random.randint(-360, 360))
+            self.set_dirty(3)
+
+            await self.sleep(0.1)
+            await self._yield(0)
+
+        util.send_event('broadcast_ThatGuy')
         self.visible = 0
         self.set_dirty(1)
 
@@ -3245,22 +1832,42 @@ class Sprite10(engine.Target):
 
 
 
-class Sprite15(engine.Target):
-    costume = 0
-    xpos, ypos = 0, 0
+class SpriteSprite11(engine.Target):
+    costume = 2
+    xpos, ypos = -45, 77
     direction = 90
     visible = False
 
     costumes = [
         {
-            'name': "background1",
-            'path': "d8ee44bdec07f0f4aa7f3b803da8d75e.png",
-            'center': (-178, 222),
+            'name': "costume1",
+            'path': "3da21817b579bd8afd458ab761d1f524.png",
+            'center': (136, 246),
+            'scale': 2
+        },
+        {
+            'name': "costume2",
+            'path': "370f785b81c6d87328c31a3b44a2ae0c.png",
+            'center': (136, 246),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "a7ff76a8c90598e3137355f5f67d934c.png",
+            'center': (452, 272),
             'scale': 2
         },
     ]
 
     sounds = [
+        {
+            'name': "FemaleScream",
+            'path': "b6112cd0ba548e3f327ab8f817e4046e.wav"
+        },
+        {
+            'name': "MegaPiff",
+            'path': "1df99f700c6a9d5996059c7969d4aa2f.wav"
+        },
     ]
 
     def __init__(self, util):
@@ -3268,126 +1875,300 @@ class Sprite15(engine.Target):
             'green_flag': [
                 self.green_flag,
             ],
-            'broadcast_SlowDownFolks': [
-                self.broadcast_SlowDownFolks,
-            ],
-            'broadcast_Kablammie': [
-                self.broadcast_Kablammie,
+            'broadcast_FemaleScream': [
+                self.broadcast_FemaleScream,
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 23
+        self.sprite._layer = 8
 
     async def green_flag(self, util):
         self.visible = 0
         self.set_dirty(1)
 
 
-    async def broadcast_SlowDownFolks(self, util):
+    async def broadcast_FemaleScream(self, util):
+        self.xpos = 38
+        self.ypos = 3
+        self.set_costume('costume2')
+        self.set_effect('ghost', 0)
+        self.visible = 1
+        self.sounds.play('FemaleScream')
+        self.set_dirty(3)
+
+        for _ in range(20):
+            await self.sleep(0.03)
+            self.ypos += 10
+            self.xpos += -1
+            self.set_dirty(2)
+
+            await self.sleep(0.03)
+            self.ypos += -7
+            await self._yield(2)
+
+        util.send_event('broadcast_MegaPiff')
+        self.sounds.play('MegaPiff')
+        self.set_costume('costume3')
+        self.xpos = -45
+        self.ypos = 77
+        self.set_dirty(3)
+
+        for _ in range(10):
+            await self.sleep(0.06)
+            self.change_effect('ghost', 10)
+            await self._yield(3)
+
         self.visible = 0
         self.set_dirty(1)
 
 
-    async def broadcast_Kablammie(self, util):
-        self.xpos = 0
-        self.ypos = 0
-        self.visible = 1
-        self.front_layer(util)
-        self.set_dirty(2)
 
-
-
-class Sprite12(engine.Target):
-    costume = 0
-    xpos, ypos = 56, -124
-    direction = 75
+class SpriteSprite12(engine.Target):
+    costume = 1
+    xpos, ypos = -107, -225
+    direction = 120
     visible = False
 
     costumes = [
         {
             'name': "costume1",
-            'path': "b7d0d369d49323580ded2ec39fc2e8b6.png",
-            'center': (204, 198),
+            'path': "3ca9ebd70a39c95ea669bbeab9ec1c55.png",
+            'center': (96, 214),
+            'scale': 2
+        },
+        {
+            'name': "costume2",
+            'path': "25999b45dac21f4190816405be74bc56.png",
+            'center': (96, 214),
             'scale': 2
         },
     ]
 
     sounds = [
         {
-            'name': "TheTaco",
-            'path': "974378b0dd0111b396f2ad636a4845d3.wav"
+            'name': "Cikehs",
+            'path': "c132179ce0e6bcc3eec567e4b061d186.wav"
         },
         {
-            'name': "ThePerfectCombin",
-            'path': "a1471d4cb7955179714fec8bec6fd8e6.wav"
-        },
-        {
-            'name': "Cheese",
-            'path': "4cd92fda24987d125eb82caf22d8e01d.wav"
-        },
-        {
-            'name': "Substances",
-            'path': "13404a53a0a09c82bfa087d744c0862a.wav"
+            'name': "Thwack Hit By Pu",
+            'path': "0dbd74c6e2313305704e755ef3e0fa6a.wav"
         },
     ]
 
     def __init__(self, util):
         self.hats = {
-            'broadcast_Flash': [
-                self.broadcast_Flash,
+            'green_flag': [
+                self.green_flag,
             ],
-            'broadcast_HeyGuys': [
-                self.broadcast_HeyGuys,
+            'broadcast_FemaleScream': [
+                self.broadcast_FemaleScream,
             ],
-            'broadcast_WhatThe': [
-                self.broadcast_WhatThe,
+            'broadcast_MegaPiff': [
+                self.broadcast_MegaPiff,
             ],
-            'broadcast_NowZeke': [
-                self.broadcast_NowZeke,
+        }
+        super().__init__(util)
+        self.sprite._layer = 18
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_FemaleScream(self, util):
+        self.xpos = 147
+        self.ypos = 71
+        self.set_costume('costume1')
+        self.set_direction(90)
+        self.visible = 1
+        self.set_dirty(3)
+
+
+    async def broadcast_MegaPiff(self, util):
+        self.front_layer(util)
+        await self.sleep(1.5)
+        self.set_costume('costume2')
+        self.set_dirty(3)
+
+        await self.sounds.play('Cikehs')
+        for _ in range(6):
+            self.set_direction(self.direction - DEGREES)
+            self.ypos += -14
+            self.xpos += -9
+            self.set_dirty(3)
+
+            await self.sleep(0.01)
+            await self._yield(0)
+
+        util.send_event('broadcast_Lo')
+        await self.sleep(0.5)
+        self.sounds.play('Thwack Hit By Pu')
+        for _ in range(20):
+            self.xpos += -10
+            self.ypos += -15
+            self.set_direction(self.direction + -30)
+            self.set_dirty(3)
+
+            await self.sleep(0.01)
+            await self._yield(0)
+
+        self.visible = 0
+        self.set_dirty(1)
+
+
+
+class SpriteSprite13(engine.Target):
+    costume = 0
+    xpos, ypos = 240, 170
+    direction = 60
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume1",
+            'path': "e53fdbe3d53b1694111ca71a21419fd2.png",
+            'center': (66, 36),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_Yesss': [
+                self.broadcast_Yesss,
             ],
             'green_flag': [
                 self.green_flag,
             ],
-            'broadcast_WhereIsIt': [
-                self.broadcast_WhereIsIt,
+            'broadcast_MegaPiff': [
+                self.broadcast_MegaPiff,
+            ],
+        }
+        super().__init__(util)
+        self.sprite._layer = 9
+
+    async def broadcast_Yesss(self, util):
+        await self.glide(0.9, 240, 170)
+        self.visible = 0
+        self.set_dirty(2)
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_MegaPiff(self, util):
+        self.variables['velocity'] = 5
+        self.set_direction(90)
+        self.xpos = 24
+        self.ypos = 91
+        self.set_costume('costume1')
+        self.visible = 1
+        self.set_dirty(3)
+
+        for _ in range(7):
+            self.ypos += number(self.variables['Velocity'])
+            self.set_direction(self.direction + 15)
+            self.set_dirty(3)
+
+            await self.sleep(0.01)
+            await self._yield(0)
+
+        for _ in range(15):
+            self.variables['velocity'] += -2
+            self.ypos += number(self.variables['Velocity'])
+            self.set_direction(self.direction + 15)
+            self.set_dirty(3)
+
+            await self.sleep(0.01)
+            await self._yield(0)
+
+
+
+
+class SpriteSprite14(engine.Target):
+    costume = 3
+    xpos, ypos = 252, 187
+    direction = 90
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume1",
+            'path': "c6665c06cb61e2e4d7a771f40f4c6a1a.png",
+            'center': (220, 246),
+            'scale': 2
+        },
+        {
+            'name': "costume2",
+            'path': "f00c343e2988b145fb50ee5ab1b0c84f.png",
+            'center': (220, 246),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "21767caa97fbd02b242d783ba8bab7ba.png",
+            'center': (220, 246),
+            'scale': 2
+        },
+        {
+            'name': "costume4",
+            'path': "e848464ea146f1504b10a5d169d3db77.png",
+            'center': (220, 246),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+        {
+            'name': "Lo",
+            'path': "656366fa1089de7dfd53d2015f49bb3b.wav"
+        },
+        {
+            'name': "HehHehHeh",
+            'path': "49376427395c10e22ab9c38df7a1d796.wav"
+        },
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_Lo': [
+                self.broadcast_Lo,
+            ],
+            'green_flag': [
+                self.green_flag,
             ],
         }
         super().__init__(util)
         self.sprite._layer = 19
 
-    async def broadcast_Flash(self, util):
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', -20)
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.3)
-        for _ in range(10):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
-
-
-    async def broadcast_HeyGuys(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_WhatThe(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_NowZeke(self, util):
-        self.set_direction(75)
-        self.xpos = 56
-        self.ypos = -124
-        self.set_effect('brightness', -20)
+    async def broadcast_Lo(self, util):
+        self.xpos = 244
+        self.ypos = 264
+        self.set_costume('costume2')
         self.visible = 1
+        self.front_layer(util)
+        self.sounds.play('Lo')
+        await self.glide(1, -173, -289)
+        self.visible = 0
         self.set_dirty(3)
+
+        await self.sleep(1)
+        self.set_costume('costume4')
+        self.visible = 1
+        self.sounds.play('HehHehHeh')
+        await self.glide(0.6, -95, -107)
+        util.send_event('broadcast_Yesss')
+        await self.glide(1.4, 252, 187)
+        self.visible = 0
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        util.send_event('broadcast_OhBoy')
 
 
     async def green_flag(self, util):
@@ -3395,450 +2176,374 @@ class Sprite12(engine.Target):
         self.set_dirty(1)
 
 
-    async def broadcast_WhereIsIt(self, util):
-        self.visible = 1
-        self.set_dirty(1)
 
-
-
-class Sprite13(engine.Target):
-    costume = 24
-    xpos, ypos = 28, -6
-    direction = 90
+class SpriteSprite15(engine.Target):
+    costume = 46
+    xpos, ypos = -61, -299
+    direction = 80
     visible = False
 
     costumes = [
         {
             'name': "costume1",
-            'path': "d0bff393f8f52fbd1128885ce252d116.png",
-            'center': (98, 252),
-            'scale': 2
-        },
-        {
-            'name': "costume10",
-            'path': "9242ef51b80e8ee52d04d55bf5889885.png",
-            'center': (98, 252),
+            'path': "2f10e985e44a92c6e3f76e5250436f67.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume2",
-            'path': "64ac8d62ba03190e565a381c6659b467.png",
-            'center': (98, 252),
+            'path': "04cdb206e78bf1647040e8b4583a1e20.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume3",
-            'path': "17fda3ecedb6e971233fbf64d88b9ccf.png",
-            'center': (98, 252),
+            'path': "1412edf931cac05be7b98385226f79d4.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume4",
-            'path': "fb88d7033f94b57b2603ec3b946cf747.png",
-            'center': (98, 252),
+            'path': "440e4dbae9fc899699feb8f75721d2db.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume5",
-            'path': "39fc795593a8cace93e32dbef7b384cd.png",
-            'center': (98, 252),
+            'path': "ef95dc6f1e73d2077774c9aaaa055e42.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume6",
-            'path': "d0b9f7eb002470bf817a9d2dd7093504.png",
-            'center': (98, 252),
+            'path': "302b1170d5a7f494b6dccf05d624328f.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume7",
-            'path': "689c6634c48a8423bd166ec5a518af48.png",
-            'center': (98, 252),
+            'path': "77dde23f4efe2d926e5724c8b6c8bd24.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume11",
-            'path': "689c6634c48a8423bd166ec5a518af48.png",
-            'center': (98, 252),
+            'path': "302b1170d5a7f494b6dccf05d624328f.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume8",
-            'path': "689c6634c48a8423bd166ec5a518af48.png",
-            'center': (98, 252),
+            'path': "ef95dc6f1e73d2077774c9aaaa055e42.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume9",
-            'path': "64ac8d62ba03190e565a381c6659b467.png",
-            'center': (98, 252),
+            'path': "440e4dbae9fc899699feb8f75721d2db.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume10",
+            'path': "a5c3760bc95ab6a6e78e5aca507c3511.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume12",
-            'path': "d0b9f7eb002470bf817a9d2dd7093504.png",
-            'center': (98, 252),
+            'path': "59e8280ddb213cafe440744224f712b9.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume13",
-            'path': "caf10935c1656be59ea584d739ca4c13.png",
-            'center': (98, 252),
-            'scale': 2
-        },
-        {
-            'name': "costume20",
-            'path': "caf10935c1656be59ea584d739ca4c13.png",
-            'center': (98, 252),
+            'path': "04cdb206e78bf1647040e8b4583a1e20.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume14",
-            'path': "eb246dbd0e6291697188d961f882dd1c.png",
-            'center': (98, 252),
+            'path': "ab0b8bdc6c9cc62e1267ef285dc022a4.png",
+            'center': (408, 344),
             'scale': 2
         },
         {
             'name': "costume15",
-            'path': "9242ef51b80e8ee52d04d55bf5889885.png",
-            'center': (98, 252),
+            'path': "6bbaf29a08fe60d38d7494aa260203c6.png",
+            'center': (408, 344),
             'scale': 2
         },
         {
             'name': "costume16",
-            'path': "689c6634c48a8423bd166ec5a518af48.png",
-            'center': (98, 252),
+            'path': "ddd5afe01edc517c9e586b300a99d617.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume17",
-            'path': "689c6634c48a8423bd166ec5a518af48.png",
-            'center': (98, 252),
+            'path': "b6b205603b8667e7673dd2022d750a9e.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume18",
-            'path': "e5b1d9e7d80bc17276e18fcc0401efaf.png",
-            'center': (98, 252),
+            'path': "4a57484d7c01859015fbe7424e57d3dc.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume19",
-            'path': "17fda3ecedb6e971233fbf64d88b9ccf.png",
-            'center': (98, 252),
+            'path': "370f57262ae0c6e96b44b3197e9ee840.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume20",
+            'path': "c077abf04506980c2adf28354a16a291.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume21",
-            'path': "ac36b93354264d6a56bc4a66949ea671.png",
-            'center': (100, 258),
+            'path': "5efd46fe55f0ddc8ae296bcc141a15d7.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume22",
-            'path': "1ddbb10ad79e1e6298583b4af9eed8b3.png",
-            'center': (100, 282),
+            'path': "a5e9e1bc4ee2c4b13230de9352109284.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume23",
-            'path': "5c81455b1379e0009ef0359b3e9fe953.png",
-            'center': (100, 242),
+            'path': "df5e0c67484fd910d1d6568954bc764a.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume24",
-            'path': "d3613507abf302ec3519157a8683525b.png",
-            'center': (100, 258),
+            'path': "5a06d1e209eedea6277b65c9894ad4d6.png",
+            'center': (408, 304),
             'scale': 2
         },
         {
             'name': "costume25",
-            'path': "c71e7506ce46c061469ea101283ae658.png",
-            'center': (100, 258),
+            'path': "df5e0c67484fd910d1d6568954bc764a.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume26",
+            'path': "bebe5881b39383e94ec3c7cdb334b046.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume27",
+            'path': "5efd46fe55f0ddc8ae296bcc141a15d7.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume28",
+            'path': "bebe5881b39383e94ec3c7cdb334b046.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume29",
+            'path': "72b5c3f8ce4910ae414da29a67954215.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume30",
+            'path': "5a06d1e209eedea6277b65c9894ad4d6.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume31",
+            'path': "5efd46fe55f0ddc8ae296bcc141a15d7.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume32",
+            'path': "72b5c3f8ce4910ae414da29a67954215.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume33",
+            'path': "df5e0c67484fd910d1d6568954bc764a.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume34",
+            'path': "5efd46fe55f0ddc8ae296bcc141a15d7.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume35",
+            'path': "72b5c3f8ce4910ae414da29a67954215.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume36",
+            'path': "b254550271783ed9f8605938a373d206.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume37",
+            'path': "fdc3deedf4cf3f25ada986085bfe105f.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume38",
+            'path': "29fad1fcdeb3aa0f6cd0ddbbc27d1d3f.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume39",
+            'path': "acf96de19086a3d02f3bd09c4a757747.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume40",
+            'path': "622d4c7971da097a968363c7865a9dad.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume41",
+            'path': "d90b7d023cd367efb78540be18c392b1.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume42",
+            'path': "4481b099ac1a8beb4b4f90510b80766a.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume43",
+            'path': "6ffb3b08145ff02668337413274ded03.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume46",
+            'path': "6ffb3b08145ff02668337413274ded03.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume44",
+            'path': "d8bf4a673a2d40ffc55ede88407fb1e6.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume45",
+            'path': "d90b7d023cd367efb78540be18c392b1.png",
+            'center': (408, 304),
+            'scale': 2
+        },
+        {
+            'name': "costume47",
+            'path': "76853a6c22b19e44d6c845555e1b7871.png",
+            'center': (408, 304),
             'scale': 2
         },
     ]
 
     sounds = [
         {
-            'name': "NowZeke",
-            'path': "c73dbfc5ef65f3e0fc7127b9ada7bb8b.wav"
+            'name': "OhBoy",
+            'path': "7ada0852c96957ffebf41f92c09e8282.wav"
         },
         {
-            'name': "GiveMeThe",
-            'path': "b199d18519b6f01b10ca9edcdb92d2ab.wav"
+            'name': "SuddenDefeatClip",
+            'path': "22ea2700c0059d4b518f6e7aa9fd99ba.wav"
         },
         {
-            'name': "whoosh",
-            'path': "6394551b397c5a9669d02786b4d8e91d.wav"
+            'name': "Chomp",
+            'path': "ca6526c0b3ae71c2b24c214742afcddd.wav"
         },
         {
-            'name': "DaveGasp",
-            'path': "87dc97e02d271f180493e77ff31737a3.wav"
+            'name': "Crunch",
+            'path': "ebb8fc04a1dc7c98d20266f5b641a157.wav"
+        },
+        {
+            'name': "Mmmm",
+            'path': "751a83c65e31dab7ab10eaa85ee4a22b.wav"
+        },
+        {
+            'name': "TheDeliciousFlavorOf",
+            'path': "b111d132a1cebaa0cb5ccf9df703d99e.wav"
+        },
+        {
+            'name': "Ohhh",
+            'path': "dafe8a7ec217dd0667651d1927fcab5f.wav"
+        },
+        {
+            'name': "Cardboard",
+            'path': "dfbc8b77b474a37501f065d55a5d092a.wav"
+        },
+        {
+            'name': "Thump",
+            'path': "829b6d3efba6b99d48ebb84714955fdb.wav"
         },
     ]
 
     def __init__(self, util):
         self.hats = {
-            'broadcast_Flash': [
-                self.broadcast_Flash,
-            ],
-            'broadcast_NowZeke': [
-                self.broadcast_NowZeke,
-            ],
             'green_flag': [
                 self.green_flag,
             ],
-            'broadcast_WhereIsIt': [
-                self.broadcast_WhereIsIt,
+            'broadcast_OhBoy': [
+                self.broadcast_OhBoy,
+            ],
+            'broadcast_Faint': [
+                self.broadcast_Faint,
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 24
-
-    async def broadcast_Flash(self, util):
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', -20)
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.3)
-        for _ in range(10):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
-
-
-    async def broadcast_NowZeke(self, util):
-        self.xpos = 57
-        self.ypos = -6
-        self.set_costume('costume10')
-        self.set_effect('brightness', -20)
-        self.visible = 1
-        self.front_layer(util)
-        self.set_dirty(3)
-        await self.sleep(2)
-        self.sounds.play('NowZeke')
-        self.set_costume('costume2')
-        self.set_dirty(3)
-        for _ in range(8):
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(1)
-        self.sounds.play('GiveMeThe')
-        self.set_costume('costume12')
-        self.set_dirty(3)
-        for _ in range(8):
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.5)
-        util.send_event('broadcast_WhatThe')
-        self.visible = 0
-        self.set_dirty(1)
-
+        self.sprite._layer = 20
 
     async def green_flag(self, util):
         self.visible = 0
         self.set_dirty(1)
 
 
-    async def broadcast_WhereIsIt(self, util):
-        self.set_costume('costume21')
+    async def broadcast_OhBoy(self, util):
+        self.set_direction(90)
+        self.set_costume('costume2')
+        self.xpos = -50
+        self.ypos = -27
+        self.size = 92
+        self.front_layer(util)
+        self.change_layer(util, -1)
         self.visible = 1
         self.set_dirty(3)
+
         await self.sleep(1)
-        self.sounds.play('whoosh')
-        self.set_costume('costume23')
+        self.sounds.play('OhBoy')
+        self.set_costume('costume3')
         self.set_dirty(3)
-        await self.sleep(0.05)
-        self.set_costume('costume22')
-        self.xpos = 28
-        self.ypos = -6
-        self.set_dirty(3)
-        await self.sleep(0.05)
-        self.set_costume('costume24')
-        self.set_dirty(3)
-        await self.sleep(0.8)
-        self.set_costume('costume25')
-        self.set_dirty(3)
-        await self.sounds.play('DaveGasp')
-        await self.sleep(1)
-        util.send_event('broadcast_HeyGuys')
-        self.visible = 0
-        self.set_dirty(1)
 
-
-
-class Sprite14(engine.Target):
-    costume = 15
-    xpos, ypos = 0, 0
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "38d27d919b11a94ddb10ba31fb297357.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "f92aba0c9efdad88ba8c8701c5fc6f88.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "7a2bad2523ee1944f4904fe4bfcce7eb.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume13",
-            'path': "552d3cd3c6008d94e9b2fa86fcf67d71.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume4",
-            'path': "f4d898bfe974d2f272cda82d7978d5af.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume5",
-            'path': "27916f725b36f24e7f0c9151a299e990.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume6",
-            'path': "94f9b36bd7b96f2ebe09ce2bd08827b2.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume7",
-            'path': "c64f673722cf22556a366e828a4b145e.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume8",
-            'path': "29cc34e4892df204c8886b8b15262074.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume9",
-            'path': "7a2bad2523ee1944f4904fe4bfcce7eb.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume15",
-            'path': "c64f673722cf22556a366e828a4b145e.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume14",
-            'path': "128c618e642eda0ffdc658e114452649.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume10",
-            'path': "27916f725b36f24e7f0c9151a299e990.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume11",
-            'path': "f92aba0c9efdad88ba8c8701c5fc6f88.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume12",
-            'path': "424315fc57595f5033147f65fd5c5164.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-        {
-            'name': "costume16",
-            'path': "27916f725b36f24e7f0c9151a299e990.png",
-            'center': (328, 308),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-        {
-            'name': "WheresTheTaco",
-            'path': "eea07780614a660b11a29354e030fa4b.wav"
-        },
-        {
-            'name': "Gasp",
-            'path': "c20525e74b7c405de2c9a072bae14f80.wav"
-        },
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_Flash': [
-                self.broadcast_Flash,
-            ],
-            'broadcast_WhatThe': [
-                self.broadcast_WhatThe,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 7
-
-    async def broadcast_Flash(self, util):
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', -20)
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.3)
         for _ in range(10):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
-
-
-    async def broadcast_WhatThe(self, util):
-        self.xpos = 0
-        self.ypos = 0
-        self.set_costume('costume1')
-        self.set_effect('brightness', -15)
-        self.visible = 1
-        self.sounds.play('WheresTheTaco')
-        self.set_dirty(3)
-        for _ in range(14):
             await self.sleep(0.08)
             next_costume = self.costume['number'] + 1
             if next_costume == len(self.costumes):
@@ -3846,33 +2551,117 @@ class Sprite14(engine.Target):
             else:
                 self.set_costume(next_costume)
             await self._yield(3)
-        await self.sleep(0.5)
+
+        await self.sleep(1)
+        util.send_event('broadcast_HesGonnaEatIt')
+        self.sounds.stop_all(util)
+        self.sounds.play('SuddenDefeatClip')
+        self.xpos = -50
+        self.ypos = -42
+        self.set_costume('costume14')
+        await self.glide(10, -47, -15)
+        self.sounds.stop_all(util)
+        util.send_event('broadcast_Chomp')
+        self.sounds.play('Chomp')
+        self.set_costume('costume15')
+        self.set_dirty(3)
+
+        await self.sleep(0.08)
         self.set_costume('costume16')
         self.set_dirty(3)
-        await self.sounds.play('Gasp')
+
+        await self.sleep(0.08)
+        self.set_costume('costume17')
+        self.set_dirty(3)
+
         await self.sleep(1)
-        util.send_event('broadcast_WhereIsIt')
+        self.sounds.play('Crunch')
+        for _ in range(4):
+            self.set_costume('costume18')
+            self.set_dirty(3)
+
+            await self.sleep(0.1)
+            self.set_costume('costume17')
+            self.set_dirty(3)
+
+            await self.sleep(0.15)
+            await self._yield(0)
+
+        await self.sleep(1)
+        self.xpos = -50
+        self.ypos = -24
+        self.set_dirty(2)
+
+        await self.sounds.play('Mmmm')
+        await self.sleep(1)
+        self.sounds.play('TheDeliciousFlavorOf')
+        self.set_costume('costume20')
+        self.set_dirty(3)
+
+        for _ in range(15):
+            await self.sleep(0.07)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+        await self.sleep(1)
+        self.sounds.play('Ohhh')
+        self.set_costume('costume37')
+        self.set_direction(90)
+        self.set_dirty(3)
+
+        for _ in range(10):
+            await self.sleep(0.01)
+            self.set_direction(self.direction - DEGREES)
+            self.xpos += -1
+            await self._yield(3)
+
+        self.sounds.play('Cardboard')
+        self.set_costume('costume38')
+        self.set_dirty(3)
+
+        for _ in range(8):
+            await self.sleep(0.1)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+        await self.sleep(1)
+        util.send_event('broadcast_ItsCardboard')
+
+
+    async def broadcast_Faint(self, util):
+        self.set_costume('costume47')
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        await self.glide(0.1, -61, -299)
+        self.sounds.play('Thump')
         self.visible = 0
-        self.set_dirty(1)
+        self.set_dirty(2)
 
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
+        await self.sleep(1)
+        util.send_event('broadcast_Ahhhhh')
 
 
 
-class Sprite17(engine.Target):
+class SpriteSprite16(engine.Target):
     costume = 0
-    xpos, ypos = 40, -60
+    xpos, ypos = 34, -254
     direction = 90
     visible = False
 
     costumes = [
         {
             'name': "costume1",
-            'path': "fecec238df426b1a51dc64409467f2d0.png",
-            'center': (198, -146),
+            'path': "bbf76ca2a52d746d979b1ffb3fe63ee7.png",
+            'center': (366, 198),
             'scale': 2
         },
     ]
@@ -3882,33 +2671,887 @@ class Sprite17(engine.Target):
 
     def __init__(self, util):
         self.hats = {
-            'broadcast_NowHesAngry': [
-                self.broadcast_NowHesAngry,
+            'broadcast_HesGonnaEatIt': [
+                self.broadcast_HesGonnaEatIt,
             ],
-            'broadcast_IsThereATrend': [
-                self.broadcast_IsThereATrend,
+            'green_flag': [
+                self.green_flag,
             ],
-            'broadcast_ThirdTimeAwkward': [
-                self.broadcast_ThirdTimeAwkward,
+            'broadcast_OhBoy': [
+                self.broadcast_OhBoy,
             ],
-            'broadcast_EvenMoreAwkward': [
-                self.broadcast_EvenMoreAwkward,
+            'broadcast_Faint': [
+                self.broadcast_Faint,
             ],
-            'broadcast_SoIMustEatTacos': [
-                self.broadcast_SoIMustEatTacos,
-                self.broadcast_SoIMustEatTacos_1,
+        }
+        super().__init__(util)
+        self.sprite._layer = 2
+
+    async def broadcast_HesGonnaEatIt(self, util):
+        await self.glide(10, 33, -77)
+        self.set_dirty(2)
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_OhBoy(self, util):
+        self.xpos = 78
+        self.ypos = -95
+        self.size = 92
+        self.set_costume('costume1')
+        self.change_layer(util, -99)
+        self.visible = 1
+        self.set_dirty(3)
+
+
+    async def broadcast_Faint(self, util):
+        await self.sleep(1)
+        await self.glide(0.08, 34, -262)
+        self.visible = 0
+        self.set_dirty(2)
+
+
+
+class SpriteSprite17(engine.Target):
+    costume = 3
+    xpos, ypos = 52, -234
+    direction = 90
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume1",
+            'path': "e797f9606a2ab6933e628da832374959.png",
+            'center': (298, 202),
+            'scale': 2
+        },
+        {
+            'name': "costume2",
+            'path': "8d0ae533a461082a8ce2822f1dbff7d3.png",
+            'center': (298, 206),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "6415753103f93c87e51b854bde5e9ef6.png",
+            'center': (134, 206),
+            'scale': 2
+        },
+        {
+            'name': "costume4",
+            'path': "3627566dcf66954f2b324ee8abb6f684.png",
+            'center': (134, 206),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+        {
+            'name': "ItsCardboard",
+            'path': "20d89f7bbab1312691403f2605f875cd.wav"
+        },
+        {
+            'name': "Ding",
+            'path': "3937aaea6f511827f374e85e6d2912f6.wav"
+        },
+        {
+            'name': "DingDingDing",
+            'path': "222e0c767669318766492053bd34dee7.wav"
+        },
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_ItsCardboard': [
+                self.broadcast_ItsCardboard,
             ],
-            'broadcast_ILoveTacos': [
-                self.broadcast_ILoveTacos,
+            'broadcast_HesGonnaEatIt': [
+                self.broadcast_HesGonnaEatIt,
             ],
-            'broadcast_Awkward': [
-                self.broadcast_Awkward,
+            'green_flag': [
+                self.green_flag,
             ],
-            'broadcast_ImGonnaEatIt': [
-                self.broadcast_ImGonnaEatIt,
+            'broadcast_OhBoy': [
+                self.broadcast_OhBoy,
             ],
-            'broadcast_Play': [
-                self.broadcast_Play,
+            'broadcast_Chomp': [
+                self.broadcast_Chomp,
+            ],
+            'broadcast_Faint': [
+                self.broadcast_Faint,
+            ],
+        }
+        super().__init__(util)
+        self.sprite._layer = 21
+
+    async def broadcast_ItsCardboard(self, util):
+        self.sounds.play('Ding')
+        self.set_costume('costume4')
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        await self.sounds.play('ItsCardboard')
+        await self.sleep(1)
+        util.send_event('broadcast_Faint')
+
+
+    async def broadcast_HesGonnaEatIt(self, util):
+        await self.glide(10, 62, -13)
+        self.set_dirty(2)
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_OhBoy(self, util):
+        self.xpos = 114
+        self.ypos = 5
+        self.size = 77
+        self.set_costume('costume2')
+        self.front_layer(util)
+        self.visible = 1
+        self.set_dirty(3)
+
+
+    async def broadcast_Chomp(self, util):
+        self.set_costume('costume3')
+        self.set_dirty(3)
+
+
+    async def broadcast_Faint(self, util):
+        await self.sleep(1)
+        await self.glide(0.07, 52, -234)
+        self.visible = 0
+        self.set_dirty(2)
+
+
+
+class SpriteSprite18(engine.Target):
+    costume = 1
+    xpos, ypos = -249, -46
+    direction = 90
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume1",
+            'path': "8d6f73936946413e6ec09b0868832cd1.png",
+            'center': (52, 68),
+            'scale': 2
+        },
+        {
+            'name': "costume2",
+            'path': "ffda3776616f48741c9c101be3cf3214.png",
+            'center': (52, 68),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "91021eeb37a50f3cf3962298ff1ecd8d.png",
+            'center': (52, 68),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+        {
+            'name': "Ahhhhh",
+            'path': "c229c65484dee3055e15dfe41c29fc84.wav"
+        },
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_Ahhhhh': [
+                self.broadcast_Ahhhhh,
+                self.broadcast_Ahhhhh1,
+            ],
+            'green_flag': [
+                self.green_flag,
+            ],
+        }
+        super().__init__(util)
+        self.sprite._layer = 10
+
+    async def broadcast_Ahhhhh(self, util):
+        for _ in range(40):
+            await self.sleep(0.05)
+            self.set_costume('costume3')
+            self.set_dirty(3)
+
+            await self.sleep(0.05)
+            self.set_costume('costume2')
+            await self._yield(3)
+
+
+
+    async def broadcast_Ahhhhh1(self, util):
+        self.xpos = 260
+        self.ypos = -46
+        self.visible = 1
+        self.sounds.play('Ahhhhh')
+        await self.glide(4, -260, -46)
+        self.visible = 0
+        self.set_dirty(2)
+
+        await self.sleep(1)
+        util.send_event('broadcast_IsHeDead')
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+
+class SpriteSprite19(engine.Target):
+    costume = 15
+    xpos, ypos = -230, -0.36693877551016385
+    direction = 90
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume1",
+            'path': "c348f55de3cb3c88b189009eb2a868e1.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume2",
+            'path': "6b3f376e12392696ec366a6af65c197c.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "3e02c4732e3669f0e43b8fabb0a2b0dd.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume4",
+            'path': "10e14147b00ff49ecc2301a62a091c48.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume5",
+            'path': "fc8f85054236d070e73334c2171f4413.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume6",
+            'path': "dfffb9319d5ec8dfd1eb98e26f678987.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume7",
+            'path': "172360902c89e2495800c0eb48250667.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume8",
+            'path': "7ab89df92709cc2d5ed0fef1f50fba53.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume9",
+            'path': "4b33702f1e1823c8845917d9841c9f4b.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume10",
+            'path': "6c9be909781151b03a94b2f182f59a40.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume13",
+            'path': "4b33702f1e1823c8845917d9841c9f4b.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume11",
+            'path': "7ab89df92709cc2d5ed0fef1f50fba53.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume14",
+            'path': "fc8f85054236d070e73334c2171f4413.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume16",
+            'path': "fc8f85054236d070e73334c2171f4413.png",
+            'center': (202, 280),
+            'scale': 2
+        },
+        {
+            'name': "costume15",
+            'path': "d25a0a6c9c75fafc5cbf0acd3f4558e3.png",
+            'center': (202, 332),
+            'scale': 2
+        },
+        {
+            'name': "costume17",
+            'path': "0fa12252076c82aee646397baa9e5dd3.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume18",
+            'path': "0fa12252076c82aee646397baa9e5dd3.png",
+            'center': (202, 274),
+            'scale': 2
+        },
+        {
+            'name': "costume20",
+            'path': "e72101071231b54732cdfdde8721876d.png",
+            'center': (368, 328),
+            'scale': 2
+        },
+        {
+            'name': "costume19",
+            'path': "6b3f376e12392696ec366a6af65c197c.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume21",
+            'path': "3a4530ddc0392b9a8b5b6b1087276f45.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume22",
+            'path': "4b33702f1e1823c8845917d9841c9f4b.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume23",
+            'path': "c57446a1913e062a157d97ad3549f035.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume24",
+            'path': "6c9be909781151b03a94b2f182f59a40.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume25",
+            'path': "dfffb9319d5ec8dfd1eb98e26f678987.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume26",
+            'path': "fc8f85054236d070e73334c2171f4413.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume27",
+            'path': "4b33702f1e1823c8845917d9841c9f4b.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume28",
+            'path': "10e14147b00ff49ecc2301a62a091c48.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume29",
+            'path': "fc8f85054236d070e73334c2171f4413.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume30",
+            'path': "dfffb9319d5ec8dfd1eb98e26f678987.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume31",
+            'path': "10e14147b00ff49ecc2301a62a091c48.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume32",
+            'path': "3a4530ddc0392b9a8b5b6b1087276f45.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume33",
+            'path': "e822269adf812f55b57f061a62c25d6b.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume34",
+            'path': "4b33702f1e1823c8845917d9841c9f4b.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+        {
+            'name': "costume35",
+            'path': "dfffb9319d5ec8dfd1eb98e26f678987.png",
+            'center': (202, 306),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+        {
+            'name': "IsHeDead",
+            'path': "99b00f4f05148566a0778f2606f6aa21.wav"
+        },
+        {
+            'name': "whoosh",
+            'path': "6394551b397c5a9669d02786b4d8e91d.wav"
+        },
+        {
+            'name': "YoureJustGoingToLeaveHim",
+            'path': "43449f2826a3eb96446ef9825ac59717.wav"
+        },
+        {
+            'name': "IGuessHesOk",
+            'path': "7e1dcfde31da239316fe09f01d7ba3f1.wav"
+        },
+        {
+            'name': "IsHeDead1",
+            'path': "747a1334777118e0f51354a439d4e11e.wav"
+        },
+        {
+            'name': "YoureJustGoingTo1",
+            'path': "91eae9fbf04452b573e07e93a8bf5533.wav"
+        },
+        {
+            'name': "IGuessHesOk1",
+            'path': "d4cb3289c3162a5023cda71564cd265f.wav"
+        },
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_MoreEffects': [
+                self.broadcast_MoreEffects,
+            ],
+            'broadcast_Drrr': [
+                self.broadcast_Drrr,
+            ],
+            'broadcast_IsHeDead': [
+                self.broadcast_IsHeDead,
+            ],
+            'green_flag': [
+                self.green_flag,
+            ],
+            'broadcast_WheresMyTaco': [
+                self.broadcast_WheresMyTaco,
+            ],
+        }
+        super().__init__(util)
+        self.sprite._layer = 24
+
+    async def broadcast_MoreEffects(self, util):
+        for _ in range(5):
+            await self.sleep(0.03)
+            self.change_effect('pixelate', -10)
+            self.size += -2
+            self.xpos += 2
+            await self._yield(3)
+
+        await self.sleep(1)
+        self.sounds.play('whoosh')
+        self.set_costume('costume16')
+        self.set_dirty(3)
+
+        await self.sleep(0.03)
+        self.set_costume('costume15')
+        self.set_dirty(3)
+
+        await self.sleep(0.03)
+        self.set_costume('costume17')
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        await self.sounds.play('YoureJustGoingTo1')
+        await self.sleep(1)
+        self.sounds.play('whoosh')
+        self.set_costume('costume18')
+        self.set_dirty(3)
+
+        await self.sleep(0.03)
+        self.set_costume('costume20')
+        self.set_dirty(3)
+
+        await self.sleep(0.03)
+        self.set_costume('costume19')
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        self.set_costume('costume19')
+        self.sounds.play('IGuessHesOk1')
+        self.set_dirty(3)
+
+        for _ in range(15):
+            await self.sleep(0.07)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+        await self.sleep(1)
+        self.sounds.play('whoosh')
+        self.set_costume('costume16')
+        self.set_dirty(3)
+
+        await self.sleep(0.03)
+        self.set_costume('costume15')
+        self.set_dirty(3)
+
+        await self.sleep(0.03)
+        self.set_costume('costume17')
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        for _ in range(3):
+            for _ in range(4):
+                await self.sleep(0.01)
+                self.xpos += -10
+                self.ypos += (number(round(self.size)) / -50)
+                self.size += (number(round(self.size)) * -0.01)
+                await self._yield(3)
+
+            for _ in range(4):
+                await self.sleep(0.01)
+                self.xpos += -10
+                self.ypos += (number(round(self.size)) / 49)
+                self.size += (number(round(self.size)) * -0.01)
+                await self._yield(3)
+
+            await self._yield(0)
+
+        self.visible = 0
+        self.set_dirty(1)
+
+        await self.sleep(1)
+        util.send_event('broadcast_Questions')
+
+
+    async def broadcast_Drrr(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_IsHeDead(self, util):
+        self.set_effect('pixelate', 0)
+        self.xpos = -301
+        self.ypos = -102
+        self.size = 79
+        self.set_costume('costume2')
+        self.visible = 1
+        self.set_dirty(3)
+
+        for _ in range(5):
+            for _ in range(4):
+                await self.sleep(0.01)
+                self.xpos += 5
+                self.ypos += (number(round(self.size)) / 25)
+                self.size += (number(round(self.size)) * 0.01)
+                await self._yield(3)
+
+            for _ in range(4):
+                await self.sleep(0.01)
+                self.xpos += 5
+                self.ypos += (number(round(self.size)) / -98)
+                self.size += (number(round(self.size)) * 0.01)
+                await self._yield(3)
+
+            await self._yield(0)
+
+        await self.sleep(1)
+        self.set_costume('costume2')
+        self.sounds.play('IsHeDead1')
+        self.set_dirty(3)
+
+        for _ in range(10):
+            await self.sleep(0.07)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+        await self.sleep(0.2)
+        next_costume = self.costume['number'] + 1
+        if next_costume == len(self.costumes):
+            self.set_costume(0)
+        else:
+            self.set_costume(next_costume)
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        util.send_event('broadcast_AwesomeEffects')
+        for _ in range(5):
+            await self.sleep(0.03)
+            self.change_effect('pixelate', 10)
+            self.size += 2
+            self.xpos += -2
+            await self._yield(3)
+
+
+
+    async def green_flag(self, util):
+        self.visible = 0
+        self.set_dirty(1)
+
+
+    async def broadcast_WheresMyTaco(self, util):
+        self.visible = 1
+        self.set_dirty(1)
+
+
+
+class SpriteSprite20(engine.Target):
+    costume = 28
+    xpos, ypos = -317, -58.9893877551018
+    direction = 90
+    visible = False
+
+    costumes = [
+        {
+            'name': "costume1",
+            'path': "e000b94a092717cbc54313658741363b.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume2",
+            'path': "9da36a030c5819f1a6c993da3e58d8c5.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "11a16c185008c1cce553ce2ffce4acef.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume4",
+            'path': "5b84a8f195f4d5f9811a67b3e048c2d0.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume5",
+            'path': "e6d5d13f8d3f5fb020953971449eb3cb.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume6",
+            'path': "6d20ad96697e8cf1142f065cc5184ab0.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume7",
+            'path': "755ec95f522a799375e9dee165af1b97.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume8",
+            'path': "870ed6a5039cf2c15cf794f66e74c07c.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume9",
+            'path': "7012965c8aecba7b3087bbd32450efb0.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume10",
+            'path': "9da36a030c5819f1a6c993da3e58d8c5.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume11",
+            'path': "babf367bdc5c802d79d74f30015c9214.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume12",
+            'path': "47ad3b821abcd6f5e3a1fd447e386af9.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume13",
+            'path': "97a96797d654c42d36ab05533908135b.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume14",
+            'path': "9514b6986540821eedf54aec44113707.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume15",
+            'path': "be7f90786217606d9eca0c46a0b0aa6c.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume16",
+            'path': "47ad3b821abcd6f5e3a1fd447e386af9.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume17",
+            'path': "dfb20e7550b2af4cb7dfb5cc514d46a2.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume18",
+            'path': "e29321939fb6423bc97dd663aced7d53.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume19",
+            'path': "be7f90786217606d9eca0c46a0b0aa6c.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume20",
+            'path': "75698502c904cce94f073a0467ccfc2f.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume21",
+            'path': "97a96797d654c42d36ab05533908135b.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume22",
+            'path': "9514b6986540821eedf54aec44113707.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume23",
+            'path': "591e968f626ca0acdb08c9e6ed2927b0.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume24",
+            'path': "dfb20e7550b2af4cb7dfb5cc514d46a2.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume25",
+            'path': "be7f90786217606d9eca0c46a0b0aa6c.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume26",
+            'path': "47ad3b821abcd6f5e3a1fd447e386af9.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume27",
+            'path': "9fe48b2d4f4c25cf3cd6323219334b2e.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume28",
+            'path': "be7f90786217606d9eca0c46a0b0aa6c.png",
+            'center': (184, 334),
+            'scale': 2
+        },
+        {
+            'name': "costume29",
+            'path': "0a54aafcd3e9c79035be3d88982b8919.png",
+            'center': (288, 276),
+            'scale': 2
+        },
+    ]
+
+    sounds = [
+        {
+            'name': "IDunno",
+            'path': "5931783daf8e2cd8aeea2bb3f56d454a.wav"
+        },
+        {
+            'name': "Wait",
+            'path': "00a987ccd031bb088785881082e80dbe.wav"
+        },
+        {
+            'name': "WheresMyTaco",
+            'path': "571397abc1ee5963a9869fe942052a16.wav"
+        },
+        {
+            'name': "Dash",
+            'path': "c9a9e79183c87b3c86cd665a1cc84632.wav"
+        },
+    ]
+
+    def __init__(self, util):
+        self.hats = {
+            'broadcast_WheresMyTaco': [
+                self.broadcast_WheresMyTaco,
+            ],
+            'broadcast_AwesomeEffects': [
+                self.broadcast_AwesomeEffects,
+            ],
+            'broadcast_Drrr': [
+                self.broadcast_Drrr,
+            ],
+            'broadcast_IsHeDead': [
+                self.broadcast_IsHeDead,
             ],
             'green_flag': [
                 self.green_flag,
@@ -3917,553 +3560,159 @@ class Sprite17(engine.Target):
         super().__init__(util)
         self.sprite._layer = 1
 
-    async def broadcast_NowHesAngry(self, util):
+    async def broadcast_WheresMyTaco(self, util):
+        self.set_costume('costume10')
+        self.visible = 1
+        self.set_dirty(3)
+
+        await self.sleep(1)
+        self.sounds.play('Wait')
+        self.set_costume('costume12')
+        self.set_dirty(3)
+
+        for _ in range(3):
+            await self.sleep(0.06)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+        await self.sleep(0.5)
+        self.sounds.play('WheresMyTaco')
+        for _ in range(13):
+            await self.sleep(0.06)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+        await self.sleep(2)
+        self.set_costume('costume29')
+        self.sounds.play('Dash')
+        await self.glide(0.2, -317, -59)
+        self.visible = 0
+        util.send_event('broadcast_MoreEffects')
+        self.set_dirty(3)
+
+
+    async def broadcast_AwesomeEffects(self, util):
+        for _ in range(5):
+            await self.sleep(0.03)
+            self.change_effect('pixelate', -10)
+            self.size += 1
+            self.xpos += 1
+            await self._yield(3)
+
+        self.set_costume('costume2')
+        self.sounds.play('IDunno')
+        self.set_dirty(3)
+
+        for _ in range(8):
+            await self.sleep(0.08)
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            await self._yield(3)
+
+        await self.sleep(0.8)
+        util.send_event('broadcast_Drrr')
+
+
+    async def broadcast_Drrr(self, util):
         self.visible = 0
         self.set_dirty(1)
 
 
-    async def broadcast_IsThereATrend(self, util):
+    async def broadcast_IsHeDead(self, util):
+        self.change_layer(util, -99)
+        self.set_effect('pixelate', 50)
+        self.xpos = 301
+        self.ypos = -102
+        self.size = 68
+        self.set_costume('costume2')
+        self.set_dirty(3)
+
+        await self.sleep(1)
         self.visible = 1
         self.set_dirty(1)
 
+        for _ in range(5):
+            for _ in range(4):
+                await self.sleep(0.01)
+                self.xpos += -5
+                self.ypos += (number(round(self.size)) / 25)
+                self.size += (number(round(self.size)) * 0.005)
+                await self._yield(3)
 
-    async def broadcast_ThirdTimeAwkward(self, util):
-        self.visible = 1
-        self.set_dirty(1)
+            for _ in range(4):
+                await self.sleep(0.01)
+                self.xpos += -5
+                self.ypos += (number(round(self.size)) / -98)
+                self.size += (number(round(self.size)) * 0.005)
+                await self._yield(3)
 
-
-    async def broadcast_EvenMoreAwkward(self, util):
-        self.visible = 1
-        self.set_dirty(1)
-
-
-    async def broadcast_SoIMustEatTacos(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_ILoveTacos(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_Awkward(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_SoIMustEatTacos_1(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_ImGonnaEatIt(self, util):
-        self.variables['Zeke1or2'] = "2"
-
-
-    async def broadcast_Play(self, util):
-        self.variables['Zeke1or2'] = "1"
-        self.visible = 1
-        self.set_dirty(1)
-        while True:
-            if (self.variables['Zeke1or2'] == "1"):
-                other = util.targets['Sprite3']
-                self.xpos, self.ypos = other.xpos, other.ypos
-                self.change_layer(util, -99)
-                self.set_effect('ghost', 75)
-                self.set_dirty(3)
-            if (self.variables['Zeke1or2'] == "2"):
-                other = util.targets['Sprite4']
-                self.xpos, self.ypos = other.xpos, other.ypos
-                self.change_layer(util, -99)
-                self.set_effect('ghost', 75)
-                self.set_dirty(3)
             await self._yield(0)
 
 
+
     async def green_flag(self, util):
         self.visible = 0
         self.set_dirty(1)
 
 
 
-class Sprite18(engine.Target):
+class SpriteSprite21(engine.Target):
     costume = 0
-    xpos, ypos = -148, -57
+    xpos, ypos = 67, 29
     direction = 90
     visible = False
 
     costumes = [
         {
             'name': "costume1",
-            'path': "fecec238df426b1a51dc64409467f2d0.png",
-            'center': (198, -146),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_WhatThe': [
-                self.broadcast_WhatThe,
-            ],
-            'broadcast_NowHesAngry': [
-                self.broadcast_NowHesAngry,
-            ],
-            'broadcast_Play': [
-                self.broadcast_Play,
-            ],
-            'broadcast_IsThereATrend': [
-                self.broadcast_IsThereATrend,
-            ],
-            'broadcast_ThirdTimeAwkward': [
-                self.broadcast_ThirdTimeAwkward,
-            ],
-            'broadcast_EvenMoreAwkward': [
-                self.broadcast_EvenMoreAwkward,
-            ],
-            'broadcast_SoIMustEatTacos': [
-                self.broadcast_SoIMustEatTacos,
-                self.broadcast_SoIMustEatTacos_1,
-            ],
-            'broadcast_ILoveTacos': [
-                self.broadcast_ILoveTacos,
-            ],
-            'broadcast_Awkward': [
-                self.broadcast_Awkward,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 2
-
-    async def broadcast_WhatThe(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_NowHesAngry(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_Play(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-        while True:
-            other = util.targets['Sprite1']
-            self.xpos, self.ypos = other.xpos, other.ypos
-            self.change_layer(util, -99)
-            self.set_effect('ghost', 75)
-            await self._yield(3)
-
-
-    async def broadcast_IsThereATrend(self, util):
-        self.visible = 1
-        self.set_dirty(1)
-
-
-    async def broadcast_ThirdTimeAwkward(self, util):
-        self.visible = 1
-        self.set_dirty(1)
-
-
-    async def broadcast_EvenMoreAwkward(self, util):
-        self.visible = 1
-        self.set_dirty(1)
-
-
-    async def broadcast_SoIMustEatTacos(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_ILoveTacos(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_Awkward(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_SoIMustEatTacos_1(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite19(engine.Target):
-    costume = 0
-    xpos, ypos = 0, 0
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "background2",
-            'path': "9600252351ef03b45467c2ad6c6d97bb.png",
-            'center': (480, 360),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_Flash': [
-                self.broadcast_Flash,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_HeyGuys': [
-                self.broadcast_HeyGuys,
-            ],
-            'broadcast_Credits': [
-                self.broadcast_Credits,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 25
-
-    async def broadcast_Flash(self, util):
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', -20)
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.3)
-        for _ in range(10):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_HeyGuys(self, util):
-        self.xpos = 0
-        self.ypos = 0
-        self.set_effect('brightness', -20)
-        self.visible = 1
-        self.front_layer(util)
-        self.change_layer(util, -1)
-        self.set_dirty(3)
-
-
-    async def broadcast_Credits(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite20(engine.Target):
-    costume = 0
-    xpos, ypos = 83, -61
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "92eec3f9c0df7b2d97e06064ff621bfd.png",
-            'center': (242, 254),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_Flash': [
-                self.broadcast_Flash,
-            ],
-            'broadcast_HeyGuys': [
-                self.broadcast_HeyGuys,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_Credits': [
-                self.broadcast_Credits,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 26
-
-    async def broadcast_Flash(self, util):
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', -20)
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.3)
-        for _ in range(10):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
-
-
-    async def broadcast_HeyGuys(self, util):
-        self.xpos = 83
-        self.ypos = -61
-        self.set_effect('brightness', -20)
-        self.visible = 1
-        self.front_layer(util)
-        self.set_dirty(3)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_Credits(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite21(engine.Target):
-    costume = 25
-    xpos, ypos = -39, 90
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "3610afbc81d267acd68141e5d2b413b1.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume22",
-            'path': "7540aabc26e4eecdcae53193ac1a28d2.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "42629c7c3721df70e12ab9cce24ae34c.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume23",
-            'path': "42629c7c3721df70e12ab9cce24ae34c.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "b891fbf221e3504b7ea095d795681b27.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume4",
-            'path': "a97c9d3a5585761bac337c100305a02d.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume5",
-            'path': "fba24422df58df601e020387a442364a.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume7",
-            'path': "fba24422df58df601e020387a442364a.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume6",
-            'path': "b891fbf221e3504b7ea095d795681b27.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume8",
-            'path': "a97c9d3a5585761bac337c100305a02d.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume9",
-            'path': "3545aa2d51c9ef45491339d407154f16.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume10",
-            'path': "520c110b11477def63d8eff8f2f1a9da.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume11",
-            'path': "871538192b9fb7cbfdd3205d7af6bc30.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume12",
-            'path': "d95f69f26c115ac217673795de3e3c24.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume13",
-            'path': "42629c7c3721df70e12ab9cce24ae34c.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume14",
-            'path': "a97c9d3a5585761bac337c100305a02d.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume15",
-            'path': "42629c7c3721df70e12ab9cce24ae34c.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume16",
-            'path': "b891fbf221e3504b7ea095d795681b27.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume17",
-            'path': "871538192b9fb7cbfdd3205d7af6bc30.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume18",
-            'path': "42629c7c3721df70e12ab9cce24ae34c.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume19",
-            'path': "fba24422df58df601e020387a442364a.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume24",
-            'path': "42629c7c3721df70e12ab9cce24ae34c.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume20",
-            'path': "a97c9d3a5585761bac337c100305a02d.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume25",
-            'path': "a97c9d3a5585761bac337c100305a02d.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume21",
-            'path': "7540aabc26e4eecdcae53193ac1a28d2.png",
-            'center': (56, 76),
-            'scale': 2
-        },
-        {
-            'name': "costume26",
-            'path': "a1edd1d32209438d1b9a45343e9a6d35.png",
-            'center': (40, 56),
+            'path': "0869900f04bde58ec084a3ce967574da.png",
+            'center': (444, 258),
             'scale': 2
         },
     ]
 
     sounds = [
         {
-            'name': "LookWhatIGot",
-            'path': "9e16edbe2540029ed9d998d6590bb0d3.wav"
-        },
-        {
-            'name': "Dash",
-            'path': "c9a9e79183c87b3c86cd665a1cc84632.wav"
-        },
-        {
-            'name': "LookWhatIGot1",
-            'path': "89ab3c76f4b0984f4b31dad7baf2371d.wav"
+            'name': "IDontRecall",
+            'path': "8e71396b73a15a5d1d2fafdff666f8ee.wav"
         },
     ]
 
     def __init__(self, util):
         self.hats = {
-            'broadcast_HeyGuys': [
-                self.broadcast_HeyGuys,
+            'broadcast_Drrr': [
+                self.broadcast_Drrr,
             ],
             'green_flag': [
                 self.green_flag,
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 8
+        self.sprite._layer = 11
 
-    async def broadcast_HeyGuys(self, util):
-        self.xpos = -133
-        self.ypos = 99
+    async def broadcast_Drrr(self, util):
+        self.xpos = 67
+        self.ypos = 29
         self.visible = 1
-        self.sounds.play('LookWhatIGot1')
-        self.set_costume('costume22')
-        self.set_dirty(3)
-        for _ in range(23):
-            await self.sleep(0.1)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
+        self.set_dirty(2)
+
         await self.sleep(1)
-        self.set_costume('costume26')
-        self.sounds.play('Dash')
-        await self.glide(0.1, -39, 90)
+        await self.sounds.play('IDontRecall')
+        await self.sleep(1)
+        util.send_event('broadcast_WheresMyTaco')
         self.visible = 0
-        self.set_dirty(3)
-        await self.sleep(2)
-        util.send_event('broadcast_WhatIMiss')
+        self.set_dirty(1)
 
 
     async def green_flag(self, util):
@@ -4472,188 +3721,7 @@ class Sprite21(engine.Target):
 
 
 
-class Sprite22(engine.Target):
-    costume = 9
-    xpos, ypos = -186, -12
-    direction = 85
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "0a47bc0d26cb34b311ef854c903c2755.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "fff866aa215be0be6ab7d790a18c4f51.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume3",
-            'path': "a37cdf75361ae323480a2457a20b45a1.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume4",
-            'path': "a8f78a256605f6a376b756503eb6cacc.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume5",
-            'path': "a6692a5244f10b1f06b6b2b8231e476d.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume6",
-            'path': "fff866aa215be0be6ab7d790a18c4f51.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume7",
-            'path': "f18a77bada77760250b180b08be01aa5.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume8",
-            'path': "77509b0137988c4d081824cf88487d97.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume9",
-            'path': "187b5a30a4b3bdf5c8b15bf7b3c3d65a.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-        {
-            'name': "costume10",
-            'path': "8f50393494ebd8a8fa728cd343d44239.png",
-            'center': (366, 312),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-        {
-            'name': "MetalBang1",
-            'path': "c65d6897a07652fb0269c238c919f625.wav"
-        },
-        {
-            'name': "MetalBang2",
-            'path': "9487c49c76158fd86e05316c8e092734.wav"
-        },
-        {
-            'name': "MetalBang3",
-            'path': "50e30769e178bb5abd077bc2a4bae0d8.wav"
-        },
-        {
-            'name': "MetalBang4",
-            'path': "8e00a874d67269f947795e33845434ad.wav"
-        },
-        {
-            'name': "WhatIMiss",
-            'path': "bce16023d8dbc227273a770f043168dd.wav"
-        },
-        {
-            'name': "YouMissed",
-            'path': "9c5cc2a6a73b5ade267226fc166c705e.wav"
-        },
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_Flash': [
-                self.broadcast_Flash,
-            ],
-            'broadcast_WhatIMiss': [
-                self.broadcast_WhatIMiss,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_Credits': [
-                self.broadcast_Credits,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 27
-
-    async def broadcast_Flash(self, util):
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.01)
-        self.set_effect('brightness', -20)
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        self.set_effect('brightness', -10)
-        self.set_dirty(3)
-        await self.sleep(0.3)
-        for _ in range(10):
-            await self.sleep(0.01)
-            self.change_effect('brightness', -1)
-            await self._yield(3)
-
-
-    async def broadcast_WhatIMiss(self, util):
-        self.set_direction(75)
-        self.xpos = -166
-        self.ypos = -312
-        self.set_costume('costume2')
-        self.set_effect('brightness', -20)
-        self.visible = 1
-        self.front_layer(util)
-        self.set_direction(105)
-        await self.glide(0.8, -132, -141)
-        self.set_direction(75)
-        await self.glide(0.3, -209, -100)
-        self.sounds.play('MetalBang2')
-        util.send_event('broadcast_Flash')
-        self.set_dirty(3)
-        await self.sleep(1)
-        self.set_direction(105)
-        await self.glide(0.8, -174, -34)
-        self.set_direction(85)
-        await self.glide(0.3, -186, -12)
-        self.sounds.play('MetalBang3')
-        self.set_dirty(3)
-        await self.sleep(0.5)
-        self.sounds.play('WhatIMiss')
-        self.set_costume('costume3')
-        self.set_dirty(3)
-        for _ in range(7):
-            await self.sleep(0.07)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(0.5)
-        await self.sounds.play('YouMissed')
-        await self.sleep(1)
-        util.send_event('broadcast_TheEnd')
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_Credits(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite23(engine.Target):
+class SpriteSprite23(engine.Target):
     costume = 0
     xpos, ypos = 0, 0
     direction = 90
@@ -4662,13 +3730,43 @@ class Sprite23(engine.Target):
     costumes = [
         {
             'name': "costume1",
-            'path': "6107c46dcec6e37489e78c09e96edbed.png",
+            'path': "6b2b987e49f541f3b13c6555fe1f5785.png",
             'center': (480, 360),
             'scale': 2
         },
         {
             'name': "costume2",
-            'path': "08f59afd55fefac5641b3608fc7af292.png",
+            'path': "fee1b64d16e2348e2a9ffc738e36dcf8.png",
+            'center': (480, 360),
+            'scale': 2
+        },
+        {
+            'name': "costume3",
+            'path': "5d206d3996259ac4b27299f0e25b0b02.png",
+            'center': (480, 360),
+            'scale': 2
+        },
+        {
+            'name': "costume4",
+            'path': "c74760255a9f2f9a167880546d0b2b85.png",
+            'center': (480, 360),
+            'scale': 2
+        },
+        {
+            'name': "costume5",
+            'path': "01225cfe28d955a65429f831616947b4.png",
+            'center': (480, 360),
+            'scale': 2
+        },
+        {
+            'name': "costume6",
+            'path': "c62e74c2bde39f91d62e765cd197b92a.png",
+            'center': (480, 360),
+            'scale': 2
+        },
+        {
+            'name': "costume7",
+            'path': "f1b7a1a267c36b207b06b72e12f71e90.png",
             'center': (480, 360),
             'scale': 2
         },
@@ -4676,8 +3774,12 @@ class Sprite23(engine.Target):
 
     sounds = [
         {
-            'name': "Suspense",
-            'path': "4797dd003d3c54aa258eaa45a5705916.wav"
+            'name': "Smash",
+            'path': "640ff9c2d0ae74d69355ec709ddc5da0.wav"
+        },
+        {
+            'name': "SmokingGun",
+            'path': "1ed0d095cfc049b10695bf40dd2b3c52.wav"
         },
     ]
 
@@ -4686,81 +3788,112 @@ class Sprite23(engine.Target):
             'green_flag': [
                 self.green_flag,
             ],
-            'broadcast_TheEnd': [
-                self.broadcast_TheEnd,
-                self.broadcast_TheEnd_1,
-            ],
-            'broadcast_ClickLoveIt': [
-                self.broadcast_ClickLoveIt,
+            'broadcast_Questions': [
+                self.broadcast_Questions,
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 28
+        self.sprite._layer = 12
 
     async def green_flag(self, util):
         self.visible = 0
         self.set_dirty(1)
 
 
-    async def broadcast_TheEnd(self, util):
+    async def broadcast_Questions(self, util):
         self.xpos = 0
-        self.ypos = 0
-        self.set_effect('ghost', 100)
-        self.set_effect('brightness', 0)
+        self.ypos = 347
+        self.variables['velocity'] = 0
         self.set_costume('costume1')
+        self.set_effect('brightness', -100)
         self.visible = 1
-        self.front_layer(util)
         self.set_dirty(3)
-        for _ in range(100):
-            await self.sleep(0.05)
-            self.change_effect('ghost', -1)
-            await self._yield(3)
+
+        for _ in range(17):
+            self.variables['velocity'] += -2
+            self.ypos += number(self.variables['Velocity'])
+            self.set_dirty(2)
+
+            await self.sleep(0.01)
+            await self._yield(0)
+
+        self.sounds.play('Smash')
+        self.xpos = 0
+        self.ypos = 0
+        self.set_dirty(2)
+
         await self.sleep(2)
+        self.sounds.play('SmokingGun')
         for _ in range(10):
-            await self.sleep(0.07)
-            self.change_effect('brightness', -10)
+            await self.sleep(0.01)
+            self.change_effect('brightness', 10)
             await self._yield(3)
-        self.set_costume('costume2')
+
+        for _ in range(5):
+            await self.sleep(3)
+            for _ in range(10):
+                await self.sleep(0.01)
+                self.change_effect('brightness', -10)
+                await self._yield(3)
+
+            next_costume = self.costume['number'] + 1
+            if next_costume == len(self.costumes):
+                self.set_costume(0)
+            else:
+                self.set_costume(next_costume)
+            self.set_dirty(3)
+
+            for _ in range(10):
+                await self.sleep(0.01)
+                self.change_effect('brightness', 10)
+                await self._yield(3)
+
+            await self._yield(0)
+
+        await self.sleep(4)
+        for _ in range(20):
+            await self.sleep(0.01)
+            self.change_effect('brightness', -5)
+            await self._yield(3)
+
         util.send_event('broadcast_Credits')
+        next_costume = self.costume['number'] + 1
+        if next_costume == len(self.costumes):
+            self.set_costume(0)
+        else:
+            self.set_costume(next_costume)
         self.set_dirty(3)
+
         for _ in range(10):
-            await self.sleep(0.07)
+            await self.sleep(0.01)
             self.change_effect('brightness', 10)
             await self._yield(3)
 
 
-    async def broadcast_TheEnd_1(self, util):
-        await self.sounds.play('Suspense')
 
 
-    async def broadcast_ClickLoveIt(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite24(engine.Target):
-    costume = 2
-    xpos, ypos = 0, 194
+class SpriteSprite24(engine.Target):
+    costume = 0
+    xpos, ypos = 0, 200
     direction = 90
     visible = False
 
     costumes = [
         {
             'name': "costume1",
-            'path': "2a14cdb1b15631b42ccd27d5dac3aecc.png",
-            'center': (480, 30),
+            'path': "59549d5cb71ead543b374528f8708310.png",
+            'center': (330, 74),
             'scale': 2
         },
         {
             'name': "costume2",
-            'path': "7f3d0eb857e413fb7469f19e5c6f7922.png",
+            'path': "9c349d68fa7051971db9ec1622b72b93.png",
             'center': (484, 342),
             'scale': 2
         },
         {
             'name': "costume3",
-            'path': "37b0f3f52b2d54486a3afd7aaeae7840.png",
+            'path': "f0bcc502c31c532dd4671971a1a4850b.png",
             'center': (484, 342),
             'scale': 2
         },
@@ -4772,7 +3905,7 @@ class Sprite24(engine.Target):
         },
         {
             'name': "costume5",
-            'path': "0bf5a63d8089786a999ca2cf1d0f1ca5.png",
+            'path': "76c98a76d8c3c7b94fc6b0e6be7329f8.png",
             'center': (476, 364),
             'scale': 2
         },
@@ -4780,6 +3913,12 @@ class Sprite24(engine.Target):
             'name': "costume6",
             'path': "1b5bf8f93574db8015c34546548b6a55.png",
             'center': (530, 342),
+            'scale': 2
+        },
+        {
+            'name': "costume7",
+            'path': "682ab633b2e78eb01afab91fd998e8de.png",
+            'center': (260, 58),
             'scale': 2
         },
     ]
@@ -4797,7 +3936,7 @@ class Sprite24(engine.Target):
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 20
+        self.sprite._layer = 22
 
     async def broadcast_Credits(self, util):
         self.set_costume('costume1')
@@ -4806,7 +3945,8 @@ class Sprite24(engine.Target):
         self.visible = 1
         self.front_layer(util)
         self.set_dirty(3)
-        for _ in range(6):
+
+        for _ in range(7):
             self.xpos = 0
             self.ypos = -200
             await self.glide(3, 0, 200)
@@ -4816,8 +3956,9 @@ class Sprite24(engine.Target):
             else:
                 self.set_costume(next_costume)
             await self._yield(3)
+
         self.visible = 0
-        util.send_event('broadcast_ClickLoveIt')
+        util.send_event('broadcast_DaveRoll')
         self.set_dirty(1)
 
 
@@ -4827,777 +3968,139 @@ class Sprite24(engine.Target):
 
 
 
-class Sprite25(engine.Target):
-    costume = 67
-    xpos, ypos = 60, -20
+class SpriteSprite25(engine.Target):
+    costume = 13
+    xpos, ypos = -4, -10
     direction = 90
     visible = False
 
     costumes = [
         {
-            'name': "costume3",
-            'path': "dc921a6e27c387cc16bdb976f326f7d0.png",
-            'center': (330, 260),
+            'name': "Rickroll'd1",
+            'path': "80019763e45d78abf930b071ed7ab6e6.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume4",
-            'path': "7f3c991a7942395cc079a1d7bafb5643.png",
-            'center': (330, 260),
+            'name': "Rickroll'd3",
+            'path': "1b243ed9516c0256b82e742b4bb37f66.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume5",
-            'path': "96ac2fce34e0ba6ea063644922a50a6e.png",
-            'center': (330, 260),
+            'name': "Rickroll'd5",
+            'path': "e0f76fb69e18ee3ffaec2e16a4eb5de6.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume6",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
+            'name': "Rickroll'd7",
+            'path': "2cb3fe532d876cfe94ce8ebe54e89726.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume7",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
+            'name': "Rickroll'd9",
+            'path': "9b24327f56abb13f10f39f0354088d61.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume8",
-            'path': "a8159e4301d193ede4227cfbcb154f11.png",
-            'center': (330, 260),
+            'name': "Rickroll'd11",
+            'path': "0938c5d8ddbe2bc82a131d932a2b4394.png",
+            'center': (314, 268),
             'scale': 2
         },
         {
-            'name': "costume9",
-            'path': "c1855938df397c03092bcd61bcafd261.png",
-            'center': (330, 260),
+            'name': "Rickroll'd13",
+            'path': "ac9ea91aeac66ccc11ee4f6db884186d.png",
+            'center': (322, 262),
             'scale': 2
         },
         {
-            'name': "costume10",
-            'path': "1a73a19b1ef8f817594f7f81fc69a25d.png",
-            'center': (330, 260),
+            'name': "Rickroll'd15",
+            'path': "57df658e599b567d0f5bdcf482941c18.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume11",
-            'path': "80b46e9f2182677a72b8c9c4bf624a5b.png",
-            'center': (330, 260),
+            'name': "Rickroll'd17",
+            'path': "9406957ee74bf6767c3435ad5401c7c0.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume12",
-            'path': "a101b5d3fab62d7a4496c7a7593bf095.png",
-            'center': (330, 260),
+            'name': "Rickroll'd19",
+            'path': "2b656d5286b948f1cdaafa5b5d3fcd16.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume13",
-            'path': "a8159e4301d193ede4227cfbcb154f11.png",
-            'center': (330, 260),
+            'name': "Rickroll'd21",
+            'path': "b87877741ae3a64d15de2f2ad1a0dd59.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume14",
-            'path': "96ac2fce34e0ba6ea063644922a50a6e.png",
-            'center': (330, 260),
+            'name': "Rickroll'd23",
+            'path': "b01a4ae484eb63fb5b1e7b11200741b2.png",
+            'center': (306, 254),
             'scale': 2
         },
         {
-            'name': "costume15",
-            'path': "d816b46753cf62d153a073fa5ee7c38c.png",
-            'center': (330, 260),
+            'name': "Rickroll'd25",
+            'path': "d479c1f353ccf7d10c934d7e0c83c563.png",
+            'center': (268, 246),
             'scale': 2
         },
         {
-            'name': "costume16",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume17",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume18",
-            'path': "4131c209068f6240952998d855290833.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume19",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume20",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume21",
-            'path': "a8159e4301d193ede4227cfbcb154f11.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume22",
-            'path': "c1855938df397c03092bcd61bcafd261.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume23",
-            'path': "1a73a19b1ef8f817594f7f81fc69a25d.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume24",
-            'path': "7f3c991a7942395cc079a1d7bafb5643.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume25",
-            'path': "96ac2fce34e0ba6ea063644922a50a6e.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume26",
-            'path': "80b46e9f2182677a72b8c9c4bf624a5b.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume27",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume28",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume30",
-            'path': "d816b46753cf62d153a073fa5ee7c38c.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume31",
-            'path': "a101b5d3fab62d7a4496c7a7593bf095.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume32",
-            'path': "80b46e9f2182677a72b8c9c4bf624a5b.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume33",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume34",
-            'path': "4131c209068f6240952998d855290833.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume35",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume36",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume37",
-            'path': "b28727635c60e765823366571e464403.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume38",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume41",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume42",
-            'path': "4131c209068f6240952998d855290833.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume43",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume44",
-            'path': "c9f0a1a054ff47ad1fdf717b719bd9a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume45",
-            'path': "b28727635c60e765823366571e464403.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume46",
-            'path': "a101b5d3fab62d7a4496c7a7593bf095.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume47",
-            'path': "c9f0a1a054ff47ad1fdf717b719bd9a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume48",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume50",
-            'path': "c1855938df397c03092bcd61bcafd261.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume52",
-            'path': "96ac2fce34e0ba6ea063644922a50a6e.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume53",
-            'path': "a101b5d3fab62d7a4496c7a7593bf095.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume54",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume55",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume56",
-            'path': "b28727635c60e765823366571e464403.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume57",
-            'path': "96ac2fce34e0ba6ea063644922a50a6e.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume58",
-            'path': "c1855938df397c03092bcd61bcafd261.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume59",
-            'path': "1a73a19b1ef8f817594f7f81fc69a25d.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume60",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume61",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume62",
-            'path': "c9f0a1a054ff47ad1fdf717b719bd9a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume63",
-            'path': "7f3c991a7942395cc079a1d7bafb5643.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume64",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume65",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume66",
-            'path': "96ac2fce34e0ba6ea063644922a50a6e.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume67",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume68",
-            'path': "80b46e9f2182677a72b8c9c4bf624a5b.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume69",
-            'path': "96ac2fce34e0ba6ea063644922a50a6e.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume70",
-            'path': "ad2e05f9b51e5d91723b0783c53648a2.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume71",
-            'path': "96ac2fce34e0ba6ea063644922a50a6e.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume72",
-            'path': "dedc6e0dc9644cfe89bfbe4763943642.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume73",
-            'path': "a101b5d3fab62d7a4496c7a7593bf095.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume74",
-            'path': "a8159e4301d193ede4227cfbcb154f11.png",
-            'center': (330, 260),
-            'scale': 2
-        },
-        {
-            'name': "costume75",
-            'path': "b28727635c60e765823366571e464403.png",
-            'center': (330, 260),
+            'name': "Rickroll'd27",
+            'path': "4a3d67f9d7589bda5f2d5bfd7a97c734.png",
+            'center': (306, 254),
             'scale': 2
         },
     ]
 
     sounds = [
         {
-            'name': "whoosh",
-            'path': "6394551b397c5a9669d02786b4d8e91d.wav"
-        },
-        {
-            'name': "DidYouLikeThis",
-            'path': "c97dfe4cb15e100284b1193e97c76a17.wav"
-        },
-        {
-            'name': "ClickLoveIt",
-            'path': "d3131176dc57bf52960888ad721a52bc.wav"
-        },
-        {
-            'name': "UntilNextTime",
-            'path': "923ea30288c95fe0b1f589c3c0e13563.wav"
+            'name': "RickRollClip",
+            'path': "bb14ffe161a9a888d80acca088aee328.wav"
         },
     ]
 
     def __init__(self, util):
         self.hats = {
-            'broadcast_ClickLoveIt': [
-                self.broadcast_ClickLoveIt,
+            'broadcast_DaveRoll': [
+                self.broadcast_DaveRoll,
+                self.broadcast_DaveRoll1,
             ],
             'green_flag': [
                 self.green_flag,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 10
-
-    async def broadcast_ClickLoveIt(self, util):
-        self.sounds.stop_all(util)
-        self.set_costume('costume4')
-        self.visible = 1
-        self.xpos = 60
-        self.ypos = -336
-        self.sounds.play('whoosh')
-        await self.glide(0.3, 60, -20)
-        self.set_dirty(3)
-        await self.sleep(1)
-        self.sounds.play('DidYouLikeThis')
-        self.set_costume('costume5')
-        self.set_dirty(3)
-        for _ in range(19):
-            await self.sleep(0.07)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(1)
-        self.set_costume('costume24')
-        self.sounds.play('ClickLoveIt')
-        self.set_dirty(3)
-        for _ in range(34):
-            await self.sleep(0.06)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(1)
-        self.sounds.play('UntilNextTime')
-        self.set_costume('costume64')
-        self.set_dirty(3)
-        for _ in range(11):
-            await self.sleep(0.08)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-        await self.sleep(1)
-        util.send_event('broadcast_WitchDoctor')
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite26(engine.Target):
-    costume = 1
-    xpos, ypos = -97, -60
-    direction = 70
-    visible = False
-
-    costumes = [
-        {
-            'name': "costume1",
-            'path': "3ba619eb5cff9bf2360806ae7a88c952.png",
-            'center': (120, 146),
-            'scale': 2
-        },
-        {
-            'name': "costume2",
-            'path': "7da90a62ccbbbf301e1c1c5395a70161.png",
-            'center': (76, 48),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'broadcast_ClickLoveIt': [
-                self.broadcast_ClickLoveIt,
-            ],
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_WitchDoctor': [
-                self.broadcast_WitchDoctor,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 11
-
-    async def broadcast_ClickLoveIt(self, util):
-        self.set_costume('costume2')
-        self.xpos = -97
-        self.ypos = -205
-        self.visible = 1
-        self.set_dirty(3)
-        await self.sleep(0.1)
-        await self.glide(0.15, -97, -60)
-        self.set_dirty(2)
-
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_WitchDoctor(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-
-class Sprite27(engine.Target):
-    costume = 7
-    xpos, ypos = 215, -38
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "troll-dance",
-            'path': "3c3f00001c04588cb25ad437255bc960.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance1",
-            'path': "35925bbfa3e9db689a7a64c81e63a637.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance2",
-            'path': "2499d65f61106eb99c18aee5db37c29a.png",
-            'center': (238, 334),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance3",
-            'path': "4bb0f55cbff875bafbe35b1750171047.png",
-            'center': (282, 312),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance4",
-            'path': "22252ae4d0bbcd7d734eb96576a746bc.png",
-            'center': (308, 354),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance5",
-            'path': "a8cbd0e34d5d8e717ed4b6d0d03abb92.png",
-            'center': (324, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance6",
-            'path': "adc49d22eecb6090f51494d4e6d43c45.png",
-            'center': (336, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance7",
-            'path': "ba10f4ecf2a5039a826ea8d938a0470f.png",
-            'center': (312, 336),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance8",
-            'path': "c39761c98989b24b74a3be3767e2adfc.png",
-            'center': (268, 302),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance9",
-            'path': "90eb421eaaae34f103d4898f75010465.png",
-            'center': (238, 310),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_WitchDoctor': [
-                self.broadcast_WitchDoctor,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 12
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_WitchDoctor(self, util):
-        self.xpos = 215
-        self.ypos = -38
-        self.set_direction(90)
-        self.set_costume('troll-dance')
-        self.visible = 1
-        self.set_dirty(3)
-        while True:
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-
-
-
-class Sprite28(engine.Target):
-    costume = 7
-    xpos, ypos = -215, -38
-    direction = -90
-    visible = False
-
-    costumes = [
-        {
-            'name': "troll-dance",
-            'path': "3c3f00001c04588cb25ad437255bc960.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance1",
-            'path': "35925bbfa3e9db689a7a64c81e63a637.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance2",
-            'path': "2499d65f61106eb99c18aee5db37c29a.png",
-            'center': (238, 334),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance3",
-            'path': "4bb0f55cbff875bafbe35b1750171047.png",
-            'center': (282, 312),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance4",
-            'path': "22252ae4d0bbcd7d734eb96576a746bc.png",
-            'center': (308, 354),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance5",
-            'path': "a8cbd0e34d5d8e717ed4b6d0d03abb92.png",
-            'center': (324, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance6",
-            'path': "adc49d22eecb6090f51494d4e6d43c45.png",
-            'center': (336, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance7",
-            'path': "ba10f4ecf2a5039a826ea8d938a0470f.png",
-            'center': (312, 336),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance8",
-            'path': "c39761c98989b24b74a3be3767e2adfc.png",
-            'center': (268, 302),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance9",
-            'path': "90eb421eaaae34f103d4898f75010465.png",
-            'center': (238, 310),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_WitchDoctor': [
-                self.broadcast_WitchDoctor,
             ],
         }
         super().__init__(util)
         self.sprite._layer = 13
 
+    async def broadcast_DaveRoll(self, util):
+        self.sounds.stop_all(util)
+        while True:
+            await self.sounds.play('RickRollClip')
+            await self._yield(0)
+
+
+
     async def green_flag(self, util):
         self.visible = 0
         self.set_dirty(1)
 
 
-    async def broadcast_WitchDoctor(self, util):
-        self.xpos = -215
-        self.ypos = -38
-        self.set_direction(-90)
-        self.set_costume('troll-dance')
+    async def broadcast_DaveRoll1(self, util):
+        self.set_costume('Rickroll\'d1')
         self.visible = 1
         self.set_dirty(3)
+
         while True:
-            await self.sleep(0.05)
+            await self.sleep(0.15)
             next_costume = self.costume['number'] + 1
             if next_costume == len(self.costumes):
                 self.set_costume(0)
@@ -5607,329 +4110,8 @@ class Sprite28(engine.Target):
 
 
 
-class Sprite29(engine.Target):
-    costume = 7
-    xpos, ypos = 0, -38
-    direction = -90
-    visible = False
 
-    costumes = [
-        {
-            'name': "troll-dance",
-            'path': "3c3f00001c04588cb25ad437255bc960.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance1",
-            'path': "35925bbfa3e9db689a7a64c81e63a637.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance2",
-            'path': "2499d65f61106eb99c18aee5db37c29a.png",
-            'center': (238, 334),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance3",
-            'path': "4bb0f55cbff875bafbe35b1750171047.png",
-            'center': (282, 312),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance4",
-            'path': "22252ae4d0bbcd7d734eb96576a746bc.png",
-            'center': (308, 354),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance5",
-            'path': "a8cbd0e34d5d8e717ed4b6d0d03abb92.png",
-            'center': (324, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance6",
-            'path': "adc49d22eecb6090f51494d4e6d43c45.png",
-            'center': (336, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance7",
-            'path': "ba10f4ecf2a5039a826ea8d938a0470f.png",
-            'center': (312, 336),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance8",
-            'path': "c39761c98989b24b74a3be3767e2adfc.png",
-            'center': (268, 302),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance9",
-            'path': "90eb421eaaae34f103d4898f75010465.png",
-            'center': (238, 310),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_WitchDoctor': [
-                self.broadcast_WitchDoctor,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 21
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_WitchDoctor(self, util):
-        self.xpos = 0
-        self.ypos = -38
-        self.set_direction(-90)
-        self.set_costume('troll-dance')
-        self.visible = 1
-        self.front_layer(util)
-        self.set_dirty(3)
-        while True:
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-
-
-
-class Sprite30(engine.Target):
-    costume = 7
-    xpos, ypos = -110, -141
-    direction = -90
-    visible = False
-
-    costumes = [
-        {
-            'name': "troll-dance",
-            'path': "3c3f00001c04588cb25ad437255bc960.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance1",
-            'path': "35925bbfa3e9db689a7a64c81e63a637.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance2",
-            'path': "2499d65f61106eb99c18aee5db37c29a.png",
-            'center': (238, 334),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance3",
-            'path': "4bb0f55cbff875bafbe35b1750171047.png",
-            'center': (282, 312),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance4",
-            'path': "22252ae4d0bbcd7d734eb96576a746bc.png",
-            'center': (308, 354),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance5",
-            'path': "a8cbd0e34d5d8e717ed4b6d0d03abb92.png",
-            'center': (324, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance6",
-            'path': "adc49d22eecb6090f51494d4e6d43c45.png",
-            'center': (336, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance7",
-            'path': "ba10f4ecf2a5039a826ea8d938a0470f.png",
-            'center': (312, 336),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance8",
-            'path': "c39761c98989b24b74a3be3767e2adfc.png",
-            'center': (268, 302),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance9",
-            'path': "90eb421eaaae34f103d4898f75010465.png",
-            'center': (238, 310),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_WitchDoctor': [
-                self.broadcast_WitchDoctor,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 17
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_WitchDoctor(self, util):
-        self.xpos = -110
-        self.ypos = -141
-        self.set_direction(-90)
-        self.set_costume('troll-dance')
-        self.visible = 1
-        self.set_dirty(3)
-        while True:
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-
-
-
-class Sprite31(engine.Target):
-    costume = 7
-    xpos, ypos = 110, -141
-    direction = 90
-    visible = False
-
-    costumes = [
-        {
-            'name': "troll-dance",
-            'path': "3c3f00001c04588cb25ad437255bc960.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance1",
-            'path': "35925bbfa3e9db689a7a64c81e63a637.png",
-            'center': (218, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance2",
-            'path': "2499d65f61106eb99c18aee5db37c29a.png",
-            'center': (238, 334),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance3",
-            'path': "4bb0f55cbff875bafbe35b1750171047.png",
-            'center': (282, 312),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance4",
-            'path': "22252ae4d0bbcd7d734eb96576a746bc.png",
-            'center': (308, 354),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance5",
-            'path': "a8cbd0e34d5d8e717ed4b6d0d03abb92.png",
-            'center': (324, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance6",
-            'path': "adc49d22eecb6090f51494d4e6d43c45.png",
-            'center': (336, 360),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance7",
-            'path': "ba10f4ecf2a5039a826ea8d938a0470f.png",
-            'center': (312, 336),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance8",
-            'path': "c39761c98989b24b74a3be3767e2adfc.png",
-            'center': (268, 302),
-            'scale': 2
-        },
-        {
-            'name': "troll-dance9",
-            'path': "90eb421eaaae34f103d4898f75010465.png",
-            'center': (238, 310),
-            'scale': 2
-        },
-    ]
-
-    sounds = [
-    ]
-
-    def __init__(self, util):
-        self.hats = {
-            'green_flag': [
-                self.green_flag,
-            ],
-            'broadcast_WitchDoctor': [
-                self.broadcast_WitchDoctor,
-            ],
-        }
-        super().__init__(util)
-        self.sprite._layer = 18
-
-    async def green_flag(self, util):
-        self.visible = 0
-        self.set_dirty(1)
-
-
-    async def broadcast_WitchDoctor(self, util):
-        self.xpos = 110
-        self.ypos = -141
-        self.set_direction(90)
-        self.set_costume('troll-dance')
-        self.visible = 1
-        self.set_dirty(3)
-        while True:
-            await self.sleep(0.05)
-            next_costume = self.costume['number'] + 1
-            if next_costume == len(self.costumes):
-                self.set_costume(0)
-            else:
-                self.set_costume(next_costume)
-            await self._yield(3)
-
-
-
-class Sprite32(engine.Target):
+class SpriteSprite22(engine.Target):
     costume = 0
     xpos, ypos = 0, 0
     direction = 90
@@ -5937,8 +4119,8 @@ class Sprite32(engine.Target):
 
     costumes = [
         {
-            'name': "costume2",
-            'path': "6198baa69c42985d5eeaa4930706111f.png",
+            'name': "costume1",
+            'path': "527289c91356adf6d928ec9f3c83541e.png",
             'center': (480, 360),
             'scale': 2
         },
@@ -5954,46 +4136,39 @@ class Sprite32(engine.Target):
             ],
         }
         super().__init__(util)
-        self.sprite._layer = 22
+        self.sprite._layer = 23
 
     async def green_flag(self, util):
         self.visible = 0
         self.set_dirty(1)
 
 SPRITES = {
-    'Stage': Stage,
-    'title': title,
-    'play': play,
-    'Sprite3': Sprite3,
-    'Sprite4': Sprite4,
-    'Sprite1': Sprite1,
-    'Sprite5': Sprite5,
-    'Sprite6': Sprite6,
-    'Sprite7': Sprite7,
-    'Sprite8': Sprite8,
-    'Sprite11': Sprite11,
-    'Sprite9': Sprite9,
-    'Sprite10': Sprite10,
-    'Sprite15': Sprite15,
-    'Sprite12': Sprite12,
-    'Sprite13': Sprite13,
-    'Sprite14': Sprite14,
-    'Sprite17': Sprite17,
-    'Sprite18': Sprite18,
-    'Sprite19': Sprite19,
-    'Sprite20': Sprite20,
-    'Sprite21': Sprite21,
-    'Sprite22': Sprite22,
-    'Sprite23': Sprite23,
-    'Sprite24': Sprite24,
-    'Sprite25': Sprite25,
-    'Sprite26': Sprite26,
-    'Sprite27': Sprite27,
-    'Sprite28': Sprite28,
-    'Sprite29': Sprite29,
-    'Sprite30': Sprite30,
-    'Sprite31': Sprite31,
-    'Sprite32': Sprite32,
+    'SpriteSprite5': SpriteSprite5,
+    'SpriteSprite18': SpriteSprite18,
+    'SpriteSprite21': SpriteSprite21,
+    'SpriteSprite19': SpriteSprite19,
+    'SpriteSprite24': SpriteSprite24,
+    'SpriteSprite4': SpriteSprite4,
+    'SpriteSprite14': SpriteSprite14,
+    'SpriteSprite23': SpriteSprite23,
+    'SpriteSprite16': SpriteSprite16,
+    'SpriteSprite22': SpriteSprite22,
+    'SpriteSprite13': SpriteSprite13,
+    'Sprite_play': Sprite_play,
+    'SpriteSprite2': SpriteSprite2,
+    'SpriteSprite11': SpriteSprite11,
+    'SpriteSprite6': SpriteSprite6,
+    'SpriteSprite12': SpriteSprite12,
+    'SpriteSprite1': SpriteSprite1,
+    'SpriteSprite3': SpriteSprite3,
+    'Sprite_title': Sprite_title,
+    'SpriteSprite15': SpriteSprite15,
+    'SpriteSprite10': SpriteSprite10,
+    'SpriteSprite17': SpriteSprite17,
+    'SpriteStage': SpriteStage,
+    'SpriteSprite20': SpriteSprite20,
+    'SpriteSprite7': SpriteSprite7,
+    'SpriteSprite25': SpriteSprite25,
 }
 
 if __name__ == '__main__':
