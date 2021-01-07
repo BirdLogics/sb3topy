@@ -33,14 +33,14 @@ self.set_dirty({DIRTY})
 #: special_yield
 await self._yield({DIRTY})
 
-#: procedures_definition (string NAME, list PARAMETERS, stack SUBSTACK)
-async def {NAME}(self, {PARAMETERS}):{SUBSTACK}
+#: procedures_definition (string NAME, list PARAMETERS, stack SUBSTACK) -h
+def {NAME}(self, {PARAMETERS}):{SUBSTACK}
 
 #: any argument_reporter_string_number (any VALUE)
 args[{VALUE}]
 
 #: procedures_call (string NAME, list PARAMETERS)
-{NAME}({PARAMETERS})
+await {NAME}({PARAMETERS})
 
 #: motion_movesteps (float STEPS) -d2
 self.move({STEPS})
@@ -49,7 +49,7 @@ self.move({STEPS})
 self.set_direction(self.direction + {DEGREES})
 
 #: motion_turnleft (float DEGREES) -d3
-self.set_direction(self.direction - DEGREES)
+self.set_direction(self.direction - {DEGREES})
 
 #: motion_pointindirection (float DIRECTION) -d3
 self.set_direction({DIRECTION})
@@ -323,7 +323,7 @@ clone_start
 # control_create_clone_of({CLONE_OPTION})
 
 #: control_delete_this_clone ()
-# control_delete_this_clone()
+pass # control_delete_this_clone()
 
 #: bool sensing_touchingobject (field TOUCHINGOBJECTMENU) -u
 #? sensing_touching
@@ -347,7 +347,7 @@ answer = input({QUESTION})
 answer
 
 #: bool sensing_keypressed (field KEY_OPTION)
-util.get_key(string {KEY_OPTION})
+util.get_key({KEY_OPTION})
 
 #: bool sensing_mousedown ()
 pg.mouse.get_pressed()[0]
@@ -492,62 +492,56 @@ round({NUM})
 #? operator_mathop_{OPERATOR}
 number({NUM})
 
-# TODO Rethink variables? Parameter types.
-#: any data_variable (field VARIABLE)
-self.variables[{VARIABLE}]
+#: any data_variable (field VARIABLE, field PREFIX)
+{PREFIX}.{VARIABLE}
 
-#: data_setvariableto (VARIABLE, VALUE)
-self.variables[{VARIABLE}] = {VALUE}
+#: data_setvariableto (field VARIABLE, any VALUE, field PREFIX)
+{PREFIX}.{VARIABLE} = {VALUE}
 
-#: data_changevariableby (VARIABLE, VALUE)
-self.variables[{VARIABLE}] += {VALUE}
+#: data_changevariableby (field VARIABLE, any VALUE, field PREFIX)
+{PREFIX}.{VARIABLE} = number({PREFIX}.{VARIABLE}) + {VALUE}
 
-# TODO Variable monitors
-#: data_showvariable (VARIABLE)
-pass # data_showvariable({VARIABLE})
+#: data_showvariable (field VARIABLE, field PREFIX)
+print({PREFIX}.{VARIABLE})
 
-#: data_hidevariable (VARIABLE)
-pass # data_hidevariable({VARIABLE})
+#: data_hidevariable (field VARIABLE, field PREFIX)
+pass # hide variable
 
-# TODO List class
-# Should support first, last, rand index
+#: string data_listcontents (field LIST, field PREFIX)
+str({PREFIX}.{LIST})
 
-#: string data_listcontents (field LIST)
-str(self.lists[{LIST}])
+#: data_addtolist (any ITEM, field LIST, field PREFIX)
+{PREFIX}.{LIST}.append({ITEM})
 
-#: data_addtolist (any ITEM, field LIST)
-self.lists[{LIST}].append({ITEM})
+#: data_deleteoflist (any INDEX, field LIST, field PREFIX)
+{PREFIX}.{LIST}.delete({INDEX})
 
-#: data_deleteoflist (any INDEX, field LIST)
-self.lists[{LIST}].delete({INDEX})
+#: data_deletealloflist (field LIST, field PREFIX)
+{PREFIX}.{LIST}.delete_all()
 
-#: data_deletealloflist (field LIST)
-self.lists[{LIST}].delete_all()
+#: data_insertatlist (any ITEM, any INDEX, field LIST, field PREFIX)
+{PREFIX}.{LIST}.insert({INDEX}, {ITEM})
 
-#: data_insertatlist (any ITEM, any INDEX, field LIST)
-self.lists[{LIST}].insert({INDEX}, {ITEM})
+#: data_replaceitemoflist (any INDEX, field LIST, any ITEM, field PREFIX)
+{PREFIX}.{LIST}[{INDEX}] = {ITEM}
 
-#: data_replaceitemoflist (any INDEX, field LIST, any ITEM)
-self.lists[{LIST}][{INDEX}] = {ITEM}
+#: any data_itemoflist (any INDEX, field LIST, field PREFIX)
+{PREFIX}.{LIST}[{INDEX}]
 
-#: any data_itemoflist (any INDEX, field LIST)
-self.lists[{LIST}][{INDEX} - 1]
+#: int data_itemnumoflist (field LIST, any ITEM, field PREFIX)
+{PREFIX}.{LIST}.index({ITEM})
 
-#: int data_itemnumoflist (field LIST, any ITEM)
-self.lists[{LIST}].index({ITEM})
+#: int data_lengthoflist (field LIST, field PREFIX)
+len({PREFIX}.{LIST})
 
-#: int data_lengthoflist (field LIST)
-len(self.lists[{LIST}])
+#: bool data_listcontainsitem (field LIST, any ITEM, field PREFIX)
+{ITEM} in {PREFIX}.{LIST}
 
-#: bool data_listcontainsitem (field LIST, any ITEM)
-{ITEM} in self.lists[{LIST}]
+#: data_showlist (field LIST, field PREFIX)
+{PREFIX}.{LIST}.show()
 
-# TODO List monitors
-#: data_showlist (field LIST)
-self.lists[{LISTS}].show()
-
-#: data_hidelist (field LIST)
-self.lists[{LISTS}].hide()
+#: data_hidelist (field LIST, field PREFIX)
+{PREFIX}.{LIST}.hide()
 
 
 if __name__ == '__main__':
