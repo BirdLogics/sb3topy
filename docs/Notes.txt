@@ -119,3 +119,8 @@ Input Types
 [13, Name, VariableId, (x), (y)]
 
 =================================================
+
+Scratch MIDI to Pygame MIDI
+{
+    1: 
+}
