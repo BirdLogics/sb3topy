@@ -29,6 +29,7 @@ KEY_MAP - Maps pygame keys to their names in the project
 
 import asyncio
 import math
+import random
 import time
 
 import pygame as pg
@@ -45,7 +46,7 @@ DISPLAY_SIZE = (480, 360)
 DISPLAY_FLAGS = pg.DOUBLEBUF | pg.HWSURFACE
 FS_SCALE = 1
 
-ASSETS_PATH = "./assets/"
+ASSETS_PATH = "./results/assets/"
 AUDIO_CHANNELS = 8
 
 DEBUG_ASYNC = True
@@ -896,13 +897,13 @@ class Target:
         """Defaults all graphic effects to 0"""
         self.effects = {}
 
-    def change_layer(self, util, number):
+    def change_layer(self, util, value):
         """Moves number layers fowards"""
         # TODO Layering diffrences
         # Pygame has multiple sprites per layer
         util.sprites.change_layer(
             self.sprite,
-            util.sprites.get_layer_of_sprite(self.sprite) + number)
+            util.sprites.get_layer_of_sprite(self.sprite) + value)
 
     def front_layer(self, util):
         """Moves the sprite to the front layer"""
@@ -972,10 +973,15 @@ class Sounds:
         """Saves the channel and waits for it to finish"""
         delay = sound.get_length()
         channel.set_volume(self.volume / 100)
-        self._channels[channel] = asyncio.ensure_future(asyncio.sleep(delay))
         channel.play(sound)
-        await self._channels[channel]
-        self._channels.pop(channel)
+        try:
+            self._channels[channel] = asyncio.ensure_future(
+                asyncio.sleep(delay))
+            await self._channels[channel]
+        except asyncio.CancelledError:
+            pass
+        finally:
+            self._channels.pop(channel)
 
     @staticmethod
     def stop_all(util):
@@ -990,79 +996,6 @@ class Sounds:
             task.cancel()
 
 
-class Value:
-    """Handles casting a value as necesary"""
-
-    def __init__(self, value):
-        self.value = value
-
-    def __lt__(self, other):
-        return self.value < other
-
-    def __le__(self, other):
-        return self.value <= other
-
-    def __eq__(self, other):
-        return str(self.value) == str(other)
-
-    def __ne__(self, other):
-        return str(self.value) != str(other)
-
-    def __gt__(self, other):
-        return self.value > other
-
-    def __ge__(self, other):
-        return self.value >= other
-
-    def __bool__(self):
-        return bool(self.value)
-
-    def __add__(self, other):
-        return self.to_number(self.value) + self.to_number(other)
-
-    def __sub__(self, other):
-        return self.to_number(self.value) - self.to_number(other)
-
-    def __mul__(self, other):
-        return self.to_number(self.value) * self.to_number(other)
-
-    def __truediv__(self, other):
-        return self.to_number(self.value) / self.to_number(other)
-
-    def __mod__(self, other):
-        return self.to_number(self.value) % self.to_number(other)
-
-    def __pow__(self, other):
-        return pow(self.to_number(self.value), self.to_number(other))
-
-    def __iadd__(self, other):
-        self.value = self.to_number(self.value) + self.to_number(other)
-
-    def __isub__(self, other):
-        self.value = self.to_number(self.value) + self.to_number(other)
-
-    def __index__(self):
-        try:
-            return int(self)
-        except ValueError:
-            return 0
-        except OverflowError:
-            return 0
-
-    @staticmethod
-    def to_number(value):
-        """Attempts to cast a value to a number"""
-        if isinstance(value, str):
-            try:
-                value = float(value)
-                if value.is_integer():
-                    value = int(value)
-            except ValueError:
-                return 0
-        if value == float('NaN'):
-            return 0
-        return value
-
 def number(value):
     """Attempts to cast a value to a number"""
     if isinstance(value, str):
@@ -1075,6 +1008,73 @@ def number(value):
     if value == float('NaN'):
         return 0
     return value
+
+
+class List:
+    """Handles special list behaviors"""
+
+    def __init__(self, lst):
+        self.list = lst
+
+    def __get_item__(self, key):
+        key = self._to_index(key)
+        if key is not None:
+            return self.list[key - 1]
+        return ""
+
+    def __set_item__(self, key, value):
+        key = self._to_index(key)
+        if key is not None:
+            self.list[key] = value
+
+    def append(self, value):
+        """Add up to 200,000 items to list"""
+        if len(self.list) < 200000:
+            self.list.append(value)
+
+    def insert(self, key, value):
+        """Insert up to 200,000 items in list"""
+        if len(self.list) < 200000:
+            key = self._to_index(key, 0)
+            if key is not None:
+                self.list.insert(key, value)
+
+    def remove(self, key):
+        """Remove an item from list"""
+        key = self._to_index(key)
+        if key is not None:
+            self.list.remove(key)
+
+    def _to_index(self, key, max_adj=-1):
+        """Gets the index of first, last, random strings"""
+        if self.list:
+            if key == "first":
+                return 0
+            if key == "last":
+                return -1
+            if key == "random":
+                return random.randint(0, len(self.list) + max_adj)
+            key = round(number(key))
+            if 0 < key <= len(self.list) + max_adj:
+                return key - 1
+        return None
+
+    def __str__(self):
+        char_join = True
+        for item in self.list:
+            if len(str(item)) != 1:
+                char_join = False
+                break
+        if char_join:
+            return ''.join(self.list)
+        return ' '.join(self.list)
+
+    # TODO Variable/list reporters
+    def show(self):
+        """Do nothing"""
+
+    def hide(self):
+        """Do nothing"""
 
 
 def main(sprites):
