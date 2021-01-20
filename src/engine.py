@@ -21,7 +21,6 @@ FS_SCALE - Changes the display size in fullscreen, potentially increacing
     performance at the cost of quality. With a factor of 2, the window
     size is half that of your computer, changing your resolution.
 
-ASSETS_PATH - The path the assets folder; f"{ASSETS_PATH}md5.ext"
 AUDIO_CHANNELS - The number of audio channels created for the pygame mixer
 
 KEY_MAP - Maps pygame keys to their names in the project
@@ -46,7 +45,6 @@ DISPLAY_SIZE = (480, 360)
 DISPLAY_FLAGS = pg.DOUBLEBUF | pg.HWSURFACE
 FS_SCALE = 1
 
-ASSETS_PATH = "./results/assets/"
 AUDIO_CHANNELS = 8
 
 DEBUG_ASYNC = True
@@ -317,6 +315,10 @@ class BlockUtil:
                 pass
         self.send_event_to("sprite_clicked", self.stage)
 
+    def get_key(self, key):
+        """Gets if a key is down"""
+        return key in self.down_keys
+
 
 class Runtime:
     """Container for everything needed to run the project"""
@@ -341,7 +343,7 @@ class Runtime:
 
         # Initialize targets
         for name, target in targets.items():
-            if name == "SpriteStage":
+            if name == "Stage":
                 self.util.stage = target(self.util)
             else:
                 self.util.targets[name] = target(self.util)
@@ -388,7 +390,7 @@ class Runtime:
 
                 # Check if any sprites need drawing
                 for target in self.util.targets.values():
-                    if target.dirty:
+                    if target.dirty and target.visible:
                         dirty = True
 
             # Update sprite rects, images, etc.
@@ -400,6 +402,7 @@ class Runtime:
 
                 # Get the stage bg
                 bg_image = pg.Surface(self.display.size)
+                bg_image.fill((255, 255, 255))
                 bg_image.blit(
                     self.util.stage.sprite.image,
                     (self.display.rect.x, self.display.rect.y))
@@ -475,7 +478,7 @@ class AssetCache:
             if not image:
                 # Need to load the image first
                 image = pg.image.load(
-                    ASSETS_PATH + costume['path']).convert_alpha()
+                    "assets/" + costume['path']).convert_alpha()
                 self.costumes[(costume['path'], costume['scale'])] = image
 
             # Smooth scale the image
@@ -556,38 +559,8 @@ class AssetCache:
     def get_sound(self, md5ext):
         """Gets or loads a sound"""
         if not md5ext in self.sounds:
-            self.sounds[md5ext] = pg.mixer.Sound(ASSETS_PATH + md5ext)
+            self.sounds[md5ext] = pg.mixer.Sound("assets/" + md5ext)
         return self.sounds[md5ext]
-
-
-class Stage:
-    variables = {}
-    lists = {}
-
-    backdrops_dict = {}
-    backdrops = []
-    backdrop = 0
-
-    sounds_dict = {}
-    sounds = []
-
-    warp = False
-    warp_timer = 0
-
-    hats = {}
-
-    effects = {}
-
-    # 1 dirty sprite, 2 dirty rect, 3 dirty image
-    dirty = 3
-
-    def __init__(self):
-        self.sprite = pg.sprite.Sprite()
-        self.sprite.image = pg.surface.Surface((480, 360))
-
-    def update(self, _):
-        """Update the stage's appearence"""
-        self.dirty = 0  # TODO Stage update
 
 
 class Target:
@@ -616,9 +589,6 @@ class Target:
         effects - A dict which tracks costume effects
     """
 
-    variables = {}
-    lists = {}
-
     costumes = []
     sounds = []
 
@@ -630,6 +600,8 @@ class Target:
     visible = True
 
     hats = None
+
+    clones = []
 
     # draggable = False
     # rotationStyle
@@ -652,36 +624,17 @@ class Target:
         self.warp = False
         self.warp_timer = 0
 
-        if parent is None:
-            # Get assets by name
-            self.costumes_dict = {}
-            self.sounds_dict = {}
+        # Get assets by name
+        self.costumes_dict = {}
 
-            # Parse assets and fill the dicts
-            self._parse_assets(util.cache)
+        # Parse assets and fill the dicts
+        self._parse_assets(util.cache)
 
-            # Get the current costume
-            self.costume = self.costumes[self.costume]
+        # Get the current costume
+        self.costume = self.costumes[self.costume]
 
-            # Clear effects
-            self.effects = {}
-
-        else:
-            # This is a clone of parent
-            self.costumes_dict = parent.costumes_dict
-            self.sounds_dict = parent.costumes_dict
-
-            self.variables = parent.variable.copy()
-            self.lists = parent.lists.copy()
-
-            self.xpos, self.ypos = parent.xpos, parent.ypos
-            self.direction = parent.direction
-            self.size = parent.size
-
-            self.effects = parent.effects.copy()
-
-            # TODO Clone start
-            # await self.recieve_event("clone_start")#, [], None)
+        # Clear effects
+        self.effects = {}
 
         # Update the sprite rect, image, mask
         self.update(util)
@@ -845,6 +798,11 @@ class Target:
 
     def get_touching(self, util, other):
         """Check if this sprite is touching another or its clones"""
+        other = util.targets.get(other)
+        if not other:
+            print("Invalid sprite name " + other)
+            return False
+
         # Must update this sprite and the other before testing
         self.update(util)
         other.update(util)
@@ -911,7 +869,25 @@ class Target:
 
     def back_layer(self, util):
         """Moves the sprite to the back layer"""
-        util.sprites.move_to_bback(self.sprite)
+        util.sprites.move_to_back(self.sprite)
+
+    async def _warp(self, awaitable):
+        """Enables warp and disables it even if canceled"""
+        try:
+            self.warp = True
+            self.warp_timer = time.monotonic()
+            await awaitable
+        # except asyncio.CancelledError:
+        #     pass
+        finally:
+            self.warp = False
+
+    def goto(self, util, other):
+        """Goto the position of another sprite"""
+        other = util.targets.get(other)
+        if other:
+            self.xpos = other.xpos
+            self.ypos = other.ypos
 
 
 class Sounds:
@@ -1013,16 +989,16 @@ def number(value):
 class List:
     """Handles special list behaviors"""
 
-    def __init__(self, lst):
-        self.list = lst
+    def __init__(self, *values):
+        self.list = list(values)
 
-    def __get_item__(self, key):
+    def __getitem__(self, key):
         key = self._to_index(key)
         if key is not None:
-            return self.list[key - 1]
+            return self.list[key]
         return ""
 
-    def __set_item__(self, key, value):
+    def __setitem__(self, key, value):
         key = self._to_index(key)
         if key is not None:
             self.list[key] = value
@@ -1035,17 +1011,32 @@ class List:
     def insert(self, key, value):
         """Insert up to 200,000 items in list"""
         if len(self.list) < 200000:
-            key = self._to_index(key, 0)
-            if key is not None:
+            if key == "first":
+                key = 0
+            elif key == "last":
+                key = -1
+            elif key == "random":
+                key = random.randint(0, len(self.list))
+            else:
+                key = round(number(key)) - 1
+
+            if key is not None and 0 <= key <= len(self.list):
                 self.list.insert(key, value)
 
-    def remove(self, key):
+    def delete(self, key):
         """Remove an item from list"""
-        key = self._to_index(key)
-        if key is not None:
-            self.list.remove(key)
+        if key == "all":
+            self.list = []
+        else:
+            key = self._to_index(key)
+            if key is not None:
+                self.list.pop(key)
 
-    def _to_index(self, key, max_adj=-1):
+    def delete_all(self):
+        """Delete all items in list"""
+        self.list = []
+
+    def _to_index(self, key):
         """Gets the index of first, last, random strings"""
         if self.list:
             if key == "first":
@@ -1053,11 +1044,14 @@ class List:
             if key == "last":
                 return -1
             if key == "random":
-                return random.randint(0, len(self.list) + max_adj)
+                return random.randint(0, len(self.list) - 1)
             key = round(number(key))
-            if 0 < key <= len(self.list) + max_adj:
+            if 0 < key <= len(self.list):
                 return key - 1
         return None
+
+    def __contains__(self, item):
+        return item in self.list
 
     def __str__(self):
         char_join = True
@@ -1069,12 +1063,30 @@ class List:
             return ''.join(self.list)
         return ' '.join(self.list)
 
+    def __len__(self):
+        return self.list.__len__()
+
     # TODO Variable/list reporters
     def show(self):
         """Do nothing"""
 
     def hide(self):
         """Do nothing"""
+
+    def index(self, item):
+        """Find the index of an item, case insensitive"""
+        item = str(item).lower()
+        for i, value in enumerate(self.list):
+            if str(value).lower() == item:
+                return i + 1
+        return 0
+
+    def index1(self, item):
+        """Find the index of an item in the list"""
+        try:
+            return self.list.index(item) + 1
+        except ValueError:
+            return 0
 
 
 def main(sprites):
@@ -1086,6 +1098,32 @@ def main(sprites):
     finally:
         if runtime:
             runtime.quit()
+
+
+def letter(text, index):
+    """Gets a letter from string"""
+    try:
+        return str(text)[index - 1]
+    except:
+        return ""
+
+
+def gt(val1, val2):
+    try:
+        return float(val1) > float(val2)
+    except ValueError:
+        return str(val1) > str(val2)
+
+
+def lt(val1, val2):
+    try:
+        return float(val1) < float(val2)
+    except ValueError:
+        return str(val1) < str(val2)
+
+
+def eq(val1, val2):
+    return str(val1).lower() == str(val2).lower()
 
 
 if __name__ == '__main__':

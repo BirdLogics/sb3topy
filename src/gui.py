@@ -4,9 +4,71 @@
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 
+import json
+import queue
+import subprocess
+import threading
 import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
+import time
+
+FORMATS = {
+    '[DEBUG]': "debug",
+    '[INFO]': "info",
+    '[WARNING]': "warn",
+    '[ERROR]': "error",
+    '[CRITICAL]': "critical"
+}
+
+
+class Task:
+    """
+    Runs a task in a new process and creates
+    a thread to read its output without blocking.
+
+    queue - Holds lines read from the subprocess
+    popen - Holds the Popen subprocess
+    thread - Holds the thread watching the subprocess
+    """
+
+    def __init__(self):
+        self.queue = queue.Queue()
+        self.popen = None
+        self.thread = None
+
+    def start(self, cmd):
+        """Start the task with a command"""
+        # Start the subprocess
+        self.popen = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+
+        # Start the watching thread
+        self.thread = threading.Thread(
+            target=self._thread_reader,
+            args=(self.popen, self.queue),
+            daemon=True)
+        self.thread.start()
+
+    @staticmethod
+    def _thread_reader(popen, data_queue):
+        while popen.poll() is None:
+            data_queue.put(popen.stdout.readline())
+
+    def read_queue(self):
+        """Returns the string data on the queue"""
+        data = ""
+        while not self.queue.empty():
+            try:
+                data = data + self.queue.get_nowait().decode('utf-8')
+            except queue.Empty:
+                break
+        return data or None
+
+    def kill_task(self):
+        """Terminates the task. The thread should follow."""
+        self.popen.kill()
 
 
 class ConvertFrame(ttk.Frame):
@@ -25,6 +87,7 @@ class ConvertFrame(ttk.Frame):
 
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent, padding="5 0 5 5")
+        self.app = parent
 
         self.project_path = tk.StringVar()
         project_label = ttk.Label(self, text="Input Project:")
@@ -81,7 +144,8 @@ class ConvertFrame(ttk.Frame):
         folder_box.grid(column=0, row=3, columnspan=2, sticky="WE")
         folder_button.grid(column=2, row=3, sticky="WE", padx=(5, 0))
 
-        convert_button.grid(column=0, row=4, columnspan=3, sticky="WE", pady=5)
+        convert_button.grid(column=2, row=4, columnspan=1,
+                            sticky="WE", pady=(0, 5), padx=(5, 0))
         seperator.grid(column=0, row=5, columnspan=3, sticky="WE")
 
         zip_label.grid(column=0, row=6, sticky="W")
@@ -110,10 +174,11 @@ class ConvertFrame(ttk.Frame):
 
     def browse_folder(self):
         """Show a dialog to select the output folder"""
-        self.project_path.set(filedialog.askdirectory())
+        self.folder_path.set(filedialog.askdirectory())
 
     def convert(self):
         """Run the converter"""
+        self.app.run_main()
 
     def delete_assets(self):
         """Clear the contents of the assets folder"""
@@ -144,18 +209,99 @@ class ConvertFrame(ttk.Frame):
 
 
 class OutputFrame(ttk.Frame):
+    """Handles the Output tab, logging"""
+
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent, padding="5 0 5 5")
 
-        text = tk.scrolledtext.ScrolledText(self, width=10, height=10)
+        self.text = tk.Text(self, width=32, height=17.5, state="disabled")
+        scroll = ttk.Scrollbar(self, orient="vertical",
+                               command=self.text.yview)
+        self.text['yscrollcommand'] = scroll.set
 
-        text.grid(column=0, row=0, columnspan=3, sticky="NSWE")
+        self.show_info = tk.BooleanVar(value=True)
+        self.show_debug = tk.BooleanVar()
+        verbose_check = ttk.Checkbutton(
+            self, text="Verbose Ouput", variable=self.show_info, command=self.info_tag)
+        debug_check = ttk.Checkbutton(
+            self, text="Debug Ouput", variable=self.show_debug, command=self.debug_tag)
 
-        self.columnconfigure(0, weight=1)
+        export_button = ttk.Button(
+            self, text="Export Log...", command=self.export_log)
+
+        # Grid everything
+        self.text.grid(column=0, row=0, columnspan=4,
+                       sticky="NSEW", pady=5)
+        scroll.grid(column=4, row=0, sticky="NS", pady=5)
+
+        verbose_check.grid(column=0, row=1, sticky="NSW")
+        debug_check.grid(column=1, row=1, sticky="NSW", padx=15)
+
+        export_button.grid(row=1, column=3, sticky="NSW")
+
+        self.columnconfigure(3, weight=1)
         self.rowconfigure(0, weight=1)
+
+        # Output theme
+        self.font = "Courier 10"
+        self.debug_tag()
+        self.info_tag()
+        self.text.tag_config("warn", foreground="gold", font=self.font+" bold")
+        self.text.tag_config("warn_text", font=self.font)
+        self.text.tag_config("error", foreground="red", font=self.font+" bold")
+        self.text.tag_config("error_text", foreground="red", font=self.font)
+        self.text.tag_config(
+            "critical", foreground="dark red", font=self.font+" bold")
+        self.text.tag_config(
+            "critical_text", foreground="dark red", font=self.font+" bold")
+        self.text.tag_config("default", font=self.font)
+        self.text.tag_config("default_text", font=self.font)
+
+    def log_line(self, line):
+        """Display and format a line"""
+        self.text["state"] = "normal"
+
+        # Get a tag based on the first word
+        keyword = line.split(' ', 1)[0]
+        tag = FORMATS.get(keyword, "default")
+
+        self.text.insert("end", keyword, (tag,))
+        self.text.insert("end", line.lstrip(keyword), (tag+"_text",))
+
+        self.text["state"] = "disabled"
+
+    def debug_tag(self):
+        """Configures debug text tags, shown/hidden"""
+        value = not self.show_debug.get()
+        self.text.tag_config("debug", foreground="grey",
+                             font=self.font, elide=value)
+        self.text.tag_config("debug_text", foreground="grey",
+                             font=self.font, elide=value)
+        self.text.see("end")
+
+    def info_tag(self):
+        """Configures info text tags, shown/hidden"""
+        value = not self.show_info.get()
+        self.text.tag_config("info", foreground="green",
+                             font=self.font+" bold", elide=value)
+        self.text.tag_config("info_text", font=self.font, elide=value)
+        self.text.see("end")
+
+    def export_log(self):
+        """Save the current log to a file"""
+        path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text File", "*.txt;*.log"),
+                       ("All Files", "*.*")])
+
+        with open(path, 'w') as file:
+            file.write('\n'.join(
+                self.text.get('1.0', 'end').splitlines()
+            ))
 
 
 class SettingsFrame(ttk.Frame):
+    """Handles the Settings tab"""
     pass
 
 
@@ -240,9 +386,15 @@ class App(tk.Tk):
         self.settings.grid(column=1, row=0, sticky="NSWE")
 
         self.columnconfigure(0, minsize=100)
-        self.columnconfigure(1, weight=1)
+        self.columnconfigure(1, minsize=300, weight=1)
+        self.rowconfigure(0, minsize=300, weight=1)
 
         self.mode.set("convert")
+
+        self.task = Task()
+        # self.start_task("python -u junkprov.py")
+
+        self.load_config("data/config.json")
 
     def cb_mode(self, *_):
         """Called when the mode switches"""
@@ -258,48 +410,90 @@ class App(tk.Tk):
         elif mode == "settings":
             self.settings.grid()
 
+    def save_config(self, path):
+        """Saves the config to a json file"""
+        with open(path, 'r') as file:
+            config = json.load(file)
+
+        config.update(
+            project_path=self.convert.project_path.get(),
+            temp_folder=self.convert.folder_path.get(),
+
+            zip_create=self.convert.zip_create.get(),
+            zip_overwrite=self.convert.zip_overwrite.get(),
+            zip_path=self.convert.zip_path.get(),
+
+            exe_create=self.convert.exe_create.get(),
+            exe_overwrite=self.convert.exe_overwrite.get(),
+            exe_path=self.convert.exe_path.get()
+        )
+
+        with open(path, 'w') as file:
+            json.dump(config, file, indent=0)
+
+        return path
+
+    def load_config(self, path):
+        """Loads the config from a json file"""
+        with open(path, 'r') as file:
+            config = json.load(file)
+
+        self.convert.project_path.set(config.get("project_path"))
+        self.convert.folder_path.set(config.get("temp_folder"))
+
+        self.convert.zip_create.set(config.get("zip_create"))
+        self.convert.zip_overwrite.set(config.get("zip_overwrite"))
+        self.convert.zip_path.set(config.get("zip_path"))
+
+        self.convert.exe_create.set(config.get("exe_create"))
+        self.convert.exe_overwrite.set(config.get("exe_overwrite"))
+        self.convert.exe_path.set(config.get("exe_path"))
+
+    def run_main(self, options=None):
+        """Runs the converter with options"""
+        self.mode.set("output")
+
+        cmd = [
+            "py", "-3.8", "-u", "main.py",
+            "-c", self.save_config("data/config.json"),
+            self.convert.project_path.get()
+        ]
+        if options:
+            cmd.extend(options)
+
+        self.output.log_line(' '.join(cmd) + "\n")
+        self.start_task(cmd)
+
+    def start_task(self, cmd):
+        """Starts running a task of cmd"""
+        self.task.start(cmd)
+        self.after(1, self.loop)
+
+    def end_task(self):
+        """Kills the currently running task"""
+        self.task.popen.kill()
+
+    def loop(self):
+        """Update the log"""
+        start_time = time.monotonic()
+        while not self.task.queue.empty() and \
+                time.monotonic() - start_time < 0.05:
+            try:
+                self.output.log_line(
+                    self.task.queue.get_nowait().decode('utf-8'))
+            except queue.Empty:
+                break
+        self.output.text.see("end")
+
+        # Keep the loop until the task stops and the queue is empty
+        if self.task.popen.poll() is None or not self.task.queue.empty():
+            self.after(1, self.loop)
+
 
 def main():
-
+    """Run the app"""
     app = App()
     app.mainloop()
-
-    # mainframe = ttk.Frame(root, padding="5 5 12 0")
-    # mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-    # root.grid_columnconfigure(0, weight=1)
-    # root.grid_rowconfigure(0, weight=1)
-
-    # mainframe = ttk.Frame(root, padding="3 3 3 3")
-
-    # mainframe.grid(column=0, row=0, sticky="NWES")
-    # root.columnconfigure(0, weight=1)
-    # root.rowconfigure(0, weight=1)
-
-    # convert_frame = ConvertFrame(root)
-
-    # choices = ["apples", "bannanas", "oranges"]
-    # choicesvar = StringVar(value=choices)
-    # sidebar = Listbox(mainframe, listvariable=choicesvar)
-    # sidebar.grid(column=0, row=0, sticky=(N, S))
-
-    # outbook = ttk.Notebook(mainframe, padding="3 3 3 3")
-    # outbook.grid(column=1, row=0, sticky=(N, S, W, E))
-
-    # outframe = ttk.Frame(outbook, padding="3 3 3 3")
-    # outbook.add(outframe, text="Output")
-    # outframe2 = ttk.Frame(outbook, padding="3 3 3 3")
-    # outbook.add(outframe2, text="Settings")
-
-    # logbox = Text(outframe, width=40, height=10)
-    # # logbox['state'] = "disabled"
-    # logbox.grid(column=1, row=0, sticky=(N, S, W, E))
-
-    # scrollbar = ttk.Scrollbar(outframe, orient=VERTICAL, command=logbox.yview)
-    # scrollbar.grid(column=2, row=0, sticky=(N, S))
-    # logbox['yscrollcommand'] = scrollbar.set
-
-    # progress = ttk.Progressbar(mainframe, orient=HORIZONTAL, length=200, mode='determinate')
-    # progress.grid(column = 1, row=10, sticky=(E, W), padx=5, pady=2)
 
 
 if __name__ == "__main__":
