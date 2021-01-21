@@ -92,7 +92,7 @@ self.ypos = {Y}
 # motion_ifonedgebounce()
 
 #: motion_setrotationstyle (string STYLE) -d3
-self.rotation_style = {STYLE}
+self.costume.rotation_style = {STYLE}
 
 #: float motion_xposition ()
 self.xpos
@@ -122,39 +122,31 @@ self.visible = 1
 self.visible = 0
 
 #: looks_switchcostumeto (any COSTUME) -d3
-self.set_costume({COSTUME})
+self.costume.switch({COSTUME})
 
 #: looks_nextcostume () -d3
-next_costume = self.costume['number'] + 1
-if next_costume == len(self.costumes):
-    self.set_costume(0)
-else:
-    self.set_costume(next_costume)
+self.costume.next()
 
 #: looks_switchbackdropto (any BACKDROP) -d3
-util.stage.costume = util.stage.get_costume({BACKDROP})
-util.send_event('onbackdrop_' + self.costume['name'])
+util.stage.costume.switch({BACKDROP})
+util.send_event('onbackdrop_' + util.stage.costume.name)
 
 #: looks_switchbackdroptoandwait (any BACKDROP) -d3s1
-util.stage.costume = util.stage.get_costume({BACKDROP})
-await util.send_event('onbackdrop_' + self.costume['name'])
+util.stage.costume.switch({BACKDROP})
+await til.send_event('onbackdrop_' + util.stage.costume.name)
 
 #: looks_nextbackdrop () -d3
-next_backdrop = util.stage.costume['number'] + 1
-if next_backdrop == len(util.stage.costumes):
-    util.stage.costume = util.stage.costumes[0]
-else:
-    util.stage.costume = util.stage.costumes[next_backdrop]
-util.send_event('onbackdrop_' + self.costume['name'])
+util.stage.costume.next()
+util.send_event('onbackdrop_' + util.stage.costume.name)
 
 #: looks_changeeffectby (string EFFECT, float CHANGE) -d3
-self.change_effect({EFFECT}, {CHANGE})
+self.costume.change_effect({EFFECT}, {CHANGE})
 
 #: looks_seteffectto (string EFFECT, float VALUE) -d3
-self.set_effect({EFFECT}, {VALUE})
+self.costume.set_effect({EFFECT}, {VALUE})
 
 #: looks_cleargraphiceffects () -d3
-self.clear_effects()
+self.costume.clear_effects()
 
 #: looks_changesizeby (float CHANGE) -d3
 self.size += {CHANGE}
@@ -186,12 +178,25 @@ self.change_layer(util, {NUM})
 #: looks_go'backward'layers
 self.change_layer(util, -{NUM})
 
-# TODO Name/number field?
-#: any looks_costumenumbername (field NUMBER_NAME)
-self.costume[{NUMBER_NAME}]
+#: int looks_costumenumbername (field NUMBER_NAME)
+#? looks_costume_{NUMBER_NAME}
+0$
 
-#: any looks_backdropnumbername (field NUMBER_NAME)
-self.costume[{NUMBER_NAME}]
+#: int looks_costume_'number' ()
+self.costume.number
+
+#: string looks_costume_'name' ()
+self.costume.name
+
+#: int looks_backdropnumbername (field NUMBER_NAME)
+#? looks_backdrop_{NUMBER_NAME}
+0$
+
+#: int looks_backdrop_'number' ()
+util.stage.costume.number
+
+#: string looks_backdrop_'name' ()
+util.stage.costume.name
 
 #: int looks_size ()
 round(self.size)
@@ -391,10 +396,10 @@ util.targets[{OBJECT}].ypos
 util.targets[{OBJECT}].direction
 
 #: int sensing_costume_#_of
-util.targets[{OBJECT}].costume['number']
+util.targets[{OBJECT}].costume.number
 
 #: string sensing_costume_name_of
-util.targets[{OBJECT}].costume['name']
+util.targets[{OBJECT}].costume.name
 
 #: int sensing_size_of
 round(util.targets[{OBJECT}].size)
@@ -403,10 +408,10 @@ round(util.targets[{OBJECT}].size)
 util.targets[{OBJECT}].volume
 
 #: int sensing_backdrop_#_of
-round(util.targets[{OBJECT}].costume['number'])
+round(util.targets[{OBJECT}].costume.number)
 
 #: string sensing_backdrop_name_of
-util.targets[{OBJECT}].costume['name']
+util.targets[{OBJECT}].costume.name
 
 #: int sensing_current (field CURRENT_MENU)
 #? sensing_current_{CURRENT_MENU}
@@ -496,7 +501,7 @@ round({NUM})
 number({NUM})$
 
 #: int operator_mathop_'abs' (float NUM)
-math.abs({NUM})
+abs({NUM})
 
 #: int operator_mathop_'floor' (float NUM)
 math.floor({NUM})

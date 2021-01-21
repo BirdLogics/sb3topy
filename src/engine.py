@@ -239,7 +239,6 @@ class BlockUtil:
 
     def __init__(self, runtime):
         self.runtime = runtime
-        self.cache = AssetCache()
 
     def send_event(self, event):
         """Starts an event for all sprites"""
@@ -260,14 +259,15 @@ class BlockUtil:
     def key_event(self, key, state):
         """Presses or releases a key and sends press events"""
         if state:
-            if key in self.down_keys:
-                self.down_keys.remove(key)
-        else:
             if not key in self.down_keys:
                 self.down_keys.append(key)
-                if len(self.down_keys) == 1:
-                    self.down_keys = []  # Remove 'any'
-        self.send_event(f"key{key}_pressed")
+        else:
+            if key in self.down_keys:
+                self.down_keys.remove(key)
+            if len(self.down_keys) == 1:
+                self.down_keys = []  # Remove 'any'
+                self.send_event(f"keyany_pressed")
+            self.send_event(f"key{key.upper()}_pressed")
 
     def key_down(self, event):
         """Called by runtime to handle key down events"""
@@ -276,7 +276,7 @@ class BlockUtil:
             self.key_event(KEY_MAP[event.key], True)
         elif event.unicode:  # TODO event.unicode doesn't exist for esc
             self.key_event("any", True)
-            self.key_event(event.unicode.upper(), True)
+            self.key_event(event.unicode.lower(), True)
         else:
             return False
         return True
@@ -286,7 +286,7 @@ class BlockUtil:
         if event.key in KEY_MAP:
             self.key_event(KEY_MAP[event.key], False)
         elif event.unicode:
-            self.key_event(event.unicode.upper(), False)
+            self.key_event(event.unicode.lower(), False)
         else:
             return False
         return True
@@ -365,8 +365,8 @@ class Runtime:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     running = False
-                # elif event.type == pg.KEYDOWN:
-                #     self.util.key_down(event) # TODO When key pressed
+                elif event.type == pg.KEYDOWN:
+                    self.util.key_down(event)  # TODO When key pressed
                 elif event.type == pg.KEYUP:
                     # self.util.key_down(event)
                     if event.key == pg.K_F11:
@@ -462,107 +462,6 @@ class Runtime:
             fps, True, (0, 100, 20)), (5, 5))
 
 
-class AssetCache:
-    """Handles sounds and costumes"""
-    costumes = {}
-    sounds = {}
-
-    def get_costume(self, costume, scale):
-        """Gets or loads a costume"""
-        # Try to get the costume from the cache
-        image = self.costumes.get((costume['path'], scale), None)
-        if not image:
-            # Need to scale a new image
-            image = self.costumes.get(
-                (costume['path'], costume['scale']), None)
-            if not image:
-                # Need to load the image first
-                image = pg.image.load(
-                    "assets/" + costume['path']).convert_alpha()
-                self.costumes[(costume['path'], costume['scale'])] = image
-
-            # Smooth scale the image
-            image = pg.transform.smoothscale(
-                image,
-                (int(image.get_width() * scale / costume['scale']),
-                 int(image.get_height() * scale / costume['scale'])))
-            self.costumes[(costume['path'], scale)] = image
-        return image
-
-    def apply_effects(self, image, effects):
-        """Currently doesn't use cache but could in future"""
-
-        # Brighten/Darken
-        brightness = effects.get('brightness', 0)
-        if brightness > 0:
-            brightness = 255 * brightness / 100
-            image.fill(
-                (brightness, brightness, brightness),
-                special_flags=pg.BLEND_RGB_ADD)
-        elif brightness < 0:
-            brightness = -255 * brightness / 100
-            image.fill(
-                (brightness, brightness, brightness),
-                special_flags=pg.BLEND_RGB_SUB)
-
-        # Transparent
-        ghost = effects.get('ghost', 0)
-        if ghost:
-            ghost = 255 - 255 * ghost / 100
-            image.fill(
-                (255, 255, 255, ghost),
-                special_flags=pg.BLEND_RGBA_MULT)
-
-        # Hue change
-        color = effects.get('color', 0)
-        if color:
-            color = 360 * color / 200
-            image = self.change_hue(image, color)
-
-        return image
-
-    @staticmethod
-    def change_hue(image, value):
-        """Changes the hue of an image for the color effect
-        Value should be between 0 and 360. Coverts the image
-        to an 8-bit surface and adjusts the color palette.
-        Transparency is copied first to preserve it."""
-
-        # Gets a copy of the alpha channel
-        transparency = image.convert_alpha()
-        transparency.fill((255, 255, 255, 0), special_flags=pg.BLEND_RGBA_MAX)
-
-        # Get an 8-bit surface with a color palette
-        image = image.convert(8)
-
-        # Change the hue of the palette
-        for index in range(256):
-            # Get the palette color at index
-            color = pg.Color(*image.get_palette_at(index))
-
-            # Get the new hue
-            hue = color.hsva[0] + value
-            if hue > 360:
-                hue -= 360
-
-            # Update the hue
-            color.hsva = (hue, *color.hsva[1:3])
-            image.set_palette_at(index, color)
-
-        # Return the image transparency
-        image.set_alpha()
-        image = image.convert_alpha()
-        image.blit(transparency, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
-
-        return image
-
-    def get_sound(self, md5ext):
-        """Gets or loads a sound"""
-        if not md5ext in self.sounds:
-            self.sounds[md5ext] = pg.mixer.Sound("assets/" + md5ext)
-        return self.sounds[md5ext]
-
-
 class Target:
     """Holds common code for targets
 
@@ -628,10 +527,8 @@ class Target:
         self.costumes_dict = {}
 
         # Parse assets and fill the dicts
-        self._parse_assets(util.cache)
-
-        # Get the current costume
-        self.costume = self.costumes[self.costume]
+        self.costume = Costumes(self.costumes, self.costume, "all around")
+        self.sounds = Sounds(self.sounds, 100)
 
         # Clear effects
         self.effects = {}
@@ -642,33 +539,6 @@ class Target:
     def recieve_event(self, name, threads, util):
         """Start an event"""
         threads.extend(c(util) for c in self.hats.get(name, []))
-
-    def _parse_assets(self, cache):
-        """Parses the costume list and creates the costume dict"""
-        # Parse costumes
-        for index, costume in enumerate(self.costumes):
-            # Preload the costume
-            image = cache.get_costume(costume, costume['scale'])
-
-            # Calculate the rotation offset
-            center = pg.math.Vector2(image.get_size()) / 2
-            # if costume['center'] is None:
-            #     costume['offset'] = center
-            # else:
-            # Image center is pixels offset
-            costume['offset'] = pg.math.Vector2(costume['center'])
-            costume['offset'] *= -1
-            costume['offset'] += center
-            costume['offset'] /= costume['scale']
-
-            # Save the index
-            costume['number'] = index
-
-            # Add the costume to the dict
-            self.costumes_dict[costume['name']] = costume
-
-        # Parse sounds
-        self.sounds = Sounds(cache, self.sounds, 100)
 
     def update(self, util):
         """Clears the dirty flag by updating the sprite, rect and/or image"""
@@ -686,20 +556,14 @@ class Target:
 
     def _update_image(self, util):
         """Updates and transforms the sprites image"""
-        display = util.runtime.display
-
-        # TODO Rotation style support
-        # The image is scaled to the display scale
-        image = util.cache.get_costume(
-            self.costume, self.size/100 * display.scale)
-        image = pg.transform.rotate(image, 90-self.direction)
+        # Update the image
+        image = self.costume.get_image(
+            self.size * util.runtime.display.scale,
+            self.direction)
+        self.sprite.image = image
         self.sprite.mask = pg.mask.from_surface(image)
 
-        if self.effects:
-            self.sprite.image = util.cache.apply_effects(image, self.effects)
-        else:
-            self.sprite.image = image  # change_hue(image, 20)
-
+        # The rect now needs updating
         self._update_rect(util)
 
     def _update_rect(self, util):
@@ -707,7 +571,8 @@ class Target:
         display = util.runtime.display
 
         # Rotate the rect properly
-        offset = (self.costume['offset']).rotate(self.direction-90)
+        offset = self.costume.costume['offset']
+        offset = offset.rotate(self.direction-90)
         self.sprite.rect = self.sprite.image.get_rect(
             center=(display.scale*(offset + pg.math.Vector2(self.xpos + STAGE_SIZE[0]//2,
                                                             STAGE_SIZE[1]//2 - self.ypos))))
@@ -892,10 +757,10 @@ class Target:
 
 class Sounds:
     """
-    Handles sounds for a sprite
+    Handles sounds for a target
 
         sounds - A dict referencing sounds (pg.mixer.Sound) by name
-        sound_list - Used to reference sounds by number
+        sounds_list - Used to reference sounds by number
         volume - The current volume. If set directly, currently playing
             channels will not update. Use set_volume to update them.
 
@@ -904,15 +769,25 @@ class Sounds:
             adjusted and the tasks are there to be canceled.
     """
 
-    def __init__(self, cache, sounds, volume):
+    _cache = {}
+
+    def __init__(self, sounds, volume):
         self.sounds = {}
-        self.sound_list = []
+        self.sounds_list = []
 
         for asset in sounds:
-            self.sounds[asset['name']] = cache.get_sound(asset['path'])
-            self.sound_list.append(self.sounds[asset['name']])
+            self.sounds[asset['name']] = self._load_sound(asset['path'])
+            self.sounds_list.append(self.sounds[asset['name']])
         self._channels = {}
         self.set_volume(volume)
+
+    def _load_sound(self, path):
+        """Load a sound or retrieve it from cache"""
+        sound = self._cache.get(path)
+        if not sound:
+            sound = pg.mixer.Sound("assets/" + path)
+            self._cache[path] = sound
+        return sound
 
     def set_volume(self, volume):
         """Sets the volume and updates it for playing sounds"""
@@ -931,19 +806,21 @@ class Sounds:
         if not sound:
             try:
                 name = round(float(name)) - 1
-                if 0 < name < len(self.sound_list):
-                    sound = self.sound_list[name]
+                if 0 < name < len(self.sounds_list):
+                    sound = self.sounds_list[name]
                 else:
-                    sound = self.sound_list[0]
+                    sound = self.sounds_list[0]
             except ValueError:
                 pass
             except OverflowError:  # round(Infinity)
                 pass
+        
+        # Play the sound
         if sound:
             channel = pg.mixer.find_channel()
             if channel:
                 return asyncio.ensure_future(self._handle_channel(sound, channel))
-        return asyncio.sleep(0)
+        return asyncio.ensure_future(asyncio.sleep(0))
 
     async def _handle_channel(self, sound, channel):
         """Saves the channel and waits for it to finish"""
@@ -954,10 +831,9 @@ class Sounds:
             self._channels[channel] = asyncio.ensure_future(
                 asyncio.sleep(delay))
             await self._channels[channel]
-        except asyncio.CancelledError:
-            pass
         finally:
             self._channels.pop(channel)
+            channel.stop()
 
     @staticmethod
     def stop_all(util):
@@ -970,6 +846,197 @@ class Sounds:
         for channel, task in self._channels.items():
             channel.stop()
             task.cancel()
+
+
+class Costumes:
+    """
+    Handles costumes for a target
+
+    costumes - A dict referencing costume by name
+    costumes_list - Used to reference costumes by number
+
+    name - The name of the current costume
+    number - The number of the current costume
+
+    effects - A dict of current effects and values
+
+    _cache - A shared cache containing loaded images
+    """
+
+    _cache = {}
+
+    def __init__(self, costumes, costume_number, rotation_style):
+        self.number = costume_number
+        self.costume = costumes[costume_number]
+        self.name = self.costume['name']
+        self.rotation_style = rotation_style
+
+        self.costumes = {}
+        self.costume_list = []
+
+        self.effects = {}
+
+        # Initialize the costume lists
+        for index, asset in enumerate(costumes):
+            # Load the image
+            asset['image'] = self._load_image(asset['path'])
+
+            # Calculate the rotation offset
+            center = pg.math.Vector2(asset['image'].get_size()) / 2
+            asset['offset'] = pg.math.Vector2(asset['center'])
+            asset['offset'] *= -1
+            asset['offset'] += center
+            asset['offset'] /= asset['scale']
+
+            # Add the costume to the dict
+            asset['number'] = index + 1
+            self.costumes[asset['name']] = asset
+            self.costume_list.append(asset)
+
+    def switch(self, costume):
+        """Sets the costume"""
+        asset = self.costumes.get(costume)
+        if asset:
+            self.name = costume
+            self.costume = asset
+            self.number = asset['number']
+        else:
+            try:
+                self.number = (round(float(costume)) %
+                               len(self.costume_list))
+                self.costume = self.costume_list[self.number - 1]
+                self.name = self.costume['name']
+            except ValueError:
+                pass
+            except OverflowError:
+                pass
+
+    def next(self):
+        """Go to the next costume"""
+        self.number += 1
+        if self.number > len(self.costume_list):
+            self.number = 1
+        self.costume = self.costume_list[self.number - 1]
+        self.name = self.costume['name']
+
+    def _load_image(self, path):
+        """Loads an image or retrieves it from cache"""
+        image = self._cache.get(path)
+        if not image:
+            image = pg.image.load("assets/" + path).convert_alpha()
+            self._cache[path] = image
+        return image
+
+    def get_image(self, size, direction):
+        """Get the current image with a size and direction"""
+        costume = self.costume_list[self.number - 1]
+        image = self._load_image(costume['path'])
+
+        # Scale the image
+        scale = size/100 / costume['scale']
+        image = pg.transform.smoothscale(
+            image, (int(image.get_width() * scale),
+                    int(image.get_height() * scale))
+        )
+
+        # Rotate the image
+        if self.rotation_style == "all around":
+            image = pg.transform.rotate(image, 90-direction)
+        elif self.rotation_style == "left-right":
+            if direction > 0:
+                image = pg.transform.flip(image, True, False)
+
+        # Apply effects
+        image = self._apply_effects(image)
+
+        return image
+
+    def set_effect(self, effect, value):
+        """Sets and wraps/clamps a graphics effect"""
+        if effect == 'ghost':
+            self.effects[effect] = min(max(value, 0), 100)
+        elif effect == 'brightness':
+            self.effects[effect] = min(max(value, -100), 100)
+        elif effect == 'color':
+            self.effects[effect] = value % 200
+
+    def change_effect(self, effect, value):
+        """Changes and wraps/clamps a graphics effect"""
+        value = self.effects.get(effect, 0) + value
+        self.set_effect(effect, value)
+
+    def clear_effects(self):
+        """Clear all graphic effects"""
+        self.effects = {}
+
+    def _apply_effects(self, image):
+        """Apply current effects to an image"""
+        # Brighten/Darken
+        brightness = self.effects.get('brightness', 0)
+        if brightness > 0:
+            brightness = 255 * brightness / 100
+            image.fill(
+                (brightness, brightness, brightness),
+                special_flags=pg.BLEND_RGB_ADD)
+        elif brightness < 0:
+            brightness = -255 * brightness / 100
+            image.fill(
+                (brightness, brightness, brightness),
+                special_flags=pg.BLEND_RGB_SUB)
+
+        # Transparency
+        ghost = self.effects.get('ghost', 0)
+        if ghost:
+            ghost = 255 - 255 * ghost / 100
+            image.fill(
+                (255, 255, 255, ghost),
+                special_flags=pg.BLEND_RGBA_MULT)
+
+        # Hue change
+        color = self.effects.get('color', 0)
+        if color:
+            color = 360 * color / 200
+            image = self._hue_effect(image, color)
+
+        return image
+
+    @staticmethod
+    def _hue_effect(image, value):
+        """
+        Changes the hue of an image for the color effect
+        Value should be between 0 and 360. Coverts the image
+        to an 8-bit surface and adjusts the color palette.
+        Transparency is copied first to preserve it.
+        """
+
+        # Get a copy of the alpha channel
+        transparency = image.convert_alpha()
+        transparency.fill((255, 255, 255, 0),
+                          special_flags=pg.BLEND_RGBA_MAX)
+
+        # Get an 8-bit surface with a color palette
+        image = image.convert(8)
+
+        # Change the hue of the palette
+        for index in range(256):
+            # Get the palette color at index
+            color = pg.Color(*image.get_palette_at(index))
+
+            # Get the new hue
+            hue = color.hsva[0] + value
+            if hue > 360:
+                hue -= 360
+
+            # Update the hue
+            color.hsva = (hue, *color.hsva[1:3])
+            image.set_palette_at(index, color)
+
+        # Return the image transparency
+        image.set_alpha()
+        image = image.convert_alpha()
+        image.blit(transparency, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
+
+        return image
 
 
 def number(value):
