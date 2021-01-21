@@ -4,20 +4,22 @@
 
 import itertools
 import json
-# import keyword
 import logging
-import re
 import math
-import shutil
+import re
 import textwrap
+from os import path
 
-JSON_PATH = "results/project.json"
-OUTPUT_PATH = "results/result.py"
-OUTPUT_FOLDER = "results"
+CONFIG_PATH = "data/config.json"
+CONFIG = {
+    "specmap_path": "data/specmap2.txt",
+    "temp_folder": "temp"
+}
 
 LOWER_FIELDS = ('EFFECT')
-LOG_LEVEL = 30
-CAST_NUMBERS = True
+
+# Used run directly
+LOG_LEVEL = 40
 
 
 def clean_identifier(text):
@@ -47,7 +49,7 @@ def quote_or_num(value):
             value = int(value)
         if math.isfinite(value):
             return str(int(value))
-        return quote_string(value)
+        return quote_string(str(value))
     except ValueError:
         return quote_string(value, '"')
 
@@ -71,7 +73,7 @@ class Parser:
 
     hats = None
     blocks = None
-    lvariables = None
+    name = ""
 
     def __init__(self, sb3_json):
         # with open(path, 'r') as sb3_file:
@@ -80,21 +82,21 @@ class Parser:
 
         # Creates the specmap dict
         # {'opcode': {'args': (), 'flags': "", 'switch': "", 'code': ""}}
-        self.load_specmap("specmap2.txt")
+        self.load_specmap(CONFIG['specmap_path'])
 
         self.broadcasts = Identifiers()
-        self.gvariables = Identifiers()
+        self.variables = {}
 
-    def load_specmap(self, path):
+    def load_specmap(self, spec_path):
         """Reads and parses the specmap file"""
         # Read the specmap file
-        with open(path, 'r') as file:
+        with open(spec_path, 'r') as file:
             specmap = file.read()
 
         # Parse the specmap file
         pattern = (
             r"(?s)#: ?(\w*?)?(?# type)"
-            r" ?((?:\w|')+)(?# opcode) ?"
+            r" ?((?:\w|'|\^)+)(?# opcode) ?"
             r"(?:\(([\w, ]+)?\))?(?# args) ?"
             r"(?:-(\w+))?(?# flags)"
             r"(?:\n#\? ?([\w{}]+))?(?# switch)"
@@ -128,22 +130,29 @@ class Parser:
             "\nimport math"
             "\nimport random"
             "\nimport time"
+            "\n\nimport pygame as pg"
             "\n\nimport engine"
-            "\nfrom engine import number"
+            "\nfrom engine import List"
+            "\nfrom engine import number, gt, lt, eq"
         )
+
+        # Init variable Identifier handlers
+        for target in self.sb3["targets"]:
+            self.read_variables(target)
 
         t_names = Identifiers()
         for target in self.sb3["targets"]:
             # Get a unique name for the class
-            target['name'] = t_names.get_cammel("Sprite", target['name'])
+            target['identifier'] = t_names.get_cammel("Sprite", target['name'])
 
             # Parse the target
             code = code + self.parse_target(target)
 
         # Create the SPRITES dict and __main__
         code = code + "SPRITES = {"
-        for name in t_names.modified:
-            code = code + f"\n    '{name}': {name},"
+        for target in self.sb3["targets"]:
+            code = code + \
+                f"\n    {quote_string(target['name'])}: {target['identifier']},"
         code = code + (
             "\n}\n\n"
             "if __name__ == '__main__':\n"
@@ -161,8 +170,7 @@ class Parser:
         self.hats = Identifiers()
         self.blocks = target.get('blocks', {})
 
-        # Initialize Identifiers lvariables
-        self.read_variables(target)
+        self.name = target['name']
 
         code = ""
 
@@ -184,7 +192,7 @@ class Parser:
                     # If the function is empty, add pass
                     if len(line.strip().split('\n')) == 1:
                         line = line + "    pass"
-                    
+
                     # Indent the code
                     code = code + textwrap.indent(line, '    ') + '\n'
 
@@ -196,14 +204,14 @@ class Parser:
                     #     raise Exception("Invalid function")
 
                 else:
-                    logging.warning("Skipping top level block '%s' with opcode '%s'",
-                                    block_id, block['opcode'])
+                    logging.info("Skipping top level block '%s' with opcode '%s'",
+                                 block_id, block['opcode'])
 
         if len(code.strip().split('\n')) == 1:
             code = code + '\n    pass\n'
 
         # Add the top of the code
-        top = f"\n\nclass {target['name']}(engine.Target):"
+        top = f"\n\nclass {target['identifier']}(engine.Target):"
 
         # Add sprite info (costumes, etc.)
         top = top + textwrap.indent(self.parse_info(target), '    ')
@@ -214,17 +222,18 @@ class Parser:
         return top + code
 
     def read_variables(self, target):
-        """Initializes Identifiers lvariables"""
+        """Initializes the Identifier for a Sprite"""
+        self.name = target['name']
         if target.get('isStage'):
-            self.lvariables = self.gvariables
-        else:
-            self.lvariables = Identifiers()
+            self.name = "Stage"
 
-        for var, _ in target.get('variables', {}).values():
-            self.lvariables.get_existing("var_" + var)
+        self.variables[self.name] = Identifiers()
+
+        for var in target.get('variables', {}).values():
+            self.variables[self.name].get_existing("var_" + var[0])
 
         for lst, _ in target.get('lists', {}).values():
-            self.lvariables.get_existing("list_" + lst)
+            self.variables[self.name].get_existing("list_" + lst)
 
     def parse_info(self, target):
         """Gets costume info"""
@@ -273,18 +282,19 @@ class Parser:
 
         # Variables string
         variables = ""
-        for name, value in target.get('variables', {}).values():
+        for var in target.get('variables', {}).values():
             variables = variables +\
-                self.lvariables.get_existing("var_" + name) +\
-                " = " + str(quote_or_num(value)) + "\n"
+                self.variables[self.name].get_existing("var_" + var[0], False) +\
+                " = " + str(quote_or_num(var[1])) + "\n"
 
         lists = ""
         for name, values in target.get('lists', {}).values():
             lists = lists +\
-                self.lvariables.get_existing("list_" + name) + " = [\n"
+                self.variables[self.name].get_existing(
+                    "list_" + name, False) + " = List(\n"
             for value in values:
                 lists = lists + "    " + str(quote_or_num(value)) + ",\n"
-            lists = lists + "]\n\n"
+            lists = lists + ")\n\n"
 
         # Put it all together
         return (
@@ -303,9 +313,9 @@ class Parser:
         code = "\ndef __init__(self, util):"
         code = code + "\n    self.hats = {"
         for hat, names in self.hats.specific.items():
-            code = code + f"\n        '{hat}': ["
+            code = code + "\n        " + quote_string(hat) + ": ["
             for name in names[1]:
-                code = code + f"\n            self.{name},"
+                code = code + "\n            self." + name + ","
             code = code + "\n        ],"
 
         code = code + (
@@ -363,6 +373,9 @@ class Parser:
             # Add inputs to parameters
             self.get_inputs(parameters, block, blockmap)
 
+            # Perform special parsing
+            self.post_parse(parameters, block)
+
             # Get the block's converted code
             code = code + self.get_code(blockid, blockmap, parameters)
             if input_type == "stack":
@@ -393,29 +406,42 @@ class Parser:
     def get_fields(self, block):
         """Gets, lowercases, and quotes fields from block"""
         parameters = {}
-        for field, value in block.get('fields', "").items():
+        fields = block.get('fields', {})
+        for field, value in fields.items():
             # Get an existing broadcast name
             if field == "BROADCAST_OPTION":
                 value = self.broadcasts.get_existing("broadcast_" + value[0])
-                parameters[field] = quote_string(value)
+                parameters[field] = value
 
             # Get an existing variable name
             elif field == "VARIABLE":
                 value = "var_" + value[0]
-                name = self.hats.get_existing(value, False)
+                name = self.variables[self.name].get_existing(value, False)
                 parameters["PREFIX"] = "self" if name else "util.stage"
                 if not name:
-                    name = self.gvariables.get_existing(value)
+                    name = self.variables['Stage'].get_existing(value)
                 parameters["VARIABLE"] = name
 
             # Get an existing list name
             elif field == "LIST":
                 value = "list_" + value[0]
-                name = self.hats.get_existing(value, False)
+                name = self.variables[self.name].get_existing(value, False)
                 parameters["PREFIX"] = "self" if name else "util.stage"
                 if not name:
-                    name = self.gvariables.get_existing(value)
+                    name = self.variables['Stage'].get_existing(value)
                 parameters["LIST"] = name
+
+            elif field in ("PROPERTY", "OBJECT"):
+                # These need to not be lowered/quoted
+                parameters[field] = value[0]
+                print(value[0])
+
+            # CB Parameter
+            elif block['opcode'] == "argument_reporter_string_number":
+                parameters["VALUE"] = clean_identifier("arg_" + value[0])
+
+            elif block['opcode'] == "argument_reporter_boolean":
+                parameters["VALUE"] = clean_identifier("arg_" + value[0])
 
             else:
                 value = value[0].lower()
@@ -445,18 +471,19 @@ class Parser:
 
         # Check for a switch
         switch = blockmap['switch']
-        blockmap = self.specmap.get(switch.format(**parameters), blockmap)
+        blockmap = self.specmap.get(switch.format(
+            **parameters).replace(" ", "_"), blockmap)
 
         # TODO Custom block support
         if opcode == "procedures_definition":
+            blockmap = blockmap.copy()
             mutation = self.blocks[block['inputs']
                                    ['custom_block'][1]]['mutation']
 
-            # TODO Validate argumentnames
-            # TODO CB naming
+            # TODO CB, var name conflicts
             blockmap['code'] = "async def " + clean_identifier(
-                "cb_" + mutation['proccode']) + "(self, " +\
-                ', '.join(json.loads(mutation['argumentnames'])) +\
+                "cb_" + mutation['proccode']) + "(self, util," +\
+                ', '.join(clean_identifier("arg_" + arg) for arg in json.loads(mutation['argumentnames'])) +\
                 "):\n{SUBSTACK}"
             self.blocks[blockid]['inputs'].pop("custom_block")
             blockmap['flags'] = ""
@@ -465,9 +492,9 @@ class Parser:
             mutation = block['mutation']
             blockmap['args'] = {
                 name: 'any' for name in json.loads(mutation['argumentids'])}
-            blockmap['code'] = "self." + \
+            blockmap['code'] = "await self._warp(self." + \
                 clean_identifier(
-                    "cb_" + mutation['proccode']) + "({PARAMETERS})"
+                    "cb_" + mutation['proccode']) + "(util, {PARAMETERS}))"
             #  + "(" + ', '.join(
             #     "{" + arg + "}" for arg in blockmap['args']
             # )
@@ -544,7 +571,7 @@ class Parser:
             # TODO! Some values are not properly quoted
             value = self.cast_value(value[1], itype)
         elif value[0] == 10:
-            value = quote_or_num(value[1])
+            value = quote_string(str(value[1]))
 
         # Broadcast
         elif value[0] == 11:
@@ -556,10 +583,10 @@ class Parser:
         elif value[0] == 12:
             # TODO Variable selection by id
             value = "var_" + value[1]
-            name = self.hats.get_existing(value, False)
+            name = self.variables[self.name].get_existing(value, False)
             prefix = "self" if name else "util.stage"
             if not name:
-                name = self.gvariables.get_existing(value)
+                name = self.variables['Stage'].get_existing(value)
             value = self.specmap['data_variable']['code'].format(
                 VARIABLE=name, PREFIX=prefix)
             value = self.cast_wrapper(value, itype)
@@ -567,10 +594,10 @@ class Parser:
         # List
         elif value[0] == 13:
             value = "list_" + value[1]
-            name = self.hats.get_existing(value, False)
+            name = self.variables[self.name].get_existing(value, False)
             prefix = "self" if name else "util.stage"
             if not name:
-                name = self.gvariables.get_existing(value)
+                name = self.variables['Stage'].get_existing(value)
             value = self.specmap['data_listcontents']['code'].format(
                 LIST=name, PREFIX=prefix)
 
@@ -580,6 +607,37 @@ class Parser:
             value = value[1]
 
         return value
+
+    def post_parse(self, parameters, block):
+        """Perform block specific parsing"""
+        if block['opcode'] == "sensing_of":
+            name = parameters['OBJECT']
+            if not name in self.variables:
+                logging.warning(
+                    "Block input to sensing_of OBJECT, guessing variable name")
+                parameters['PROPERTY'] = self.get_variable(
+                    None, parameters['PROPERTY'])
+            else:
+                parameters['PROPERTY'] = self.get_variable(
+                    name, parameters['PROPERTY'])
+
+    def get_variable(self, sprite, name):
+        """Gets a variable name from a sprite"""
+        # Try to get an existing variable name
+        if sprite in self.variables:
+            new_name = self.variables[sprite].get_existing(
+                "var_" + name, False)
+            if not new_name:
+                logging.error(
+                    "Unkown variable name '%s' for sprite '%s'",
+                    name, sprite)
+            return new_name
+
+        # Guess the name, clean the identifier
+        if sprite:
+            logging.warning(
+                "Unkown sprite '%s', guessing variable name", sprite)
+        return clean_identifier("var_" + name)
 
     @staticmethod
     def cast_value(value, to_type):
@@ -610,8 +668,9 @@ class Parser:
     def get_code(self, blockid, blockmap, parameters):
         """Generates a block's code from the blockmap and parsed parameters"""
         if self.blocks[blockid]['opcode'] == "procedures_call":
+            # TODO str(parameter) should be done earlier
             parameters['PARAMETERS'] = ", ".join(
-                parameters[arg] for arg in blockmap['args'])
+                str(parameters[arg]) for arg in blockmap['args'])
 
         for arg, itype in blockmap['args'].items():
             # Verify expected parameters are present
@@ -680,7 +739,7 @@ class Identifiers:
     def get_unique(self, specific):
         """Gets a unique identifier from a specific (uncleaned) identifier"""
         # Check for an existing group
-        specific = clean_identifier(specific)
+        # specific = clean_identifier(specific)
         iterator, names = self.specific.get(specific, (None, None))
 
         # Create a new group
@@ -786,22 +845,26 @@ def main():
     """Main function"""
     logging.basicConfig(format="[%(levelname)s] %(message)s", level=LOG_LEVEL)
 
-    with open(JSON_PATH, 'r') as sb3_file:
+    if path.isfile(CONFIG_PATH):
+        with open(CONFIG_PATH, 'r') as file:
+            CONFIG.update(json.load(file))
+
+    json_path = path.join(CONFIG['temp_folder'], "project.json")
+    with open(json_path, 'r') as sb3_file:
         sb3_json = json.load(sb3_file)
 
-    parse = Parser(sb3_json)
-    code = parse.parse()
+    code = Parser(sb3_json).parse()
 
-    # import timeit
-    # print(timeit.timeit("parse.parse()", "parse = Parser('test2.json')", number=1000))
-
-    with open(OUTPUT_PATH, 'w') as code_file:
+    output_path = path.join(CONFIG['temp_folder'], "project.py")
+    with open(output_path, 'w') as code_file:
         code_file.write(code)
 
-    # Copy the engine
-    shutil.copyfile("engine.py", OUTPUT_FOLDER + "/engine.py")
 
-    print()
+def parse(sb3_json, config):
+    """Run the parser from a config file"""
+    CONFIG.update(config)
+
+    return Parser(sb3_json).parse()
 
 
 if __name__ == '__main__':
