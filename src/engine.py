@@ -866,7 +866,7 @@ class Costumes:
     _cache = {}
 
     def __init__(self, costumes, costume_number, rotation_style):
-        self.number = costume_number
+        self.number = costume_number + 1
         self.costume = costumes[costume_number]
         self.name = self.costume['name']
         self.rotation_style = rotation_style
@@ -929,11 +929,11 @@ class Costumes:
 
     def get_image(self, size, direction):
         """Get the current image with a size and direction"""
-        costume = self.costume_list[self.number - 1]
-        image = self._load_image(costume['path'])
+        # Get the base image
+        image = self.costume['image']
 
         # Scale the image
-        scale = size/100 / costume['scale']
+        scale = size/100 / self.costume['scale']
         image = pg.transform.smoothscale(
             image, (int(image.get_width() * scale),
                     int(image.get_height() * scale))
