@@ -593,6 +593,77 @@ len({PREFIX}.{LIST})
 #: data_hidelist (field LIST, field PREFIX)
 {PREFIX}.{LIST}.hide()
 
+#: code_var_init
+self.{name} = {value}
+
+#:code_var_clone
+self.{name} = parent.{name}
+
+#:code_list_init
+self.{name} = engine.List(
+{items}
+)
+
+#:code_list_clone
+self.{name} = parent.{name}.copy()
+
+#: code_costume
+{{
+    'name': {name},
+    'path': {path},
+    'center': {center},
+    'scale': {scale}
+}}
+
+#: code_costumes_init
+self.costume = engine.Costumes(
+    {costume}, {rotation}, {costumes})
+
+#: code_sound
+{{
+    'name': {name},
+    'path': {path}
+}}
+
+#: code_sounds_init
+self.sounds = engine.Sounds(
+    {volume}, {sounds})
+
+#: code_assets_clone
+self.costume = parent.costume.copy()
+self.sounds = parent.sounds.copy()
+
+#: code_info
+self.xpos = {xpos}
+self.ypos = {ypos}
+self.direction = {direction}
+self.visible = {visible}
+
+#: code_info_clone
+self.xpos = parent.xpos
+self.ypos = parent.ypos
+self.direction = parent.direction
+self.visible = parent.visible
+
+#: code_hat
+{name}: [
+{hats}
+]
+
+#: code_hats_dict
+self.hats = {{
+{hats}
+}}
+
+#: code_target_init
+def __init__(self, util, parent=None):
+    if parent is None:
+{init_code}
+    else:
+{clone_code}
+{hats}
+    super().__init__(util)
+    self.sprite._layer = {layer}
 
 if __name__ == '__main__':
     pass

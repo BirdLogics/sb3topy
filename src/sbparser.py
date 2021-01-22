@@ -35,9 +35,9 @@ def clean_identifier(text):
 def quote_string(text, quote="'"):
     """Escapes and quotes a string"""
     if quote == "'":
-        return "'" + re.sub(r"()(?=\\|')", r"\\", text) + "'"
+        return "'" + re.sub(r"()(?=\\|')", r"\\", str(text)) + "'"
     if quote == '"':
-        return '"' + re.sub(r'()(?=\\|")', r"\\", text) + '"'
+        return '"' + re.sub(r'()(?=\\|")', r"\\", str(text)) + '"'
     raise Exception("Invalid string quote")
 
 
@@ -207,17 +207,11 @@ class Parser:
                     logging.info("Skipping top level block '%s' with opcode '%s'",
                                  block_id, block['opcode'])
 
-        if len(code.strip().split('\n')) == 1:
-            code = code + '\n    pass\n'
-
         # Add the top of the code
-        top = f"\n\nclass {target['identifier']}(engine.Target):"
-
-        # Add sprite info (costumes, etc.)
-        top = top + textwrap.indent(self.parse_info(target), '    ')
+        top = "\n\nclass {}(engine.Target):\n".format(target['identifier'])\
 
         # Add the __init__ function
-        top = top + textwrap.indent(self.create_init(target), '    ')
+        top = top + textwrap.indent(self.create_init(target), "    ")
 
         return top + code
 
@@ -235,99 +229,163 @@ class Parser:
         for lst, _ in target.get('lists', {}).values():
             self.variables[self.name].get_existing("list_" + lst)
 
-    def parse_info(self, target):
-        """Gets costume info"""
-        # TODO!! Validate asset details
-
-        # Costumes string
-        costumes = "costumes = ["
-        for costume in target.get('costumes', []):
-            # TODO Support for svg conversion
-            path = costume.get('md5ext', '')
-            name = costume.get('name', '')
-            scale = costume.get('bitmapResolution', 1)
-
-            center = (
-                costume.get('rotationCenterX'),
-                costume.get('rotationCenterY')
-            )
-            if center[0] is None or center[1] is None:
-                center = None
-            else:
-                center = f"({center[0]}, {center[1]})"
-
-            costumes = costumes + (
-                "\n    {"
-                f"\n        'name': \"{name}\","
-                f"\n        'path': \"{path}\","
-                f"\n        'center': {center},"
-                f"\n        'scale': {scale}"
-                "\n    },"
-            )
-        costumes = costumes + "\n]\n"
-
-        # Sounds string
-        sounds = "sounds = ["
-        for sound in target.get('sounds', []):
-            path = sound.get('md5ext', '')
-            name = sound.get('name', '')
-
-            sounds = sounds + (
-                "\n    {"
-                f"\n        'name': \"{name}\","
-                f"\n        'path': \"{path}\""
-                "\n    },"
-            )
-        sounds = sounds + "\n]\n"
-
-        # Variables string
-        variables = ""
-        for var in target.get('variables', {}).values():
-            variables = variables +\
-                self.variables[self.name].get_existing("var_" + var[0], False) +\
-                " = " + str(quote_or_num(var[1])) + "\n"
-
-        lists = ""
-        for name, values in target.get('lists', {}).values():
-            lists = lists +\
-                self.variables[self.name].get_existing(
-                    "list_" + name, False) + " = List(\n"
-            for value in values:
-                lists = lists + "    " + str(quote_or_num(value)) + ",\n"
-            lists = lists + ")\n\n"
-
-        # Put it all together
-        return (
-            f"\ncostume = {target.get('currentCostume', 1) }"
-            f"\nxpos, ypos = {target.get('x', 0)}, {target.get('y', 0)}"
-            f"\ndirection = {target.get('direction', 90)}"
-            f"\nvisible = {target.get('visible', True)}"
-            f"\n\n{costumes}"
-            f"\n{sounds}"
-            f"\n\n{variables}"
-            f"\n\n{lists}"
-        )
-
     def create_init(self, target):
-        """Creates the target __init__ saving hats"""
-        code = "\ndef __init__(self, util):"
-        code = code + "\n    self.hats = {"
-        for hat, names in self.hats.specific.items():
-            code = code + "\n        " + quote_string(hat) + ": ["
-            for name in names[1]:
-                code = code + "\n            self." + name + ","
-            code = code + "\n        ],"
+        """Creates the target __init__ code"""
+        info = self.specmap['code_info']['code'].format(
+            xpos=target.get('x', 0),
+            ypos=target.get('y', 0),
+            direction=target.get('direction', 90),
+            visible=target.get('visible', True)
+        ) + "\n\n"
+        info_clone = self.specmap['code_info_clone']['code'] + "\n\n"
 
-        code = code + (
-            "\n    }"
-            "\n    super().__init__(util)"
-        )
+        costumes = self.parse_costumes(target)
+        sounds = self.parse_sounds(target)
+        assets_clone = self.specmap['code_assets_clone']['code'] + "\n\n"
 
-        if not target['isStage']:
-            code = code + "\n    self.sprite._layer = " + \
-                str(int(target['layerOrder']) - 1) + "\n"
+        vars_init, vars_clone = self.parse_variables(target)
+        lists_init, lists_clone = self.parse_lists(target)
 
-        return code
+        init_code = info + costumes + sounds + vars_init + lists_init
+        clone_code = info_clone + assets_clone + vars_clone + lists_clone
+
+        hats = self.parse_hats()
+
+        return self.specmap['code_target_init']['code'].format(
+            init_code=textwrap.indent(init_code, "    "*2),
+            clone_code=textwrap.indent(clone_code, "    "*2),
+            hats=textwrap.indent(hats, "    "),
+            layer=int(target['layerOrder'])
+        ) + "\n"
+
+    def parse_costumes(self, target):
+        """Create a Costumes initializer for target"""
+        costumes = []
+        costume_code = self.specmap['code_costume']['code']
+
+        # Create a dict str for each costume
+        for costume in target['costumes']:
+            name = quote_string(costume['name'], '"')
+
+            # TODO costume md5ext regex extension list
+            # Validate the costume path
+            if not re.match(r"[a-z0-9]{32}\.(?:png|jpg)", costume['md5ext']):
+                logging.error(
+                    "Invalid costume format or path '%s'", costume['md5ext'])
+                costumes.append("{'name': " + name + "}")
+                continue
+
+            # Create the costume dict
+            costumes.append(costume_code.format(
+                name=name,
+                path=quote_string(costume['md5ext']),
+                center=(
+                    int(costume['rotationCenterX']),
+                    int(costume['rotationCenterY'])
+                ),
+                scale=costume['bitmapResolution']
+            ))
+
+        # Create the costumes list string
+        costumes = "[\n" + \
+            textwrap.indent(',\n'.join(costumes), "    ") + "\n]"
+
+        return self.specmap['code_costumes_init']['code'].format(
+            costume=int(target['currentCostume']),
+            rotation=quote_string(target.get('rotationStyle'), '"'),
+            costumes=costumes
+        ) + "\n"
+
+    def parse_sounds(self, target):
+        """Create a Sounds initializer for target"""
+        sounds = []
+        sound_code = self.specmap['code_sound']['code']
+
+        # Create a dict string for each sound
+        for sound in target['sounds']:
+            name = quote_string(sound['name'], '"')
+
+            # Validate the sound path
+            if not re.match(r"[a-z0-9]{32}\.wav", sound['md5ext']):
+                logging.error(
+                    "Invalid sound format or path '%s'", sound['md5ext'])
+                sounds.append("{'name': " + name + "}")
+                continue
+
+            sounds.append(sound_code.format(
+                name=name,
+                path=quote_string(sound['md5ext'])
+            ))
+
+        # Create the sounds list string
+        sounds = "[\n" + textwrap.indent(',\n'.join(sounds), "    ") + "]\n"
+
+        return self.specmap['code_sounds_init']['code'].format(
+            volume=int(target['volume']),
+            sounds=sounds
+        ) + "\n\n"
+
+    def parse_variables(self, target):
+        """Create variable init/clone strings"""
+        vars_init = []
+        vars_clone = []
+
+        init_code = self.specmap['code_var_init']['code']
+        clone_code = self.specmap['code_var_clone']['code']
+
+        for var in target['variables'].values():
+            name = self.variables[self.name].get_existing("var_" + var[0])
+            vars_init.append(init_code.format(
+                name=name,
+                value=quote_or_num(var[1])
+            ))
+            vars_clone.append(clone_code.format(
+                name=name
+            ))
+
+        return '\n'.join(vars_init) + "\n\n", '\n'.join(vars_clone) + "\n\n"
+
+    def parse_lists(self, target):
+        """Create list init/clone strings"""
+        list_init = []
+        list_clone = []
+
+        init_code = self.specmap['code_list_init']['code']
+        clone_code = self.specmap['code_list_clone']['code']
+
+        for lst in target['lists'].values():
+            # Validate list items
+            items = []
+            for value in lst[1]:
+                items.append(quote_or_num(value))
+
+            # Create code with
+            name = self.variables[self.name].get_existing("list_" + lst[0])
+            list_init.append(init_code.format(
+                name=name,
+                items=textwrap.indent("[" + ', '.join(items) + "]", "    ")
+            ) + "\n")
+            list_clone.append(clone_code.format(
+                name=name
+            ) + "\n")
+
+        return "".join(list_init).rstrip(), "".join(list_clone)
+
+    def parse_hats(self):
+        """Create a dict of hats for event reference"""
+        hat_dict = []
+        for name, hats in self.hats.specific.items():
+            hat_list = []
+            for hat in hats[1]:
+                hat_list.append("self." + hat)
+            hat_dict.append(self.specmap['code_hat']['code'].format(
+                name=quote_string(name),
+                hats=textwrap.indent(',\n'.join(hat_list), "    ")
+            ))
+
+        return self.specmap['code_hats_dict']['code'].format(
+            hats=textwrap.indent(',\n'.join(hat_dict), "    ")
+        ) + "\n"
 
     def parse_stack(self, blockid, input_type=None, end_yield=False):
         """
@@ -437,7 +495,6 @@ class Parser:
             elif field in ("PROPERTY", "OBJECT"):
                 # These need to not be lowered/quoted
                 parameters[field] = value[0]
-                print(value[0])
 
             # CB Parameter
             elif block['opcode'] == "argument_reporter_string_number":

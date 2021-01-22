@@ -523,13 +523,6 @@ class Target:
         self.warp = False
         self.warp_timer = 0
 
-        # Get assets by name
-        self.costumes_dict = {}
-
-        # Parse assets and fill the dicts
-        self.costume = Costumes(self.costumes, self.costume, "all around")
-        self.sounds = Sounds(self.sounds, 100)
-
         # Clear effects
         self.effects = {}
 
@@ -736,20 +729,20 @@ class Target:
     async def _warp(self, awaitable):
         """Enables warp and disables it even if canceled"""
         try:
-            self.warp=True
-            self.warp_timer=time.monotonic()
+            self.warp = True
+            self.warp_timer = time.monotonic()
             await awaitable
         # except asyncio.CancelledError:
         #     pass
         finally:
-            self.warp=False
+            self.warp = False
 
     def goto(self, util, other):
         """Goto the position of another sprite"""
-        other=util.targets.get(other)
+        other = util.targets.get(other)
         if other:
-            self.xpos=other.xpos
-            self.ypos=other.ypos
+            self.xpos = other.xpos
+            self.ypos = other.ypos
 
 
 class Sounds:
@@ -766,29 +759,29 @@ class Sounds:
             adjusted and the tasks are there to be canceled.
     """
 
-    _cache={}
+    _cache = {}
 
-    def __init__(self, sounds, volume):
-        self.sounds={}
-        self.sounds_list=[]
+    def __init__(self, volume, sounds):
+        self.sounds = {}
+        self.sounds_list = []
 
         for asset in sounds:
-            self.sounds[asset['name']]=self._load_sound(asset['path'])
+            self.sounds[asset['name']] = self._load_sound(asset['path'])
             self.sounds_list.append(self.sounds[asset['name']])
-        self._channels={}
+        self._channels = {}
         self.set_volume(volume)
 
     def _load_sound(self, path):
         """Load a sound or retrieve it from cache"""
-        sound=self._cache.get(path)
+        sound = self._cache.get(path)
         if not sound:
-            sound=pg.mixer.Sound("assets/" + path)
-            self._cache[path]=sound
+            sound = pg.mixer.Sound("assets/" + path)
+            self._cache[path] = sound
         return sound
 
     def set_volume(self, volume):
         """Sets the volume and updates it for playing sounds"""
-        self.volume=max(0, min(100, volume))
+        self.volume = max(0, min(100, volume))
         for channel in self._channels:
             channel.set_volume(self.volume / 100)
 
@@ -799,14 +792,14 @@ class Sounds:
     def play(self, name):
         """Plays the sound and returns an awaitable."""
         # Get the sound from name or number
-        sound=self.sounds.get(name)
+        sound = self.sounds.get(name)
         if not sound:
             try:
-                name=round(float(name)) - 1
+                name = round(float(name)) - 1
                 if 0 < name < len(self.sounds_list):
-                    sound=self.sounds_list[name]
+                    sound = self.sounds_list[name]
                 else:
-                    sound=self.sounds_list[0]
+                    sound = self.sounds_list[0]
             except ValueError:
                 pass
             except OverflowError:  # round(Infinity)
@@ -814,18 +807,18 @@ class Sounds:
 
         # Play the sound
         if sound:
-            channel=pg.mixer.find_channel()
+            channel = pg.mixer.find_channel()
             if channel:
                 return asyncio.ensure_future(self._handle_channel(sound, channel))
         return asyncio.ensure_future(asyncio.sleep(0))
 
     async def _handle_channel(self, sound, channel):
         """Saves the channel and waits for it to finish"""
-        delay=sound.get_length()
+        delay = sound.get_length()
         channel.set_volume(self.volume / 100)
         channel.play(sound)
         try:
-            self._channels[channel]=asyncio.ensure_future(
+            self._channels[channel] = asyncio.ensure_future(
                 asyncio.sleep(delay))
             await self._channels[channel]
         finally:
@@ -860,49 +853,49 @@ class Costumes:
     _cache - A shared cache containing loaded images
     """
 
-    _cache={}
+    _cache = {}
 
-    def __init__(self, costumes, costume_number, rotation_style):
-        self.number=costume_number + 1
-        self.costume=costumes[costume_number]
-        self.name=self.costume['name']
-        self.rotation_style=rotation_style
+    def __init__(self, costume_number, rotation_style, costumes):
+        self.number = costume_number + 1
+        self.costume = costumes[costume_number]
+        self.name = self.costume['name']
+        self.rotation_style = rotation_style
 
-        self.costumes={}
-        self.costume_list=[]
+        self.costumes = {}
+        self.costume_list = []
 
-        self.effects={}
+        self.effects = {}
 
         # Initialize the costume lists
         for index, asset in enumerate(costumes):
             # Load the image
-            asset['image']=self._load_image(asset['path'])
+            asset['image'] = self._load_image(asset['path'])
 
             # Calculate the rotation offset
-            center=pg.math.Vector2(asset['image'].get_size()) / 2
-            asset['offset']=pg.math.Vector2(asset['center'])
+            center = pg.math.Vector2(asset['image'].get_size()) / 2
+            asset['offset'] = pg.math.Vector2(asset['center'])
             asset['offset'] *= -1
             asset['offset'] += center
             asset['offset'] /= asset['scale']
 
             # Add the costume to the dict
-            asset['number']=index + 1
-            self.costumes[asset['name']]=asset
+            asset['number'] = index + 1
+            self.costumes[asset['name']] = asset
             self.costume_list.append(asset)
 
     def switch(self, costume):
         """Sets the costume"""
-        asset=self.costumes.get(costume)
+        asset = self.costumes.get(costume)
         if asset:
-            self.name=costume
-            self.costume=asset
-            self.number=asset['number']
+            self.name = costume
+            self.costume = asset
+            self.number = asset['number']
         else:
             try:
-                self.number=(round(float(costume)) %
+                self.number = (round(float(costume)) %
                                len(self.costume_list))
-                self.costume=self.costume_list[self.number - 1]
-                self.name=self.costume['name']
+                self.costume = self.costume_list[self.number - 1]
+                self.name = self.costume['name']
             except ValueError:
                 pass
             except OverflowError:
@@ -912,88 +905,88 @@ class Costumes:
         """Go to the next costume"""
         self.number += 1
         if self.number > len(self.costume_list):
-            self.number=1
-        self.costume=self.costume_list[self.number - 1]
-        self.name=self.costume['name']
+            self.number = 1
+        self.costume = self.costume_list[self.number - 1]
+        self.name = self.costume['name']
 
     def _load_image(self, path):
         """Loads an image or retrieves it from cache"""
-        image=self._cache.get(path)
+        image = self._cache.get(path)
         if not image:
-            image=pg.image.load("assets/" + path).convert_alpha()
-            self._cache[path]=image
+            image = pg.image.load("assets/" + path).convert_alpha()
+            self._cache[path] = image
         return image
 
     def get_image(self, size, direction):
         """Get the current image with a size and direction"""
         # Get the base image
-        image=self.costume['image']
+        image = self.costume['image']
 
         # Scale the image
-        scale=size/100 / self.costume['scale']
-        image=pg.transform.smoothscale(
+        scale = size/100 / self.costume['scale']
+        image = pg.transform.smoothscale(
             image, (int(image.get_width() * scale),
                     int(image.get_height() * scale))
         )
 
         # Rotate the image
         if self.rotation_style == "all around":
-            image=pg.transform.rotate(image, 90-direction)
+            image = pg.transform.rotate(image, 90-direction)
         elif self.rotation_style == "left-right":
             if direction > 0:
-                image=pg.transform.flip(image, True, False)
+                image = pg.transform.flip(image, True, False)
 
         # Apply effects
-        image=self._apply_effects(image)
+        image = self._apply_effects(image)
 
         return image
 
     def set_effect(self, effect, value):
         """Sets and wraps/clamps a graphics effect"""
         if effect == 'ghost':
-            self.effects[effect]=min(max(value, 0), 100)
+            self.effects[effect] = min(max(value, 0), 100)
         elif effect == 'brightness':
-            self.effects[effect]=min(max(value, -100), 100)
+            self.effects[effect] = min(max(value, -100), 100)
         elif effect == 'color':
-            self.effects[effect]=value % 200
+            self.effects[effect] = value % 200
 
     def change_effect(self, effect, value):
         """Changes and wraps/clamps a graphics effect"""
-        value=self.effects.get(effect, 0) + value
+        value = self.effects.get(effect, 0) + value
         self.set_effect(effect, value)
 
     def clear_effects(self):
         """Clear all graphic effects"""
-        self.effects={}
+        self.effects = {}
 
     def _apply_effects(self, image):
         """Apply current effects to an image"""
         # Brighten/Darken
-        brightness=self.effects.get('brightness', 0)
+        brightness = self.effects.get('brightness', 0)
         if brightness > 0:
-            brightness=255 * brightness / 100
+            brightness = 255 * brightness / 100
             image.fill(
                 (brightness, brightness, brightness),
-                special_flags = pg.BLEND_RGB_ADD)
+                special_flags=pg.BLEND_RGB_ADD)
         elif brightness < 0:
-            brightness=-255 * brightness / 100
+            brightness = -255 * brightness / 100
             image.fill(
                 (brightness, brightness, brightness),
-                special_flags = pg.BLEND_RGB_SUB)
+                special_flags=pg.BLEND_RGB_SUB)
 
         # Transparency
-        ghost=self.effects.get('ghost', 0)
+        ghost = self.effects.get('ghost', 0)
         if ghost:
-            ghost=255 - 255 * ghost / 100
+            ghost = 255 - 255 * ghost / 100
             image.fill(
                 (255, 255, 255, ghost),
-                special_flags = pg.BLEND_RGBA_MULT)
+                special_flags=pg.BLEND_RGBA_MULT)
 
         # Hue change
-        color=self.effects.get('color', 0)
+        color = self.effects.get('color', 0)
         if color:
-            color=360 * color / 200
-            image=self._hue_effect(image, color)
+            color = 360 * color / 200
+            image = self._hue_effect(image, color)
 
         return image
 
@@ -1007,31 +1000,31 @@ class Costumes:
         """
 
         # Get a copy of the alpha channel
-        transparency=image.convert_alpha()
+        transparency = image.convert_alpha()
         transparency.fill((255, 255, 255, 0),
-                          special_flags = pg.BLEND_RGBA_MAX)
+                          special_flags=pg.BLEND_RGBA_MAX)
 
         # Get an 8-bit surface with a color palette
-        image=image.convert(8)
+        image = image.convert(8)
 
         # Change the hue of the palette
         for index in range(256):
             # Get the palette color at index
-            color=pg.Color(*image.get_palette_at(index))
+            color = pg.Color(*image.get_palette_at(index))
 
             # Get the new hue
-            hue=color.hsva[0] + value
+            hue = color.hsva[0] + value
             if hue > 360:
                 hue -= 360
 
             # Update the hue
-            color.hsva=(hue, *color.hsva[1:3])
+            color.hsva = (hue, *color.hsva[1:3])
             image.set_palette_at(index, color)
 
         # Return the image transparency
         image.set_alpha()
-        image=image.convert_alpha()
-        image.blit(transparency, (0, 0), special_flags = pg.BLEND_RGBA_MULT)
+        image = image.convert_alpha()
+        image.blit(transparency, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
 
         return image
 
@@ -1040,9 +1033,9 @@ def number(value):
     """Attempts to cast a value to a number"""
     if isinstance(value, str):
         try:
-            value=float(value)
+            value = float(value)
             if value.is_integer():
-                value=int(value)
+                value = int(value)
         except ValueError:
             return 0
     if value == float('NaN'):
@@ -1053,19 +1046,19 @@ def number(value):
 class List:
     """Handles special list behaviors"""
 
-    def __init__(self, *values):
-        self.list=list(values)
+    def __init__(self, values):
+        self.list = list(values)
 
     def __getitem__(self, key):
-        key=self._to_index(key)
+        key = self._to_index(key)
         if key is not None:
             return self.list[key]
         return ""
 
     def __setitem__(self, key, value):
-        key=self._to_index(key)
+        key = self._to_index(key)
         if key is not None:
-            self.list[key]=value
+            self.list[key] = value
 
     def append(self, value):
         """Add up to 200,000 items to list"""
@@ -1076,13 +1069,13 @@ class List:
         """Insert up to 200,000 items in list"""
         if len(self.list) < 200000:
             if key == "first":
-                key=0
+                key = 0
             elif key == "last":
-                key=-1
+                key = -1
             elif key == "random":
-                key=random.randint(0, len(self.list))
+                key = random.randint(0, len(self.list))
             else:
-                key=round(number(key)) - 1
+                key = round(number(key)) - 1
 
             if key is not None and 0 <= key <= len(self.list):
                 self.list.insert(key, value)
@@ -1090,15 +1083,15 @@ class List:
     def delete(self, key):
         """Remove an item from list"""
         if key == "all":
-            self.list=[]
+            self.list = []
         else:
-            key=self._to_index(key)
+            key = self._to_index(key)
             if key is not None:
                 self.list.pop(key)
 
     def delete_all(self):
         """Delete all items in list"""
-        self.list=[]
+        self.list = []
 
     def _to_index(self, key):
         """Gets the index of first, last, random strings"""
@@ -1109,7 +1102,7 @@ class List:
                 return -1
             if key == "random":
                 return random.randint(0, len(self.list) - 1)
-            key=round(number(key))
+            key = round(number(key))
             if 0 < key <= len(self.list):
                 return key - 1
         return None
@@ -1118,10 +1111,10 @@ class List:
         return item in self.list
 
     def __str__(self):
-        char_join=True
+        char_join = True
         for item in self.list:
             if len(str(item)) != 1:
-                char_join=False
+                char_join = False
                 break
         if char_join:
             return ''.join(self.list)
@@ -1139,7 +1132,7 @@ class List:
 
     def index(self, item):
         """Find the index of an item, case insensitive"""
-        item=str(item).lower()
+        item = str(item).lower()
         for i, value in enumerate(self.list):
             if str(value).lower() == item:
                 return i + 1
@@ -1155,10 +1148,10 @@ class List:
 
 def main(sprites):
     """Run the program"""
-    runtime=None
+    runtime = None
     try:
-        runtime=Runtime(sprites)
-        asyncio.run(runtime.main_loop(), debug = DEBUG_ASYNC)
+        runtime = Runtime(sprites)
+        asyncio.run(runtime.main_loop(), debug=DEBUG_ASYNC)
     finally:
         if runtime:
             runtime.quit()
