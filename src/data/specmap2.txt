@@ -164,18 +164,15 @@ self.front_layer(util)
 #: looks_goto'back' ()
 self.back_layer(util)
 
-# Note, decimal behavior is off
-# looks_gofowardsbackwardslayers (int NUM) -d1
-pass # looks_gofowardsbackwardslayers(util, {NUM})
-
+# TODO Decimal behavior
 #: looks_goforwardbackwardlayers (field FORWARD_BACKWARD, int NUM) -d1
 #? looks_go{FORWARD_BACKWARD}layers
-pass # looks_goforwardbackwardlayers(util, {NUM})
+0$
 
-#: looks_go'foward'layers
+#: looks_go'forward'layers (int NUM)
 self.change_layer(util, {NUM})
 
-#: looks_go'backward'layers
+#: looks_go'backward'layers (int NUM)
 self.change_layer(util, -{NUM})
 
 #: int looks_costumenumbername (field NUMBER_NAME)
@@ -268,6 +265,9 @@ green_flag
 key{KEY_OPTION}_pressed
 
 #: event_whenthisspriteclicked (stack SUBSTACK) -h
+sprite_clicked
+
+#: event_whenstageclicked (stack SUBSTACK) -h
 sprite_clicked
 
 #: event_whenbackdropswitchesto (stack SUBSTACK, string BACKDROP) -h

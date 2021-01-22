@@ -321,8 +321,11 @@ class Parser:
         code = code + (
             "\n    }"
             "\n    super().__init__(util)"
-            f"\n    self.sprite._layer = {int(target.get('layerOrder'))}\n"
-        )  # TODO Better layer parsing
+        )
+
+        if not target['isStage']:
+            code = code + "\n    self.sprite._layer = " + \
+                str(int(target['layerOrder']) - 1) + "\n"
 
         return code
 
