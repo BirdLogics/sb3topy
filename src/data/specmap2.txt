@@ -33,7 +33,7 @@ self.set_dirty({DIRTY})
 #: special_yield
 await self._yield({DIRTY})
 
-#: procedures_definition (string NAME, list PARAMETERS, stack SUBSTACK) -h
+#: procedures_definition (stack SUBSTACK) -h
 def {NAME}(self, {PARAMETERS}):{SUBSTACK}
 
 #: any argument_reporter_string_number (any VALUE)
@@ -218,45 +218,45 @@ self.sounds.volume
 
 # TODO Verify pen opcodes
 #: pen_clear ()
-# pen_clear()
+pass # pen_clear()
 
 #: pen_stamp ()
-# pen_stamp()
+pass # pen_stamp()
 
 #: pen_down ()
-# pen_down()
+pass # pen_down()
 
 #: pen_up ()
-# pen_up()
+pass # pen_up()
 
 # Verified
 #: pen_penUp ()
-# pen_up()
+pass # pen_up()
 
 #: pen_penDown ()
 print(self.xpos, self.ypos)  # pen_down()
 
 # TODO Pen shade color menu
 #: pen_changePenHueBy (float HUE)
-# pen_changePenHueBy({HUE})
+pass # pen_changePenHueBy({HUE})
 
 #: pen_setPenHueToNumber (float HUE)
-# pen_setPenHueToNumber({HUE})
+pass # pen_setPenHueToNumber({HUE})
 
 #: pen_changePenShadeBy (float SHADE)
-# pen_changePenShadeBy({SHADE})
+pass # pen_changePenShadeBy({SHADE})
 
 #: pen_setPenShadeToNumber (float SHADE)
-# pen_setPenShadeToNumber({SHADE})
+pass # pen_setPenShadeToNumber({SHADE})
 
 #: pen_changePenSizeBy (float SIZE)
-# pen_changePenSizeBy({SIZE})
+pass # pen_changePenSizeBy({SIZE})
 
 #: pen_setPenSizeTo (float SIZE)
-# pen_setPenSizeTo({SIZE})
+pass # pen_setPenSizeTo({SIZE})
 
 #: pen_setPenColorToColor (float COLOR)
-# pen_setPenColorToColor({COLOR})
+pass # pen_setPenColorToColor({COLOR})
 
 #: event_whenflagclicked (stack SUBSTACK) -h
 green_flag
@@ -328,10 +328,10 @@ return None
 clone_start
 
 #: control_create_clone_of (string CLONE_OPTION)
-pass # control_create_clone_of({CLONE_OPTION})
+self.create_clone_of(util, {CLONE_OPTION})
 
 #: control_delete_this_clone ()
-pass # control_delete_this_clone()
+self.delete_clone(util)
 
 #: bool sensing_touchingobject (field TOUCHINGOBJECTMENU) -u
 #? sensing_touching
@@ -490,6 +490,9 @@ engine.letter({STRING}, {LETTER})
 #: int operator_length (string STRING)
 len(str({STRING}))
 
+#: bool operator_contains (string STRING1, string STRING2)
+({STRING2} in {STRING1})
+
 #: float operator_mod (float NUM1, float NUM2)
 ({NUM1} % {NUM2})
 
@@ -637,12 +640,14 @@ self.sounds = parent.sounds.copy()
 self.xpos = {xpos}
 self.ypos = {ypos}
 self.direction = {direction}
+self.size = {size}
 self.visible = {visible}
 
 #: code_info_clone
 self.xpos = parent.xpos
 self.ypos = parent.ypos
 self.direction = parent.direction
+self.size = parent.size
 self.visible = parent.visible
 
 #: code_hat
@@ -657,13 +662,14 @@ self.hats = {{
 
 #: code_target_init
 def __init__(self, util, parent=None):
+    super().__init__(util, parent)
     if parent is None:
 {init_code}
     else:
 {clone_code}
 {hats}
-    super().__init__(util)
     self.sprite._layer = {layer}
+    self.update(util)
 
 if __name__ == '__main__':
     pass

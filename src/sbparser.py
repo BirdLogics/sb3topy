@@ -55,7 +55,7 @@ def quote_or_num(value):
 
 
 def to_number(value):
-    """Attempts to cast a value to a number"""
+    """Either casts a number, returns """
     if isinstance(value, str):
         try:
             value = float(value)
@@ -65,7 +65,10 @@ def to_number(value):
             return 0
     if value == float('NaN'):
         return 0
-    return value
+    if isinstance(value, (int, float)):
+        return value
+    logging.error("Unkown type '%s' for value %s", type(value), value)
+    return "None"
 
 
 class Parser:
@@ -235,6 +238,7 @@ class Parser:
             xpos=target.get('x', 0),
             ypos=target.get('y', 0),
             direction=target.get('direction', 90),
+            size=target.get('size', 100),
             visible=target.get('visible', True)
         ) + "\n\n"
         info_clone = self.specmap['code_info_clone']['code'] + "\n\n"
@@ -318,7 +322,7 @@ class Parser:
             ))
 
         # Create the sounds list string
-        sounds = "[\n" + textwrap.indent(',\n'.join(sounds), "    ") + "]\n"
+        sounds = "[\n" + textwrap.indent(',\n'.join(sounds), "    ") + "\n]"
 
         return self.specmap['code_sounds_init']['code'].format(
             volume=int(target['volume']),
@@ -611,18 +615,15 @@ class Parser:
                     # It is a valid block id
                     if self.blocks[value]["shadow"] and inp in self.blocks[value]["fields"]:
                         # The id points to a menu
-                        value = quote_string(
+                        return quote_string(
                             self.blocks[value]['fields'][inp][0])
-                    else:  # if inp in ["SUBSTACK", "SUBSTACK2"]:
-                        # The id points to a block
-                        return self.parse_stack(value, itype, 'y' in blockmap['flags'])
-                elif value is not None:
-                    # Empty block input
+                    # The id points to a block
+                    return self.parse_stack(value, itype, 'y' in blockmap['flags'])
+                if value is not None:
                     logging.warning("Invalid input block id '%s'", value)
-                return value
-            elif value is None:
+            if value is None:
                 # Empty block
-                return None
+                return "None"
 
             # Else it is a variable/list, handled below
 
@@ -710,7 +711,9 @@ class Parser:
             return round(to_number(value))
         if to_type == "int":  # Floored int
             return int(to_number(value))
-        return value  # Bool and any type don't require conversion
+        if isinstance(value, (int, float, bool)):
+            return value
+        return quote_string(value)
 
     @staticmethod
     def cast_wrapper(value, wrap_type):
@@ -916,7 +919,7 @@ def main():
     code = Parser(sb3_json).parse()
 
     output_path = path.join(CONFIG['temp_folder'], "project.py")
-    with open(output_path, 'w') as code_file:
+    with open(output_path, 'w', encoding="utf-8", errors="ignore") as code_file:
         code_file.write(code)
 
 

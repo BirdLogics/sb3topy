@@ -46,6 +46,7 @@ DISPLAY_FLAGS = pg.DOUBLEBUF | pg.HWSURFACE
 FS_SCALE = 1
 
 AUDIO_CHANNELS = 8
+MAX_CLONES = 300
 
 DEBUG_ASYNC = True
 DEBUG_RECTS = False
@@ -184,6 +185,7 @@ class Display:
 
         # Setup and redraw screen
         self.screen = pg.display.set_mode(self.size, flags)
+        self.screen.fill((250, 250, 250))
 
     def toggle_fullscreen(self):
         """Toggle between fullscreen and windowed mode"""
@@ -374,8 +376,8 @@ class Runtime:
                 elif event.type == pg.VIDEORESIZE:
                     self.display.size = (event.w, event.h)
                     self.display.setup_display()
-                    for target in self.util.targets.values():
-                        target.dirty = 3
+                    for sprite in self.util.sprites.sprites():
+                        sprite.target.dirty = 3
                     self.util.stage.dirty = 3
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     self.util.mouse_down(event)
@@ -392,6 +394,9 @@ class Runtime:
                 for target in self.util.targets.values():
                     if target.dirty and target.visible:
                         dirty = True
+                    for clone in target.clones:
+                        if clone.dirty and clone.visible:
+                            dirty = True
 
             # Update sprite rects, images, etc.
             self.update_sprites()
@@ -439,6 +444,10 @@ class Runtime:
             if target.dirty:
                 any_dirty = True
                 target.update(self.util)
+            for clone in target.clones:
+                if clone.dirty:
+                    any_dirty = True
+                    clone.update(self.util)
         return any_dirty
 
     def debug_rects(self):
@@ -456,7 +465,7 @@ class Runtime:
         """Draw debug fps"""
         font = pg.font.Font(None, 28)
         fps = "%.1f FPS" % self.clock.get_fps()
-        pg.draw.rect(self.display.screen, (0, 0, 0),
+        pg.draw.rect(self.display.screen, (255, 255, 255),
                      pg.Rect((5, 5), font.size(fps)))
         self.display.screen.blit(font.render(
             fps, True, (0, 100, 20)), (5, 5))
@@ -488,19 +497,10 @@ class Target:
         effects - A dict which tracks costume effects
     """
 
-    costumes = []
-    sounds = []
+    # These values should be overriden
 
-    costume = None
-
-    xpos, ypos = 0, 0
-    direction = 90
-    size = 100
-    visible = True
-
-    hats = None
-
-    clones = []
+    # Clones for all sprites
+    _clones = []
 
     # draggable = False
     # rotationStyle
@@ -510,14 +510,28 @@ class Target:
     # videoState
     # textToSpeechLanguage
 
-    def __init__(self, util, parent=None):
-        super().__init__()
+    def __init__(self, _, parent=None):
+        # Default values
+        self.xpos = 0
+        self.ypos = 0
+        self.direction = 90
+        self.size = 100
+        self.visible = True
+
+        # These must be set by the subsclass
+        self.costume = None
+        self.sounds = None
+
+        self.hats = {}
+
+        # Share the parent's clone list
+        self.clones = parent.clones if parent else []
+        self.parent = parent
 
         # Create the pygame sprite
         self.sprite = pg.sprite.DirtySprite()
         self.sprite.target = self
 
-        # Only brightness, color, ghost supported
         # 1 dirty sprite, 2 dirty rect, 3 dirty image
         self.dirty = 3
         self.warp = False
@@ -525,9 +539,6 @@ class Target:
 
         # Clear effects
         self.effects = {}
-
-        # Update the sprite rect, image, mask
-        self.update(util)
 
     def recieve_event(self, name, threads, util):
         """Start an event"""
@@ -744,6 +755,33 @@ class Target:
             self.xpos = other.xpos
             self.ypos = other.ypos
 
+    def create_clone_of(self, util, name):
+        """Create a clone of this target"""
+        if len(self._clones) < MAX_CLONES:
+            # Get the target to clone
+            if name == "_myself_":
+                target = self
+            else:
+                target = util.targets.get(name)
+                if target is None:
+                    return
+
+            # TODO Clone layering
+            # __class__ is the Sprite's subclass
+            clone = target.__class__(util, target)
+            self._clones.append(clone)  # Shared between targets
+            target.clones.append(clone)
+            util.sprites.add(clone.sprite)
+            util.send_event_to("clone_start", clone)
+        print(len(self._clones))
+
+    def delete_clone(self, util):
+        """Delete this clone, will not delete original"""
+        if self.parent:
+            self._clones.remove(self)
+            self.clones.remove(self)
+            self.sprite.kill()
+
 
 class Sounds:
     """
@@ -761,13 +799,17 @@ class Sounds:
 
     _cache = {}
 
-    def __init__(self, volume, sounds):
-        self.sounds = {}
-        self.sounds_list = []
+    def __init__(self, volume, sounds, copy_dict=None):
+        if copy_dict is None:
+            self.sounds = {}
+            self.sounds_list = []
 
-        for asset in sounds:
-            self.sounds[asset['name']] = self._load_sound(asset['path'])
-            self.sounds_list.append(self.sounds[asset['name']])
+            for asset in sounds:
+                self.sounds[asset['name']] = self._load_sound(asset['path'])
+                self.sounds_list.append(self.sounds[asset['name']])
+        else:
+            self.sounds = copy_dict
+            self.sounds_list = sounds
         self._channels = {}
         self.set_volume(volume)
 
@@ -821,9 +863,10 @@ class Sounds:
             self._channels[channel] = asyncio.ensure_future(
                 asyncio.sleep(delay))
             await self._channels[channel]
+        # except asyncio.CancelledError():
+        #     channel.stop()
         finally:
             self._channels.pop(channel)
-            channel.stop()
 
     @staticmethod
     def stop_all(util):
@@ -836,6 +879,10 @@ class Sounds:
         for channel, task in self._channels.items():
             channel.stop()
             task.cancel()
+
+    def copy(self):
+        """Returns a copy of this Sounds"""
+        return Sounds(self.volume, self.sounds_list, self.sounds)
 
 
 class Costumes:
@@ -922,8 +969,10 @@ class Costumes:
         # Get the base image
         image = self.costume['image']
 
+        # TODO Proper image scale clamping
+
         # Scale the image
-        scale = size/100 / self.costume['scale']
+        scale = max(0.01, size/100 / self.costume['scale'])
         image = pg.transform.smoothscale(
             image, (int(image.get_width() * scale),
                     int(image.get_height() * scale))
@@ -931,6 +980,7 @@ class Costumes:
 
         # Rotate the image
         if self.rotation_style == "all around":
+            # Segmentation fault here if image size is too small
             image = pg.transform.rotate(image, 90-direction)
         elif self.rotation_style == "left-right":
             if direction > 0:
@@ -1028,6 +1078,10 @@ class Costumes:
 
         return image
 
+    def copy(self):
+        """Return a copy of this list"""
+        return Costumes(self.number - 1, self.rotation_style, self.costume_list)
+
 
 def number(value):
     """Attempts to cast a value to a number"""
@@ -1047,7 +1101,7 @@ class List:
     """Handles special list behaviors"""
 
     def __init__(self, values):
-        self.list = list(values)
+        self.list = values
 
     def __getitem__(self, key):
         key = self._to_index(key)
@@ -1144,6 +1198,10 @@ class List:
             return self.list.index(item) + 1
         except ValueError:
             return 0
+
+    def copy(self):
+        """Return a copy of this List"""
+        return List(self.list.copy())
 
 
 def main(sprites):
