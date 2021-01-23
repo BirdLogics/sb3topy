@@ -123,7 +123,8 @@ class Project:
 
                 # Get the conversion command
                 cmd = CONFIG['svg_convert_cmd'].format(
-                    INPUT=asset_path, OUTPUT=new_path)
+                    INPUT=path.normpath(asset_path),
+                    OUTPUT=path.normpath(new_path))
                 logging.debug("Converting costume: %s", cmd)
 
                 # Run the command
@@ -134,6 +135,9 @@ class Project:
                     logging.error("SVG conversion error: %s",
                                   error.stderr.rstrip())
                     raise
+                if not path.isfile(new_path):
+                    logging.error("Failed to convert file '%s'",
+                                  costume['md5ext'])
             else:
                 logging.info("Asset '%s' already converted to png",
                              costume['md5ext'])
@@ -189,17 +193,21 @@ class Project:
 
                 # Get the conversion command
                 cmd = CONFIG['mp3_convert_cmd'].format(
-                    INPUT=asset_path, OUTPUT=new_path)
+                    INPUT=path.normpath(asset_path),
+                    OUTPUT=path.normpath(new_path))
                 logging.debug("Converting sound: %s", cmd)
 
                 # Run the command
                 try:
-                    subprocess.run(cmd, check=True,
-                                   capture_output=True, text=True)
+                    done = subprocess.run(cmd, check=True,
+                                          capture_output=True, text=True)
                 except subprocess.CalledProcessError as error:
                     logging.error("MP3 conversion error:\n%s",
                                   error.stderr.rsrtrip())
                     raise
+                if not path.isfile(new_path):
+                    logging.error("Failed to convert file '%s'",
+                                  sound['md5ext'])
             else:
                 logging.debug(
                     "Asset '%s' already converted to wav", sound['md5ext'])
