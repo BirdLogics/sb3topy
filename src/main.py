@@ -39,9 +39,6 @@ COMPRESS_MAP = {
     "LZMA": zipfile.ZIP_LZMA
 }
 
-ARGS = None  # ["-c", "data/config.json",
-#         "C:/Users/username/OneDrive/Documents/GitHub/sb3topy/examples/Beneath a Steel Sky.sb3.zip"]
-
 
 def main(args=None):
     """Main function"""
@@ -81,7 +78,7 @@ def main(args=None):
     # Save the results
     logging.info("Saving converted code")
     project_path = path.join(CONFIG['temp_folder'], "project.py")
-    with open(project_path, 'w') as file:
+    with open(project_path, 'w', encoding="utf-8", errors="ignore") as file:
         file.write(code)
 
     # Format with autopep
@@ -175,4 +172,4 @@ def load_config(config_path):
 
 
 if __name__ == "__main__":
-    main(ARGS)
+    main()
