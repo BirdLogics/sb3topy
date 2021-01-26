@@ -324,9 +324,19 @@ while not {CONDITION}:
 while not {CONDITION}:
 {SUBSTACK}
 
-# TODO Stop options
+# TODO Stop other scripts
 #: control_stop (field STOP_OPTION)
 #? control_stop_{STOP_OPTION}
+0$ {STOP_OPTION}
+
+#: control_stop_'this_script' (field STOP_OPTION)
+return None
+
+#: control_stop_'other_scripts_in_sprite' (field STOP_OPTION)
+self.stop_other()
+
+#: control_stop_'all' (field STOP_OPTION)
+util.stop_all()
 return None
 
 # TODO Clones
@@ -337,7 +347,7 @@ clone_start
 self.create_clone_of(util, {CLONE_OPTION})
 
 #: control_delete_this_clone ()
-self.delete_clone(util)
+self.delete_clone()
 
 #: bool sensing_touchingobject (field TOUCHINGOBJECTMENU) -u
 #? sensing_touching

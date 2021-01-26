@@ -31,13 +31,14 @@ import logging
 import math
 import random
 import time
+from itertools import zip_longest
 
 import pygame as pg
 
 USERNAME = ""
 
 TARGET_FPS = 31
-TURBO_MODE = True
+TURBO_MODE = False
 WORK_TIME = 1 / 60
 WARP_TIME = 0.5
 
@@ -154,35 +155,50 @@ class BlockUtil:
         self.runtime = runtime
         self.input = Inputs(runtime, self)
 
-    def send_event(self, event):
+    def send_event(self, event, restart=False):
         """Starts an event for all sprites"""
-        threads = []
+        # Get sprites in the recieving order
         sprites = self.sprites.sprites()
         sprites.reverse()
+
+        # Get a list of tasks to runs
+        tasks = []
         for sprite in sprites:
-            sprite.target.recieve_event(event, threads, self)
-        self.stage.recieve_event(event, threads, self)
-        if not threads:
-            print("Unrecieved event:", event)
-        return asyncio.gather(*threads)
+            tasks.extend(sprite.target.start_event(self, event, restart))
+        tasks.extend(self.stage.start_event(self, event, restart))
+
+        # Return an awaitable task
+        return asyncio.create_task(self._handle_tasks(tasks))
 
     def send_event_to(self, event, target):
         """Starts an event for a single target"""
-        threads = []
-        target.recieve_event(event, threads, self)
-        return asyncio.gather(*threads)
+        tasks = target.start_event(self, event)
+        return asyncio.create_task(self._handle_tasks(tasks))
+
+    async def _handle_tasks(self, tasks):
+        """Waits on a list of tasks and catches any errors"""
+        # Handle an empty list
+        if not tasks:
+            return
+
+        # Will not stop for a cancelation, only errors
+        done, _ = await asyncio.wait(
+            tasks, return_when=asyncio.FIRST_EXCEPTION)
+
+        # Handle any errors
+        for task in done:
+            if not task.cancelled() and task.exception() is not None:
+                raise task.exception()
 
     def send_broadcast(self, event):
-        """Sends and stops a broadcast"""
+        """Parses a broadcast name and sends it"""
         event = 'broadcast_' + event.title()
-        threads = self._broadcasts.get(event)
-        if threads:
-            threads.cancel()
-        threads = self.send_event(event)
-        self._broadcasts[event] = threads
+        return self.send_event(event, True)
 
-        # 3.7+, Prevent awaiting task from being canceled
-        return shield_me(threads)
+    def stop_all(self):
+        """Ends execution of the main loop"""
+        print("Stopping all...")
+        self.runtime.running = False
 
     def key_event(self, key, state):
         """Presses or releases a key and sends press events"""
@@ -280,6 +296,8 @@ class Runtime:
                 self.sprites.add(self.util.targets[name].sprite)
         self.util.sprites = self.sprites
 
+        self.running = False
+
     def quit(self):
         """Ensures fullscreen is exited to return normal display resolution"""
         if self.display.fullscreen:
@@ -290,13 +308,13 @@ class Runtime:
         """Run the main loop"""
         asyncio.get_running_loop().slow_callback_duration = 0.5
         self.util.send_event("green_flag")
-        running = True
+        self.running = True
         turbo2 = False
-        while running:
+        while self.running:
             # Allow pygame to update
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    running = False
+                    self.running = False
                 elif event.type == pg.KEYDOWN:
                     self.util.key_down(event)  # TODO When key pressed
                 elif event.type == pg.KEYUP:
@@ -476,9 +494,41 @@ class Target:
         # Clear effects
         self.effects = {}
 
-    def recieve_event(self, name, threads, util):
-        """Start an event"""
-        threads.extend(c(util) for c in self.hats.get(name, []))
+        # Reset the task dict
+        self._tasks = {}
+
+    def start_event(self, util, name, restart=True):
+        """Starts and returns a list of tasks"""
+        tasks = []
+        for cor, task in zip_longest(self.hats.get(name, []), self._tasks.get(name, [])):
+            # Either restart the task or skip it
+            if task is not None and not task.done():
+                if not restart:
+                    continue
+                task.cancel()
+
+            # Start the task
+            tasks.append(asyncio.create_task(cor(util)))
+
+        self._tasks[name] = tasks
+        return tasks
+
+    def stop_other(self):
+        """Stop scripts other than the current"""
+        this_task = asyncio.current_task()
+        this_name = None
+
+        for name in self._tasks:
+            for task in self._tasks[name]:
+                if task is this_task:
+                    this_name = name
+                else:
+                    task.cancel()
+            self._tasks[name] = []
+        if this_name is None:
+            print("Failed to find name for ", this_task)
+        self._tasks[this_name] = [this_task]
+
 
     def update(self, util):
         """Clears the dirty flag by updating the sprite, rect and/or image"""
@@ -682,7 +732,7 @@ class Target:
             )
 
     async def _warp(self, awaitable):
-        """Enables warp and disables it even if canceled"""
+        """Enables warp and disables it even if cancelled"""
         try:
             self.warp = True
             self.warp_timer = time.monotonic()
@@ -720,13 +770,17 @@ class Target:
         else:
             print("Max clones!")
 
-    def delete_clone(self, util):
+    def delete_clone(self):
         """Delete this clone, will not delete original"""
         if self.parent:
             self._clones.remove(self)
             self.clones.remove(self)
             self.sprite.kill()
-            print(len(self._clones))
+
+            # Stop all running scripts
+            for tasks in self._tasks.values():
+                for task in tasks:
+                    task.cancel()
 
     def point_towards(self, util, other):
         """Point towards another sprite"""
@@ -781,7 +835,7 @@ class Sounds:
 
         _channels - A dict with in use sound channels as keys and waiting
             tasks as values. The channels are kept so the volume can be
-            adjusted and the tasks are there to be canceled.
+            adjusted and the tasks are there to be cancelled.
     """
 
     _cache = {}
@@ -845,20 +899,22 @@ class Sounds:
             # Try to play it on an open channel
             channel = pg.mixer.find_channel()
             if channel:
-                return shield_me(self._handle_channel(sound, channel))
+                return asyncio.create_task(self._handle_channel(sound, channel))
         return asyncio.create_task(asyncio.sleep(0))
 
     async def _handle_channel(self, sound, channel):
         """Saves the channel and waits for it to finish"""
+        # Start the sound
         delay = sound.get_length()
         channel.set_volume(self.volume / 100)
         channel.play(sound)
-        try:
-            self._channels[channel] = asyncio.create_task(
-                asyncio.sleep(delay))
-            await self._channels[channel]
-        finally:
-            self._channels.pop(channel)
+
+        # Create a cancelable waiting task
+        self._channels[channel] = asyncio.create_task(asyncio.sleep(delay))
+
+        # Pop the channel once it is done or cancelled
+        await asyncio.wait((self._channels[channel],))
+        self._channels.pop(channel)
 
     @staticmethod
     def stop_all(util):
@@ -1226,8 +1282,8 @@ def main(sprites):
 
 def shield_me(task):
     """
-    Prevents a CanceledError from stopping the
-    caller when task is canceled, but will still
+    Prevents a CancelledError from stopping the
+    caller when task is cancelled, but will still
     stop at program end and will still catch
     other errors from task.
     """
