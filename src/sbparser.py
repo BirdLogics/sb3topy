@@ -19,7 +19,7 @@ CONFIG = {
 LOWER_FIELDS = ('EFFECT')
 
 # Used run directly
-LOG_LEVEL = 40
+LOG_LEVEL = 30
 
 
 def clean_identifier(text):
@@ -136,6 +136,7 @@ class Parser:
             "\n\nimport pygame as pg"
             "\n\nimport engine"
             "\nfrom engine import List"
+            "\nfrom engine import Pen"
             "\nfrom engine import number, randrange, gt, lt, eq, div"
         )
 
@@ -741,7 +742,7 @@ class Parser:
         for arg, itype in blockmap['args'].items():
             # Verify expected parameters are present
             if not arg in parameters:
-                parameters[arg] = "None"
+                parameters[arg] = self.specmap['special_yield']['code'].format(DIRTY=0) if 'y' in blockmap['flags'] else "None"
                 opcode = self.blocks[blockid]['opcode']
                 if opcode not in ("control_if_else", "operator_not"):
                     logging.warning(
@@ -763,6 +764,8 @@ class Parser:
             name = self.hats.get_unique(code)
             code = f"\nasync def {name}(self, util):\n{{SUBSTACK}}"
             code = code.format(**parameters)  # Insert substacks
+        elif 'd2' in blockmap['flags']:
+            code = code + "\n" + self.specmap['special_pen']['code'] + "\n"
 
         return code
 

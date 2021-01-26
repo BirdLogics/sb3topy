@@ -50,7 +50,6 @@ FS_SCALE = 1
 AUDIO_CHANNELS = 8
 MAX_CLONES = 300
 
-DEBUG_ASYNC = True
 DEBUG_RECTS = False
 DEBUG_FPS = True
 
@@ -329,6 +328,7 @@ class Runtime:
                     for sprite in self.util.sprites.sprites():
                         sprite.target.dirty = 3
                     self.util.stage.dirty = 3
+                    Pen.resize(self.display.size)
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     self.util.mouse_down(event)
             self.util.input.update()
@@ -356,7 +356,7 @@ class Runtime:
             self.update_sprites()
 
             # Update the screen
-            if self.util.stage.dirty:
+            if self.util.stage.dirty or Pen.dirty:
                 self.util.stage.update(self.util)
 
                 # Get the stage bg
@@ -366,9 +366,18 @@ class Runtime:
                     self.util.stage.sprite.image,
                     (self.display.rect.x, self.display.rect.y))
 
+                # Get the Pen bg
+                bg_image.blit(
+                    pg.transform.smoothscale(
+                        Pen.image, self.display.rect.size),
+                    self.display.rect.topleft
+                )
+                Pen.dirty = False
+
+                self.sprites.set_clip(self.display.rect)
                 self.sprites.clear(self.display.screen, bg_image.convert())
                 self.sprites.draw(self.display.screen)
-                self.sprites.set_clip(self.display.rect)
+
                 if DEBUG_FPS:
                     self.debug_fps()
 
@@ -528,7 +537,6 @@ class Target:
         if this_name is None:
             print("Failed to find name for ", this_task)
         self._tasks[this_name] = [this_task]
-
 
     def update(self, util):
         """Clears the dirty flag by updating the sprite, rect and/or image"""
@@ -1142,6 +1150,172 @@ class Costumes:
         return cost
 
 
+class Pen:
+    """Handles the pen for a sprite"""
+
+    # Shared image for all sprites
+    image = None
+    dirty = False
+
+    def __init__(self, util, sprite):
+        self.util = util
+        self.display = util.runtime.display
+        self.target = sprite
+        self.isdown = False
+        self.color = pg.Color("blue")
+        self.size = 1
+        self.position = (round((self.target.xpos + 240) * self.display.scale + self.display.rect[0]),
+                         round((180 - self.target.ypos) * self.display.scale + self.display.rect[1]))
+
+        if Pen.image is None:
+            Pen.image = pg.Surface(self.display.size).convert_alpha()
+            self.clear_all()
+
+    @classmethod
+    def resize(cls, size):
+        """Resize the Pen image"""
+        cls.image = pg.transform.smoothscale(cls.image, size)
+        cls.dirty = True
+
+    @classmethod
+    def clear_all(cls):
+        """Clear the pen image"""
+        cls.image.fill((255, 255, 255, 0))
+        cls.dirty = True
+
+    def down(self):
+        """Puts the pen down"""
+        self.isdown = True
+        self.move()
+
+    def up(self):
+        """Puts the pen up"""
+        self.isdown = False
+
+    def move(self):
+        """Moves and draws with the pen"""
+        end_pos = (round((self.target.xpos + 240) * self.display.scale + self.display.rect[0]),
+                   round((180 - self.target.ypos) * self.display.scale + self.display.rect[1]))
+        if self.isdown:
+            size = round(self.size * self.display.scale / 2)
+            pg.draw.line(Pen.image, self.color, self.position,
+                         end_pos, size * 2)
+            pg.draw.circle(Pen.image, self.color,
+                           self.position, size)
+            pg.draw.circle(Pen.image, self.color,
+                           end_pos, size)
+            Pen.dirty = True
+        self.position = end_pos
+
+    def stamp(self):
+        """Stamp the sprite image"""
+        self.target.update(self.util)
+        self.image.blit(
+            self.target.sprite.image, self.target.sprite.rect)
+        Pen.dirty = True
+
+    def change_size(self, value):
+        """Changes and clamps the pen size"""
+        self.set_size(self.size + value)
+
+    def set_size(self, value):
+        """Sets and clamps the pen size"""
+        self.size = max(1, min(1200, value))
+
+    def set_color(self, value):
+        """Sets the exact pen color"""
+        # Translate the color
+        if isinstance(value, str) and value.startswith("#"):
+            try:
+                self.color = pg.Color(value)
+            except ValueError:
+                self.color = pg.Color("black")
+        else:
+            self.color = pg.Color(number(value) % 0xFFFFFFFF)
+
+    def set_hue(self, value):
+        """Set and wrap pen color"""
+        _, sat, val, alp = self.color.hsva
+        self.color.hsva = (value*3.6 % 360, sat, val, alp)
+
+    def change_hue(self, value):
+        """Change and wrap pen color"""
+        hue, sat, val, alp = self.color.hsva
+        self.color.hsva = ((hue + value*3.6) % 360, sat, val, alp)
+
+    def set_saturation(self, value):
+        """Set and wrap pen saturation"""
+        hue, _, val, alp = self.color.hsva
+        self.color.hsva = (hue, value % 100, val, alp)
+
+    def change_saturation(self, value):
+        """Change and wrap pen saturation"""
+        hue, sat, val, alp = self.color.hsva
+        self.color.hsva = (hue, (sat + value) % 100, val, alp)
+
+    def set_brightness(self, value):
+        """Set and wrap pen brightness"""
+        hue, sat, _, alp = self.color.hsva
+        self.color.hsva = (hue, sat, value % 100, alp)
+
+    def change_brightness(self, value):
+        """Change and wrap pen brightness"""
+        hue, sat, val, alp = self.color.hsva
+        self.color.hsva = (hue, sat, (val + value) % 100, alp)
+
+    def set_alpha(self, value):
+        """Set and wrap pen transparency"""
+        hue, sat, val, _ = self.color.hsva
+        self.color.hsva = (hue, sat, val, value % 100)
+
+    def change_alpha(self, value):
+        """Change and wrap pen transparency"""
+        hue, sat, val, alp = self.color.hsva
+        self.color.hsva = (hue, sat, val, (alp + value) % 100)
+
+    def color_set(self, prop, value):
+        """Sets a certain color property"""
+        if prop == "color":
+            self.set_color(value)
+        elif prop == "saturation":
+            self.set_saturation(value)
+        elif prop == "brightness":
+            self.set_brightness(value)
+        elif prop == "transparency":
+            self.set_alpha(value)
+        else:
+            print("Invalid color property ", prop)
+
+    def color_change(self, prop, value):
+        """Changes a certain color property"""
+        if prop == "color":
+            self.change_hue(value)
+        elif prop == "saturation":
+            self.change_saturation(value)
+        elif prop == "brightness":
+            self.change_brightness(value)
+        elif prop == "transparency":
+            self.change_alpha(value)
+        else:
+            print("Invalid color property ", prop)
+
+    def set_shade(self, value):
+        """Sets and wraps pen shade"""
+        # TODO Pen shade
+
+    def change_shade(self, value):
+        """Changes and wraps pen shade"""
+
+    def copy(self, clone):
+        """Create a copy of the pen"""
+        pen = Pen(self.util, clone)
+        pen.isdown = self.isdown
+        pen.color = pg.Color(self.color.r, self.color.g,
+                             self.color.b, self.color.a)
+        pen.size = self.size
+        return pen
+
+
 def number(value):
     """Attempts to cast a value to a number"""
     if isinstance(value, str):
@@ -1274,31 +1448,10 @@ def main(sprites):
     logging.basicConfig(level=logging.DEBUG)
     try:
         runtime = Runtime(sprites)
-        asyncio.run(runtime.main_loop(), debug=DEBUG_ASYNC)
+        asyncio.run(runtime.main_loop())
     finally:
         if runtime:
             runtime.quit()
-
-
-def shield_me(task):
-    """
-    Prevents a CancelledError from stopping the
-    caller when task is cancelled, but will still
-    stop at program end and will still catch
-    other errors from task.
-    """
-    return asyncio.create_task(_shield_me(task))
-
-
-async def _shield_me(task):
-    """shield_me internal"""
-    errors = await asyncio.gather(task, return_exceptions=True)
-    # TODO Where are the sublists coming from?
-    if isinstance(errors[0], list):
-        errors = errors[0]
-    for error in errors:
-        if not (error is None or isinstance(error, asyncio.CancelledError)):
-            raise errors[0]
 
 
 def letter(text, index):

@@ -33,6 +33,9 @@ self.set_dirty({DIRTY})
 #: special_yield
 await self._yield({DIRTY})
 
+#: special_pen
+self.pen.move()
+
 #: procedures_definition (stack SUBSTACK) -h
 def {NAME}(self, {PARAMETERS}):{SUBSTACK}
 
@@ -89,7 +92,7 @@ self.ypos += {DY}
 self.ypos = {Y}
 
 #: motion_ifonedgebounce () -d3
-# motion_ifonedgebounce()
+0$ # motion_ifonedgebounce()
 
 #: motion_setrotationstyle (string STYLE) -d3
 self.costume.rotation_style = {STYLE}
@@ -129,15 +132,15 @@ self.costume.next()
 
 #: looks_switchbackdropto (any BACKDROP) -d3
 util.stage.costume.switch({BACKDROP})
-util.send_event('onbackdrop_' + util.stage.costume.name)
+util.send_event('onbackdrop_' + util.stage.costume.name, True)
 
 #: looks_switchbackdroptoandwait (any BACKDROP) -d3s1
 util.stage.costume.switch({BACKDROP})
-await util.send_event('onbackdrop_' + util.stage.costume.name)
+await util.send_event('onbackdrop_' + util.stage.costume.name, True)
 
 #: looks_nextbackdrop () -d3
 util.stage.costume.next()
-util.send_event('onbackdrop_' + util.stage.costume.name)
+util.send_event('onbackdrop_' + util.stage.costume.name, True)
 
 #: looks_changeeffectby (string EFFECT, float CHANGE) -d3
 self.costume.change_effect({EFFECT}, {CHANGE})
@@ -222,47 +225,53 @@ self.sounds.set_effect({EFFECT}, {VALUE})
 #: sound_changeeffectby (field EFFECT, float VALUE)
 self.sounds.change_effect({EFFECT}, {VALUE})
 
-# TODO Verify pen opcodes
 #: pen_clear ()
-pass # pen_clear()
+self.pen.clear_all()
 
 #: pen_stamp ()
-pass # pen_stamp()
-
-#: pen_down ()
-pass # pen_down()
-
-#: pen_up ()
-pass # pen_up()
-
-# Verified
-#: pen_penUp ()
-pass # pen_up()
+self.pen.stamp()
 
 #: pen_penDown ()
-print(self.xpos, self.ypos)  # pen_down()
+self.pen.down()
 
-# TODO Pen shade color menu
-#: pen_changePenHueBy (float HUE)
-pass # pen_changePenHueBy({HUE})
+#: pen_penUp ()
+self.pen.up()
 
-#: pen_setPenHueToNumber (float HUE)
-pass # pen_setPenHueToNumber({HUE})
+#: pen_setPenColorToColor (any COLOR)
+self.pen.set_color({COLOR})
 
-#: pen_changePenShadeBy (float SHADE)
-pass # pen_changePenShadeBy({SHADE})
+#: pen_changePenColorParamBy (string COLOR_PARAM, float VALUE)
+#? pen_change_{COLOR_PARAM}
+self.pen.color_set({COLOR_PARAM}, {VALUE})
 
-#: pen_setPenShadeToNumber (float SHADE)
-pass # pen_setPenShadeToNumber({SHADE})
+#: pen_setPenColorParamBy (string COLOR_PARAM, float VALUE)
+#? pen_set_{COLOR_PARAM}
+self.pen.color_change({COLOR_PARAM}, {VALUE})
 
 #: pen_changePenSizeBy (float SIZE)
-pass # pen_changePenSizeBy({SIZE})
+self.pen.change_size({SIZE})
 
 #: pen_setPenSizeTo (float SIZE)
-pass # pen_setPenSizeTo({SIZE})
+self.pen.set_size({SIZE})
 
-#: pen_setPenColorToColor (float COLOR)
-pass # pen_setPenColorToColor({COLOR})
+# Legacy blocks
+#: pen_setPenShadeToNumber (float SHADE)
+self.pen.set_shade({SHADE})
+
+#: pen_changePenShadeBy (float SHADE)
+self.pen.change_shade({SHADE})
+
+#: pen_setPenHueToNumber (float HUE)
+self.pen.set_hue({HUE})
+
+#: pen_changePenHueBy (float HUE)
+self.pen.change_hue({HUE})
+
+
+
+
+
+
 
 #: event_whenflagclicked (stack SUBSTACK) -h
 green_flag
@@ -657,6 +666,7 @@ self.ypos = {ypos}
 self.direction = {direction}
 self.size = {size}
 self.visible = {visible}
+self.pen = Pen(util, self)
 
 #: code_info_clone
 self.xpos = parent.xpos
@@ -664,6 +674,7 @@ self.ypos = parent.ypos
 self.direction = parent.direction
 self.size = parent.size
 self.visible = parent.visible
+self.pen = parent.pen.copy(self)
 
 #: code_hat
 {name}: [
