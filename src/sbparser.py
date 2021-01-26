@@ -136,7 +136,7 @@ class Parser:
             "\n\nimport pygame as pg"
             "\n\nimport engine"
             "\nfrom engine import List"
-            "\nfrom engine import number, gt, lt, eq"
+            "\nfrom engine import number, randrange, gt, lt, eq, div"
         )
 
         # Init variable Identifier handlers
@@ -310,7 +310,7 @@ class Parser:
             name = quote_string(sound['name'], '"')
 
             # Validate the sound path
-            if not re.match(r"[a-z0-9]{32}\.wav", sound['md5ext']):
+            if not re.match(r"[a-z0-9]{32}_?\.wav", sound['md5ext']):
                 logging.error(
                     "Invalid sound format or path '%s'", sound['md5ext'])
                 sounds.append("{'name': " + name + "}")
@@ -439,7 +439,7 @@ class Parser:
             self.get_inputs(parameters, block, blockmap)
 
             # Perform special parsing
-            self.post_parse(parameters, block)
+            self.post_parse(parameters, blockmap)
 
             # Get the block's converted code
             code = code + self.get_code(blockid, blockmap, parameters)
@@ -473,10 +473,9 @@ class Parser:
         parameters = {}
         fields = block.get('fields', {})
         for field, value in fields.items():
-            # Get an existing broadcast name
             if field == "BROADCAST_OPTION":
-                value = self.broadcasts.get_existing("broadcast_" + value[0])
-                parameters[field] = value
+                # Capitalise broadcasts the same
+                parameters[field] = value[0].title()
 
             # Get an existing variable name
             elif field == "VARIABLE":
@@ -496,7 +495,7 @@ class Parser:
                     name = self.variables['Stage'].get_existing(value)
                 parameters["LIST"] = name
 
-            elif field in ("PROPERTY", "OBJECT"):
+            elif field in "PROPERTY":
                 # These need to not be lowered/quoted
                 parameters[field] = value[0]
 
@@ -538,7 +537,6 @@ class Parser:
         blockmap = self.specmap.get(switch.format(
             **parameters).replace(" ", "_"), blockmap)
 
-        # TODO Custom block support
         if opcode == "procedures_definition":
             blockmap = blockmap.copy()
             mutation = self.blocks[block['inputs']
@@ -546,8 +544,9 @@ class Parser:
 
             # TODO CB, var name conflicts
             blockmap['code'] = "async def " + clean_identifier(
-                "cb_" + mutation['proccode']) + "(self, util," +\
-                ', '.join(clean_identifier("arg_" + arg) for arg in json.loads(mutation['argumentnames'])) +\
+                "cb_" + mutation['proccode']) + "(self, util, " +\
+                ', '.join(clean_identifier("arg_" + arg)
+                          for arg in json.loads(mutation['argumentnames'])) +\
                 "):\n{SUBSTACK}"
             self.blocks[blockid]['inputs'].pop("custom_block")
             blockmap['flags'] = ""
@@ -556,18 +555,20 @@ class Parser:
             mutation = block['mutation']
             blockmap['args'] = {
                 name: 'any' for name in json.loads(mutation['argumentids'])}
-            blockmap['code'] = "await self._warp(self." + \
-                clean_identifier(
-                    "cb_" + mutation['proccode']) + "(util, {PARAMETERS}))"
-            #  + "(" + ', '.join(
-            #     "{" + arg + "}" for arg in blockmap['args']
-            # )
+
+            name = clean_identifier("cb_" + mutation['proccode'])
+            if mutation.get('warp') == "true":  # May not exist for sb2
+                blockmap['code'] = "await self._warp(self." + \
+                    name + "(util, {PARAMETERS}))"
+            else:  # = 'false'
+                blockmap['code'] = "await self." + \
+                    name + "(util, {PARAMETERS})"
 
         elif opcode == "procedures_prototype":
-            pass  # TODO handle procedures_prototype
+            pass
 
         elif opcode == "argument_reporter_string_number":
-            pass  # TODO Handle argument_reporter_string_number
+            pass
 
         return blockmap
 
@@ -618,7 +619,11 @@ class Parser:
                         return quote_string(
                             self.blocks[value]['fields'][inp][0])
                     # The id points to a block
-                    return self.parse_stack(value, itype, 'y' in blockmap['flags'])
+                    stack = self.parse_stack(
+                        value, itype, 'y' in blockmap['flags'])
+                    if stack.strip() == "":
+                        stack = "pass"
+                    return stack
                 if value is not None:
                     logging.warning("Invalid input block id '%s'", value)
             if value is None:
@@ -636,9 +641,7 @@ class Parser:
 
         # Broadcast
         elif value[0] == 11:
-            value = "broadcast_" + value[1]
-            value = quote_string(
-                self.broadcasts.get_existing(value))
+            value = quote_string(value[1].title())
 
         # Variable
         elif value[0] == 12:
@@ -669,10 +672,10 @@ class Parser:
 
         return value
 
-    def post_parse(self, parameters, block):
+    def post_parse(self, parameters, blockmap):
         """Perform block specific parsing"""
-        if block['opcode'] == "sensing_of":
-            name = parameters['OBJECT']
+        if 'v' in blockmap['flags']:
+            name = parameters['OBJECT'][1:-1]
             if not name in self.variables:
                 logging.warning(
                     "Block input to sensing_of OBJECT, guessing variable name")
@@ -704,7 +707,7 @@ class Parser:
     def cast_value(value, to_type):
         """Casts a value to a certain type"""
         if to_type == "string":
-            return str(to_type)
+            return quote_string(value)
         if to_type == "float":
             return to_number(value)
         if to_type == "intR":  # Rounded int
@@ -738,11 +741,12 @@ class Parser:
         for arg, itype in blockmap['args'].items():
             # Verify expected parameters are present
             if not arg in parameters:
-                # TODO Empty if statements
                 parameters[arg] = "None"
-                logging.warning(
-                    "Block '%s' with opcode '%s' missing '%s'",
-                    blockid, self.blocks[blockid]['opcode'], arg)
+                opcode = self.blocks[blockid]['opcode']
+                if opcode not in ("control_if_else", "operator_not"):
+                    logging.warning(
+                        "Block '%s' with opcode '%s' missing '%s'",
+                        blockid, self.blocks[blockid]['opcode'], arg)
 
             # Indent stacks
             if itype == "stack":

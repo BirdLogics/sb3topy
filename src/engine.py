@@ -27,6 +27,7 @@ KEY_MAP - Maps pygame keys to their names in the project
 """
 
 import asyncio
+import logging
 import math
 import random
 import time
@@ -36,7 +37,7 @@ import pygame as pg
 USERNAME = ""
 
 TARGET_FPS = 31
-TURBO_MODE = False
+TURBO_MODE = True
 WORK_TIME = 1 / 60
 WARP_TIME = 0.5
 
@@ -64,97 +65,6 @@ KEY_MAP = {
 
 
 DISPLAY_SCALE = 1
-
-
-class Effects:
-    """Static methods for applying effects"""
-    # def apply_effects(self, image, effects):
-    #     """Currently doesn't use cache but could in future"""
-
-    #     # Brighten/Darken
-    #     brightness = effects.get('brightness', 0)
-    #     if brightness > 0:
-    #         brightness = 255 * brightness / 100
-    #         image.fill(
-    #             (brightness, brightness, brightness),
-    #             special_flags=pg.BLEND_RGB_ADD)
-    #     elif brightness < 0:
-    #         brightness = -255 * brightness / 100
-    #         image.fill(
-    #             (brightness, brightness, brightness),
-    #             special_flags=pg.BLEND_RGB_SUB)
-
-    #     # Transparent
-    #     ghost = effects.get('ghost', 0)
-    #     if ghost:
-    #         ghost = 255 * ghost / 100
-    #         image.fill(
-    #             (255, 255, 255, ghost),
-    #             special_flags=pg.BLEND_RGBA_MULT)
-
-    #     # Hue change
-    #     color = effects.get('color', 0)
-    #     if color:
-    #         color = 360 * color / 200
-    #         image = self.change_hue(image, color)
-
-    #     return image
-
-    @staticmethod
-    def change_brightness(image, value):
-        """Returns a lightened or darkened image"""
-        brightness = 255 * value
-        if brightness > 0:
-            image.fill(
-                (brightness, brightness, brightness),
-                special_flags=pg.BLEND_RGB_ADD)
-        elif brightness < 0:
-            image.fill(
-                (-brightness, -brightness, -brightness),
-                special_flags=pg.BLEND_RGB_SUB)
-
-    @staticmethod
-    def change_transparency(image, value):
-        """Returns an image with altered per-pixel transparency"""
-        image = image.copy()
-        image.fill(
-            (255, 255, 255, 255 * value),
-            special_flags=pg.BLEND_RGBA_MULT)
-        return image
-
-    @staticmethod
-    def change_hue(image, value):
-        """Returns an image with altered hue
-
-        As part of the process, the image is converted to an 8-bit
-        surface so the color palette can be adjusted. Transparency
-        is preserved, but some color quality may be lost."""
-
-        # Gets a copy of the alpha channel
-        transparency = image.convert_alpha()
-        transparency.fill((255, 255, 255, 0), special_flags=pg.BLEND_RGBA_MAX)
-
-        # Get an 8-bit surface with a color palette
-        image = image.convert(8)
-
-        # Change the hue of the palette
-        for index in range(256):
-            # Get the palette color at index
-            color = pg.Color(*image.get_palette_at(index))
-
-            # Get and wrap the new hue
-            hue = (color.hsva[0] + value) % 360
-
-            # Update the hue
-            color.hsva = (hue, *color.hsva[1:3])
-            image.set_palette_at(index, color)
-
-        # Return the image transparency
-        image.set_alpha()
-        image = image.convert_alpha()
-        image.blit(transparency, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
-
-        return image
 
 
 class Display:
@@ -238,9 +148,11 @@ class BlockUtil:
     cache = None
     stage = None
     sprites = None
+    _broadcasts = {}
 
     def __init__(self, runtime):
         self.runtime = runtime
+        self.input = Inputs(runtime, self)
 
     def send_event(self, event):
         """Starts an event for all sprites"""
@@ -250,6 +162,8 @@ class BlockUtil:
         for sprite in sprites:
             sprite.target.recieve_event(event, threads, self)
         self.stage.recieve_event(event, threads, self)
+        if not threads:
+            print("Unrecieved event:", event)
         return asyncio.gather(*threads)
 
     def send_event_to(self, event, target):
@@ -257,6 +171,18 @@ class BlockUtil:
         threads = []
         target.recieve_event(event, threads, self)
         return asyncio.gather(*threads)
+
+    def send_broadcast(self, event):
+        """Sends and stops a broadcast"""
+        event = 'broadcast_' + event.title()
+        threads = self._broadcasts.get(event)
+        if threads:
+            threads.cancel()
+        threads = self.send_event(event)
+        self._broadcasts[event] = threads
+
+        # 3.7+, Prevent awaiting task from being canceled
+        return shield_me(threads)
 
     def key_event(self, key, state):
         """Presses or releases a key and sends press events"""
@@ -307,6 +233,8 @@ class BlockUtil:
         sprites = self.sprites.sprites()
         sprites.reverse()
         for sprite in sprites:
+            if not sprite.target.visible:
+                continue
             offset = sprite.rect.topleft
             offset = (point[0] - offset[0], point[1] - offset[1])
             try:
@@ -360,8 +288,10 @@ class Runtime:
 
     async def main_loop(self):
         """Run the main loop"""
+        asyncio.get_running_loop().slow_callback_duration = 0.5
         self.util.send_event("green_flag")
         running = True
+        turbo2 = False
         while running:
             # Allow pygame to update
             for event in pg.event.get():
@@ -373,6 +303,8 @@ class Runtime:
                     # self.util.key_down(event)
                     if event.key == pg.K_F11:
                         self.display.toggle_fullscreen()
+                    elif event.key == pg.K_F10:
+                        turbo2 = not turbo2
                 elif event.type == pg.VIDEORESIZE:
                     self.display.size = (event.w, event.h)
                     self.display.setup_display()
@@ -381,6 +313,7 @@ class Runtime:
                     self.util.stage.dirty = 3
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     self.util.mouse_down(event)
+            self.util.input.update()
 
             # Allow the threads to run
             dirty = False
@@ -397,6 +330,9 @@ class Runtime:
                     for clone in target.clones:
                         if clone.dirty and clone.visible:
                             dirty = True
+
+            if turbo2:
+                continue
 
             # Update sprite rects, images, etc.
             self.update_sprites()
@@ -602,6 +538,9 @@ class Target:
 
     async def sleep(self, delay, dirty=0):
         """Yields for the given delay and set the dirty flag"""
+        # TODO Sleep for min 1 whole tick
+        # Should not run again in same tick, flags/states?
+
         # Check if the sprite has become dirtier
         if dirty > self.dirty:
             self.dirty = dirty
@@ -642,9 +581,16 @@ class Target:
         self.xpos += steps * math.cos(radians)
         self.ypos += steps * math.sin(radians)
 
-    def distance_to(self, other):
+    def distance_to(self, util, other):
         """Calculate the distance to another target"""
-        return math.sqrt((self.xpos - other.xpos)**2 + (self.ypos - other.ypos)**2)
+        if other == "_mouse_":
+            xpos = util.input.m_xpos
+            ypos = util.input.m_ypos
+        else:
+            other = util.targets.get(other, self)
+            xpos = other.xpos
+            ypos = other.ypos
+        return math.sqrt((self.xpos - xpos)**2 + (self.ypos - ypos)**2)
 
     def distance_to_point(self, point):
         """"Calculate the distance to a point (x, y)"""
@@ -652,9 +598,19 @@ class Target:
 
     def get_touching(self, util, other):
         """Check if this sprite is touching another or its clones"""
+        if other == "_mouse_":
+            self.update(util)
+            xpos, ypos = pg.mouse.get_pos()
+
+            offset = self.sprite.rect.topleft
+            offset = (xpos - offset[0], ypos - offset[1])
+            try:
+                return bool(self.sprite.mask.get_at(offset))
+            except IndexError:
+                return False
+
         other = util.targets.get(other)
         if not other:
-            print("Invalid sprite name " + other)
             return False
 
         # Must update this sprite and the other before testing
@@ -674,18 +630,6 @@ class Target:
             if pg.sprite.collide_mask(self.sprite, clone.sprite):
                 return True
         return False
-
-    # TODO Test touching point (mouse)
-    def get_touching_point(self, util, point):
-        """Check if this sprite is touching a point"""
-        # Update the image and position if necesary
-        self.update(util)
-
-        # Transform the point to match pygame coords
-        point = (point[0] * util.scale, point[1] * util.scale)
-
-        # Check if the mask contains the point
-        return self.sprite.mask.get_at(point)
 
     def change_effect(self, effect, value):
         """Changes and wraps/clamps a graphics effect"""
@@ -773,7 +717,8 @@ class Target:
             target.clones.append(clone)
             util.sprites.add(clone.sprite)
             util.send_event_to("clone_start", clone)
-        print(len(self._clones))
+        else:
+            print("Max clones!")
 
     def delete_clone(self, util):
         """Delete this clone, will not delete original"""
@@ -781,6 +726,48 @@ class Target:
             self._clones.remove(self)
             self.clones.remove(self)
             self.sprite.kill()
+            print(len(self._clones))
+
+    def point_towards(self, util, other):
+        """Point towards another sprite"""
+        if other == "_mouse_":
+            xpos = util.input.m_xpos
+            ypos = util.input.m_ypos
+        else:
+            other = util.targets.get(other, self)
+            xpos = other.xpos
+            ypos = other.ypos
+        xpos -= self.xpos
+        ypos -= self.ypos
+        direction = 90 - math.degrees(math.atan2(ypos, xpos))
+        # if ypos > 0:
+        # direction += 180
+        self.direction = direction
+
+
+class Inputs:
+    """
+    Handles keyboard and mouse inputs.
+
+    m_xpos - Mouse x position
+    m_ypos - Mouse y position
+    m_down - Mouse down?
+    """
+
+    def __init__(self, runtime, util):
+        self.util = util
+        self.runtime = runtime
+        self.m_xpos = 0
+        self.m_ypos = 0
+        self.m_down = False
+
+    def update(self):
+        """Update mouse position"""
+        xpos, ypos = pg.mouse.get_pos()
+        display = self.runtime.display
+        self.m_xpos = round((xpos - display.rect.x)/display.scale - 240)
+        self.m_ypos = round(180 - (ypos - display.rect.y)/display.scale)
+        self.m_down = bool(pg.mouse.get_pressed()[0])
 
 
 class Sounds:
@@ -849,10 +836,17 @@ class Sounds:
 
         # Play the sound
         if sound:
+            # Stop the sound if it is already playing
+            for channel, task in self._channels.items():
+                if channel.get_sound == sound:
+                    channel.stop()
+                    task.cancel()
+
+            # Try to play it on an open channel
             channel = pg.mixer.find_channel()
             if channel:
-                return asyncio.ensure_future(self._handle_channel(sound, channel))
-        return asyncio.ensure_future(asyncio.sleep(0))
+                return shield_me(self._handle_channel(sound, channel))
+        return asyncio.create_task(asyncio.sleep(0))
 
     async def _handle_channel(self, sound, channel):
         """Saves the channel and waits for it to finish"""
@@ -860,22 +854,21 @@ class Sounds:
         channel.set_volume(self.volume / 100)
         channel.play(sound)
         try:
-            self._channels[channel] = asyncio.ensure_future(
+            self._channels[channel] = asyncio.create_task(
                 asyncio.sleep(delay))
             await self._channels[channel]
-        # except asyncio.CancelledError():
-        #     channel.stop()
         finally:
             self._channels.pop(channel)
 
     @staticmethod
     def stop_all(util):
         """Stops all sounds for all sprites"""
-        for target in util.targets.values():
-            target.sounds.stop()
+        for sprite in util.sprites.sprites():
+            sprite.target.sounds.stop()
+        util.stage.sounds.stop()
 
     def stop(self):
-        """Stops sounds for just this sprite"""
+        """Stops all sounds for just this sprite"""
         for channel, task in self._channels.items():
             channel.stop()
             task.cancel()
@@ -883,6 +876,13 @@ class Sounds:
     def copy(self):
         """Returns a copy of this Sounds"""
         return Sounds(self.volume, self.sounds_list, self.sounds)
+
+    def set_effect(self, effect, value):
+        """Set a sound effect, not implemented"""
+        # TODO Pan effect with Channel.set_volume(left, right)
+
+    def change_effect(self, effect, value):
+        """Change a sound effect, not implemented"""
 
 
 class Costumes:
@@ -972,10 +972,10 @@ class Costumes:
         # TODO Proper image scale clamping
 
         # Scale the image
-        scale = max(0.01, size/100 / self.costume['scale'])
+        scale = max(0.05, size/100 / self.costume['scale'])
         image = pg.transform.smoothscale(
-            image, (int(image.get_width() * scale),
-                    int(image.get_height() * scale))
+            image, (max(5, int(image.get_width() * scale)),
+                    max(5, int(image.get_height() * scale)))
         )
 
         # Rotate the image
@@ -1080,7 +1080,10 @@ class Costumes:
 
     def copy(self):
         """Return a copy of this list"""
-        return Costumes(self.number - 1, self.rotation_style, self.costume_list)
+        cost = Costumes(self.number - 1, self.rotation_style,
+                        self.costume_list)
+        cost.effects = self.effects.copy()
+        return cost
 
 
 def number(value):
@@ -1162,7 +1165,11 @@ class List:
         return None
 
     def __contains__(self, item):
-        return item in self.list
+        item = str(item).casefold()
+        for value in self.list:
+            if item == str(value).casefold():
+                return True
+        return False
 
     def __str__(self):
         char_join = True
@@ -1179,16 +1186,17 @@ class List:
 
     # TODO Variable/list reporters
     def show(self):
-        """Do nothing"""
+        """Print list"""
+        print(self.list)
 
     def hide(self):
         """Do nothing"""
 
     def index(self, item):
         """Find the index of an item, case insensitive"""
-        item = str(item).lower()
+        item = str(item).casefold()
         for i, value in enumerate(self.list):
-            if str(value).lower() == item:
+            if str(value).casefold() == item:
                 return i + 1
         return 0
 
@@ -1207,6 +1215,7 @@ class List:
 def main(sprites):
     """Run the program"""
     runtime = None
+    logging.basicConfig(level=logging.DEBUG)
     try:
         runtime = Runtime(sprites)
         asyncio.run(runtime.main_loop(), debug=DEBUG_ASYNC)
@@ -1215,11 +1224,32 @@ def main(sprites):
             runtime.quit()
 
 
+def shield_me(task):
+    """
+    Prevents a CanceledError from stopping the
+    caller when task is canceled, but will still
+    stop at program end and will still catch
+    other errors from task.
+    """
+    return asyncio.create_task(_shield_me(task))
+
+
+async def _shield_me(task):
+    """shield_me internal"""
+    errors = await asyncio.gather(task, return_exceptions=True)
+    # TODO Where are the sublists coming from?
+    if isinstance(errors[0], list):
+        errors = errors[0]
+    for error in errors:
+        if not (error is None or isinstance(error, asyncio.CancelledError)):
+            raise errors[0]
+
+
 def letter(text, index):
     """Gets a letter from string"""
     try:
-        return str(text)[index - 1]
-    except:
+        return str(text)[number(index) - 1]
+    except IndexError:
         return ""
 
 
@@ -1239,6 +1269,22 @@ def lt(val1, val2):
 
 def eq(val1, val2):
     return str(val1).lower() == str(val2).lower()
+
+
+def div(val1, val2):
+    try:
+        return number(val1) / number(val2)
+    except ZeroDivisionError:
+        return float('infinity')
+
+
+def randrange(val1, val2):
+    val1 = number(val1)
+    val2 = number(val2)
+    val1, val2 = min(val1, val2), max(val1, val2)
+    if isinstance(val1, float) or isinstance(val2, float):
+        return random.random() * abs(val2-val1) + val1
+    return random.randint(val1, val2)
 
 
 if __name__ == '__main__':

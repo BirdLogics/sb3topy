@@ -58,7 +58,7 @@ self.set_direction(self.direction - {DEGREES})
 self.set_direction({DIRECTION})
 
 #: motion_pointtowards (string TOWARDS) -d3
-self.point_towards({TOWARDS})
+self.point_towards(util, {TOWARDS})
 
 # other = util.targets[{TOWARDS}]
 # radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
@@ -133,7 +133,7 @@ util.send_event('onbackdrop_' + util.stage.costume.name)
 
 #: looks_switchbackdroptoandwait (any BACKDROP) -d3s1
 util.stage.costume.switch({BACKDROP})
-await til.send_event('onbackdrop_' + util.stage.costume.name)
+await util.send_event('onbackdrop_' + util.stage.costume.name)
 
 #: looks_nextbackdrop () -d3
 util.stage.costume.next()
@@ -216,6 +216,12 @@ self.sounds.set_volume({VOLUME})
 #: float sound_volume ()
 self.sounds.volume
 
+#: sound_seteffectto (field EFFECT, float VALUE)
+self.sounds.set_effect({EFFECT}, {VALUE})
+
+#: sound_changeeffectby (field EFFECT, float VALUE)
+self.sounds.change_effect({EFFECT}, {VALUE})
+
 # TODO Verify pen opcodes
 #: pen_clear ()
 pass # pen_clear()
@@ -281,13 +287,13 @@ if not {VALUE} > util.timer:
     return
 
 #: event_whenbroadcastreceived (stack SUBSTACK, field BROADCAST_OPTION) -h
-{BROADCAST_OPTION}
+broadcast_{BROADCAST_OPTION}
 
 #: event_broadcast (string BROADCAST_INPUT)
-util.send_event({BROADCAST_INPUT})
+util.send_broadcast({BROADCAST_INPUT})
 
 #: event_broadcastandwait (string BROADCAST_INPUT) -s1
-await util.send_event({BROADCAST_INPUT})
+await util.send_broadcast({BROADCAST_INPUT})
 
 #: control_wait (float DURATION) -s1
 await self.sleep({DURATION})
@@ -345,7 +351,7 @@ False
 False
 
 #: float sensing_distanceto (field DISTANCETOMENU)
-self.distance_to({DISTANCETOMENU})
+self.distance_to(util, {DISTANCETOMENU})
 
 # TODO sensing_askandwait
 #: sensing_askandwait (string QUESTION)
@@ -358,14 +364,14 @@ answer
 util.get_key({KEY_OPTION})
 
 #: bool sensing_mousedown ()
-pg.mouse.get_pressed()[0]
+util.input.m_down
 
 # TODO Mouse stage coords
 #: int sensing_mousex ()
-pg.mouse.get_pos()[0]
+util.input.m_xpos
 
 #: int sensing_mousey ()
-pg.mouse.get_pos()[1]
+util.input.m_ypos
 
 #: int sensing_loudness ()
 0
@@ -382,7 +388,7 @@ util.reset_timer()
 
 # TODO {OBJECT} Stage = _stage_
 # TODO Properties such 
-#: any sensing_of (field PROPERTY, field OBJECT)
+#: any sensing_of (field PROPERTY, field OBJECT) -v
 #? sensing_{PROPERTY}_of
 util.targets[{OBJECT}].{PROPERTY}
 
@@ -454,12 +460,11 @@ engine.USERNAME
 #: float operator_multiply (float NUM1, float NUM2)
 ({NUM1} * {NUM2})
 
-#: float operator_divide (float NUM1, float NUM2)
-({NUM1} / {NUM2})
+#: float operator_divide (any NUM1, any NUM2)
+div({NUM1}, {NUM2})
 
-# TODO Decimal random
 #: float operator_random (float FROM, float TO)
-random.randint({FROM}, {TO})
+randrange({FROM}, {TO})
 
 # TODO Only string if one can't be casted
 #: bool operator_lt (any OPERAND1, any OPERAND2)
