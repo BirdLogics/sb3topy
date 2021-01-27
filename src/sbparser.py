@@ -191,7 +191,7 @@ class Parser:
                     block['next'] = None
 
                     # Parse the block
-                    line = self.parse_stack(block_id, target['blocks'])
+                    line = self.parse_stack(block_id, target['blocks']) + "\n"
 
                     # If the function is empty, add pass
                     if len(line.strip().split('\n')) == 1:
@@ -432,7 +432,7 @@ class Parser:
 
             # Check if dirty needs to be set
             if 's' in blockmap['flags'] and dirty:
-                code = code + self.specmap['special_dirty']['code'].format(
+                code = code + "\n" + self.specmap['special_dirty']['code'].format(
                     DIRTY=dirty) + '\n\n'
                 dirty = 0
 
@@ -452,14 +452,15 @@ class Parser:
             block = self.blocks.get(blockid)
 
         # Check if the parent block requires yielding
+        code = code.rstrip()
         if end_yield and input_type == "stack":
-            code = code + \
+            code = code + "\n" +\
                 self.specmap['special_yield']['code'].format(
                     DIRTY=dirty) + "\n"
 
         # Check if dirty needs to be set
         elif dirty:
-            code = code + \
+            code = code + "\n" + \
                 self.specmap['special_dirty']['code'].format(
                     DIRTY=dirty) + "\n"
 

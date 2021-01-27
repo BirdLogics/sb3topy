@@ -305,7 +305,7 @@ class Runtime:
 
     async def main_loop(self):
         """Run the main loop"""
-        asyncio.get_running_loop().slow_callback_duration = 0.5
+        asyncio.get_running_loop().slow_callback_duration = 0.49
         self.util.send_event("green_flag")
         self.running = True
         turbo2 = False
@@ -591,7 +591,9 @@ class Target:
     async def _yield(self, dirty=0):
         """Yields and sets the dirty flag if not in warp mode"""
         # Also checks if running longer than WARP_TIME
-        if not self.warp or time.monotonic() > self.warp_timer + WARP_TIME:
+        if not self.warp or time.monotonic() - self.warp_timer > WARP_TIME:
+            if self.warp:
+                print("Overtime!")
             await self.sleep(0, dirty)
 
     async def sleep(self, delay, dirty=0):
@@ -607,6 +609,7 @@ class Target:
         if self.warp:
             # Toggle warp off for other scripts in this sprite
             self.warp = False
+            print("yield")
             await asyncio.sleep(delay)
             self.warp = True
 
@@ -741,14 +744,12 @@ class Target:
 
     async def _warp(self, awaitable):
         """Enables warp and disables it even if cancelled"""
-        try:
-            self.warp = True
+        old_warp = self.warp
+        self.warp = True
+        if not old_warp:
             self.warp_timer = time.monotonic()
-            await awaitable
-        # except asyncio.CancelledError:
-        #     pass
-        finally:
-            self.warp = False
+        await awaitable
+        self.warp = old_warp
 
     def goto(self, util, other):
         """Goto the position of another sprite"""
@@ -768,21 +769,32 @@ class Target:
                 if target is None:
                     return
 
-            # TODO Clone layering
+            # Get a layer for the clone
+            # Move the top sprite where the clone will go,
+            # Then move it back to the top leaving an empty space
+            top = util.sprites.get_top_layer()
+            bottom = util.sprites.get_layer_of_sprite(self.sprite)
+            top_sprite = util.sprites.get_top_sprite()
+            self._move_layers(util.sprites, top, bottom-top)
+            util.sprites.change_layer(top_sprite, top+1)
+
             # __class__ is the Sprite's subclass
             clone = target.__class__(util, target)
             self._clones.append(clone)  # Shared between targets
             target.clones.append(clone)
-            util.sprites.add(clone.sprite)
+            util.sprites.add(clone.sprite, layer=bottom)
             util.send_event_to("clone_start", clone)
         else:
             print("Max clones!")
 
-    def delete_clone(self):
+    def delete_clone(self, util):
         """Delete this clone, will not delete original"""
         if self.parent:
             self._clones.remove(self)
             self.clones.remove(self)
+
+            # Get rid of this sprite layer
+            self.front_layer(util)
             self.sprite.kill()
 
             # Stop all running scripts
