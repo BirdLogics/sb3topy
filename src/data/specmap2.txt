@@ -560,8 +560,9 @@ math.degrees(math.atan({NUM}))
 #: float operator_mathop_'ln' (float NUM)
 math.log({NUM})
 
+# math.log(x, 10) is closer to Scratch's log10
 #: float operator_mathop_'log' (float NUM)
-math.log10({NUM})
+math.log({NUM}, 10)
 
 #: float operator_mathop_'e_^' (float NUM)
 math.exp({NUM})
