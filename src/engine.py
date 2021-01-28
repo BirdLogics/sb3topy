@@ -133,7 +133,7 @@ class Display:
                 (size[0] - scale * STAGE_SIZE[0]) // 2,
                 0, scale * STAGE_SIZE[0], size[1])
 
-        # Save the calculate info
+        # Save the calculated info
         self.size = size
         self.scale = scale
         self.rect = rect
@@ -328,7 +328,7 @@ class Runtime:
                     for sprite in self.util.sprites.sprites():
                         sprite.target.dirty = 3
                     self.util.stage.dirty = 3
-                    Pen.resize(self.display.size)
+                    Pen.resize(self.display.rect.size)
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     self.util.mouse_down(event)
             self.util.input.update()
@@ -569,7 +569,7 @@ class Target:
         display = util.runtime.display
 
         # Rotate the rect properly
-        offset = self.costume.costume['offset']
+        offset = self.costume.costume['offset'] * self.size/100
         offset = offset.rotate(self.direction-90)
         self.sprite.rect = self.sprite.image.get_rect(
             center=(display.scale*(offset + pg.math.Vector2(self.xpos + STAGE_SIZE[0]//2,
@@ -609,7 +609,6 @@ class Target:
         if self.warp:
             # Toggle warp off for other scripts in this sprite
             self.warp = False
-            print("yield")
             await asyncio.sleep(delay)
             self.warp = True
 
@@ -1176,11 +1175,12 @@ class Pen:
         self.isdown = False
         self.color = pg.Color("blue")
         self.size = 1
-        self.position = (round((self.target.xpos + 240) * self.display.scale + self.display.rect[0]),
-                         round((180 - self.target.ypos) * self.display.scale + self.display.rect[1]))
+        self.position = (self.target.xpos + STAGE_SIZE[0]//2,
+                         STAGE_SIZE[1]//2 - self.target.ypos)
 
         if Pen.image is None:
-            Pen.image = pg.Surface(self.display.size).convert_alpha()
+            Pen.image = pg.Surface(self.display.rect.size).convert_alpha()
+            Pen.scale = self.display.scale
             self.clear_all()
 
     @classmethod
@@ -1206,24 +1206,30 @@ class Pen:
 
     def move(self):
         """Moves and draws with the pen"""
-        end_pos = (round((self.target.xpos + 240) * self.display.scale + self.display.rect[0]),
-                   round((180 - self.target.ypos) * self.display.scale + self.display.rect[1]))
+        end_pos = (self.target.xpos + STAGE_SIZE[0]//2,
+                   STAGE_SIZE[1]//2 - self.target.ypos)
         if self.isdown:
             size = round(self.size * self.display.scale / 2)
-            pg.draw.line(Pen.image, self.color, self.position,
-                         end_pos, size * 2)
+            pg.draw.line(Pen.image, self.color, self._scale_point(
+                self.position), self._scale_point(end_pos), size * 2)
             pg.draw.circle(Pen.image, self.color,
-                           self.position, size)
+                           self._scale_point(self.position), size)
             pg.draw.circle(Pen.image, self.color,
-                           end_pos, size)
+                           self._scale_point(end_pos), size)
             Pen.dirty = True
         self.position = end_pos
+
+    def _scale_point(self, point):
+        """Scales and rounds point to match the display"""
+        return (round(point[0]*self.display.scale),
+                round(point[1]*self.display.scale))
 
     def stamp(self):
         """Stamp the sprite image"""
         self.target.update(self.util)
         self.image.blit(
-            self.target.sprite.image, self.target.sprite.rect)
+            self.target.sprite.image, self.target.sprite.rect.move(
+                -self.display.rect.x, -self.display.rect.y))
         Pen.dirty = True
 
     def change_size(self, value):
@@ -1489,7 +1495,10 @@ def lt(val1, val2):
 
 
 def eq(val1, val2):
-    return str(val1).lower() == str(val2).lower()
+    try:
+        return float(val1) == float(val2)
+    except ValueError:
+        return str(val1).casefold() == str(val2).casefold()
 
 
 def div(val1, val2):
