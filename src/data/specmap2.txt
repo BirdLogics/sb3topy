@@ -208,7 +208,7 @@ self.sounds.play({SOUND_MENU})
 await self.sounds.play({SOUND_MENU})
 
 #: sound_stopallsounds ()
-self.sounds.stop_all(util)
+self.sounds.stop_all()
 
 #: sound_changevolumeby (float VOLUME) 
 self.sounds.change_volume({VOLUME})
@@ -224,6 +224,9 @@ self.sounds.set_effect({EFFECT}, {VALUE})
 
 #: sound_changeeffectby (field EFFECT, float VALUE)
 self.sounds.change_effect({EFFECT}, {VALUE})
+
+#: sound_cleareffects
+self.sounds.clear_effects()
 
 #: pen_clear ()
 self.pen.clear_all()

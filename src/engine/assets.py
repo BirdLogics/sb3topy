@@ -16,17 +16,22 @@ class Sounds:
     """
     Handles sounds for a target
 
-        sounds - A dict referencing sounds (pg.mixer.Sound) by name
-        sounds_list - Used to reference sounds by number
-        volume - The current volume. If set directly, currently playing
-            channels will not update. Use set_volume to update them.
+    sounds - A dict referencing sounds (pg.mixer.Sound) by name
+    sounds_list - Used to reference sounds by number
+    volume - The current volume. If set directly, currently playing
+        channels will not update. Use set_volume to update them.
+    effects - A dict containing current sound effects
 
-        _channels - A dict with in use sound channels as keys and waiting
-            tasks as values. The channels are kept so the volume can be
-            adjusted and the tasks are there to be cancelled.
+    _channels - A dict with sound channels as keys and waiting
+        tasks as values. The channels are kept so the volume can be
+        adjusted and the tasks are there to be cancelled.
+
+    _cache - A shared dict containing md5ext / Sound pairs
+    _all_sounds - Contains all sound tasks ready for cancellation
     """
 
     _cache = {}
+    _all_sounds = {}
 
     def __init__(self, volume, sounds, copy_dict=None):
         if copy_dict is None:
@@ -39,8 +44,10 @@ class Sounds:
         else:
             self.sounds = copy_dict
             self.sounds_list = sounds
+
+        self.volume = volume
+        self.effects = {}
         self._channels = {}
-        self.set_volume(volume)
 
     def _load_sound(self, path):
         """Load a sound or retrieve it from cache"""
@@ -53,12 +60,23 @@ class Sounds:
     def set_volume(self, volume):
         """Sets the volume and updates it for playing sounds"""
         self.volume = max(0, min(100, volume))
-        for channel in self._channels:
-            channel.set_volume(self.volume / 100)
+        self._update_volume()
 
     def change_volume(self, volume):
         """Changes and updates the volume by an amount"""
         self.set_volume(self.volume + volume)
+
+    def _update_volume(self):
+        """Updates the volume for every channel"""
+        lvol, rvol = self._get_volume()
+        for channel in self._channels:
+            channel.set_volume(lvol, rvol)
+
+    def _get_volume(self):
+        """Gets the left and right volume levels"""
+        pan = self.effects.get("pan", 0)
+        return (max(0, min(100, self.volume - pan)) / 100,
+                max(0, min(100, self.volume + pan)) / 100)
 
     def play(self, name):
         """Plays the sound and returns an awaitable."""
@@ -94,39 +112,45 @@ class Sounds:
         """Saves the channel and waits for it to finish"""
         # Start the sound
         delay = sound.get_length()
-        channel.set_volume(self.volume / 100)
+        channel.set_volume(*self._get_volume())
         channel.play(sound)
 
         # Create a cancelable waiting task
-        self._channels[channel] = asyncio.create_task(asyncio.sleep(delay))
+        task = asyncio.create_task(asyncio.sleep(delay))
+        self._channels[channel] = task
+        self._all_sounds[channel] = task
 
         # Pop the channel once it is done or cancelled
-        await asyncio.wait((self._channels[channel],))
+        await asyncio.wait((task,))
         self._channels.pop(channel)
+        self._all_sounds.pop(channel)
 
-    @staticmethod
-    def stop_all(util):
+    @classmethod
+    def stop_all(cls):
         """Stops all sounds for all sprites"""
-        for sprite in util.sprites.sprites():
-            sprite.target.sounds.stop()
-        util.stage.sounds.stop()
-
-    def stop(self):
-        """Stops all sounds for just this sprite"""
-        for channel, task in self._channels.items():
-            channel.stop()
+        for channel, task in cls._all_sounds.items():
             task.cancel()
+            channel.stop()
 
     def copy(self):
         """Returns a copy of this Sounds"""
         return Sounds(self.volume, self.sounds_list, self.sounds)
 
     def set_effect(self, effect, value):
-        """Set a sound effect, not implemented"""
-        # TODO Pan effect with Channel.set_volume(left, right)
+        """Set a sound effect"""
+        if effect == 'pan':
+            self.effects['pan'] = max(-100, min(100, value))
+            self._update_volume()
 
     def change_effect(self, effect, value):
-        """Change a sound effect, not implemented"""
+        """Change a sound effect"""
+        value = self.effects.get(effect, 0) + value
+        self.set_effect(effect, value)
+
+    def clear_effects(self):
+        """Clear sound effects"""
+        self.effects = {}
+        self._update_volume()
 
 
 class Costumes:
