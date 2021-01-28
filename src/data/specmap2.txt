@@ -483,7 +483,7 @@ engine.USERNAME
 div({NUM1}, {NUM2})
 
 #: float operator_random (float FROM, float TO)
-randrange({FROM}, {TO})
+pick_rand({FROM}, {TO})
 
 # TODO Only string if one can't be casted
 #: bool operator_lt (any OPERAND1, any OPERAND2)
@@ -509,7 +509,7 @@ not {OPERAND}
 ({STRING1} + {STRING2})
 
 #: string operator_letter_of (intF LETTER, STRING)
-engine.letter({STRING}, {LETTER})
+letter_of({STRING}, {LETTER})
 
 #: int operator_length (string STRING)
 len(str({STRING}))
@@ -525,7 +525,7 @@ round({NUM})
 
 #: float operator_mathop (string OPERATOR, float NUM)
 #? operator_mathop_{OPERATOR}
-number({NUM})$
+0$
 
 #: int operator_mathop_'abs' (float NUM)
 abs({NUM})
@@ -577,7 +577,7 @@ math.pow(10, {NUM})
 {PREFIX}.{VARIABLE} = {VALUE}
 
 #: data_changevariableby (field VARIABLE, float VALUE, field PREFIX)
-{PREFIX}.{VARIABLE} = number({PREFIX}.{VARIABLE}) + {VALUE}
+{PREFIX}.{VARIABLE} = tonum({PREFIX}.{VARIABLE}) + {VALUE}
 
 #: data_showvariable (field VARIABLE, field PREFIX)
 print({PREFIX}.{VARIABLE})

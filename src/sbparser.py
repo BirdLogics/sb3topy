@@ -137,7 +137,7 @@ class Parser:
             "\n\nimport engine"
             "\nfrom engine import List"
             "\nfrom engine import Pen"
-            "\nfrom engine import number, randrange, gt, lt, eq, div"
+            "\nfrom engine import tonum, pick_rand, letter_of, gt, lt, eq, div"
         )
 
         # Init variable Identifier handlers
@@ -160,7 +160,7 @@ class Parser:
         code = code + (
             "\n}\n\n"
             "if __name__ == '__main__':\n"
-            "    engine.main(SPRITES)\n"
+            "    engine.start(SPRITES)\n"
         )
 
         return code
@@ -726,11 +726,11 @@ class Parser:
         if wrap_type == "string":
             return "str(" + value + ")"
         if wrap_type == "float":
-            return "number(" + value + ")"
+            return "tonum(" + value + ")"
         if wrap_type == "intR":
-            return "round(number(" + value + "))"
+            return "round(tonum(" + value + "))"
         if wrap_type == "int":
-            return "int(number(" + value + "))"
+            return "int(tonum(" + value + "))"
         return value
 
     def get_code(self, blockid, blockmap, parameters):

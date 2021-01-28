@@ -29,7 +29,7 @@ CONFIG = {
 
     "debug_json": True,
     "debug_manifest": True,
-    "log_level": 20
+    "log_level": 30
 }
 
 COMPRESS_MAP = {
@@ -87,7 +87,9 @@ def main(args=None):
 
     # Copy engine files
     logging.info("Copying engine files")
-    shutil.copyfile("engine.py", path.join(CONFIG['temp_folder'], "engine.py"))
+    shutil.rmtree(path.join(CONFIG['temp_folder'], "engine"), )
+    shutil.copytree("engine", path.join(CONFIG['temp_folder'], "engine"))
+    # shutil.copyfile("engine.py", path.join(CONFIG['temp_folder'], "engine.py"))
 
     if CONFIG['zip_create']:
         logging.info("Creating zip file")
