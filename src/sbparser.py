@@ -99,7 +99,7 @@ class Parser:
         # Parse the specmap file
         pattern = (
             r"(?s)#: ?(\w*?)?(?# type)"
-            r" ?((?:\w|'|\^)+)(?# opcode) ?"
+            r" ?((?:\w|'|\^|#)+)(?# opcode) ?"
             r"(?:\(([\w, ]+)?\))?(?# args) ?"
             r"(?:-(\w+))?(?# flags)"
             r"(?:\n#\? ?([\w{}]+))?(?# switch)"
@@ -342,7 +342,7 @@ class Parser:
             name = self.variables[self.name].get_existing("var_" + var[0])
             vars_init.append(init_code.format(
                 name=name,
-                value=quote_or_num(var[1])
+                value=quote_string(var[1], '"')
             ))
             vars_clone.append(clone_code.format(
                 name=name
