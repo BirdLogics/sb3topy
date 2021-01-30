@@ -47,22 +47,18 @@ class Target:
     # Clones for all sprites
     _clones = []
 
+    xpos = 0
+    ypos = 0
+    direction = 90
+    visible = True
+
     # draggable = False
-    # rotationStyle
-    # volume = 100
     # tempo = 60
     # videoTransparency = 50
     # videoState
     # textToSpeechLanguage
 
     def __init__(self, _, parent=None):
-        # Default values
-        self.xpos = 0
-        self.ypos = 0
-        self.direction = 90
-        self.size = 100
-        self.visible = True
-
         # These must be set by the subsclass
         self.costume = None
         self.sounds = None
@@ -137,9 +133,7 @@ class Target:
     def _update_image(self, util):
         """Updates and transforms the sprites image"""
         # Update the image
-        image = self.costume.get_image(
-            self.size * util.runtime.display.scale,
-            self.direction)
+        image = self.costume.get_image(util, self.direction)
         self.sprite.image = image
         self.sprite.mask = pg.mask.from_surface(image)
 
@@ -151,7 +145,7 @@ class Target:
         display = util.runtime.display
 
         # Rotate the rect properly
-        offset = self.costume.costume['offset'] * self.size/100
+        offset = self.costume.costume['offset'] * self.costume.size/100
         offset = offset.rotate(self.direction-90)
         self.sprite.rect = self.sprite.image.get_rect(
             center=(display.scale*(offset + pg.math.Vector2(self.xpos + STAGE_SIZE[0]//2,

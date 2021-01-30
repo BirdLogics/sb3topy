@@ -11,6 +11,8 @@ import asyncio
 
 import pygame as pg
 
+from .config import STAGE_SIZE
+
 
 class Sounds:
     """
@@ -160,8 +162,11 @@ class Costumes:
     costumes - A dict referencing costume by name
     costumes_list - Used to reference costumes by number
 
-    name - The name of the current costume
-    number - The number of the current costume
+    name - The name of the current costume, readonly
+    number - The number of the current costume, readonly
+
+    size - The current costume size
+    rotation_style - The current rotation style
 
     effects - A dict of current effects and values
 
@@ -170,10 +175,11 @@ class Costumes:
 
     _cache = {}
 
-    def __init__(self, costume_number, rotation_style, costumes):
+    def __init__(self, costume_number, size, rotation_style, costumes):
         self.number = costume_number + 1
         self.costume = costumes[costume_number]
         self.name = self.costume['name']
+        self.size = size
         self.rotation_style = rotation_style
 
         self.costumes = {}
@@ -197,6 +203,14 @@ class Costumes:
             asset['number'] = index + 1
             self.costumes[asset['name']] = asset
             self.costume_list.append(asset)
+
+    def _load_image(self, path):
+        """Loads an image or retrieves it from cache"""
+        image = self._cache.get(path)
+        if not image:
+            image = pg.image.load("assets/" + path).convert_alpha()
+            self._cache[path] = image
+        return image
 
     def switch(self, costume):
         """Sets the costume"""
@@ -224,40 +238,22 @@ class Costumes:
         self.costume = self.costume_list[self.number - 1]
         self.name = self.costume['name']
 
-    def _load_image(self, path):
-        """Loads an image or retrieves it from cache"""
-        image = self._cache.get(path)
-        if not image:
-            image = pg.image.load("assets/" + path).convert_alpha()
-            self._cache[path] = image
-        return image
-
-    def get_image(self, size, direction):
-        """Get the current image with a size and direction"""
-        # Get the base image
+    def set_size(self, value):
+        """Set the costume size"""
         image = self.costume['image']
 
-        # TODO Proper image scale clamping
+        cost_w = image.get_width() / self.costume['scale']
+        cost_h = image.get_height() / self.costume['scale']
 
-        # Scale the image
-        scale = max(0.05, size/100 / self.costume['scale'])
-        image = pg.transform.smoothscale(
-            image, (max(5, int(image.get_width() * scale)),
-                    max(5, int(image.get_height() * scale)))
-        )
+        min_scale = min(1, max(5 / cost_w, 5 / cost_h))
+        max_scale = min(1.5 * STAGE_SIZE[0] / cost_w,
+                        1.5 * STAGE_SIZE[1] / cost_h)
 
-        # Rotate the image
-        if self.rotation_style == "all around":
-            # Segmentation fault here if image size is too small
-            image = pg.transform.rotate(image, 90-direction)
-        elif self.rotation_style == "left-right":
-            if direction > 0:
-                image = pg.transform.flip(image, True, False)
+        self.size = max(min_scale, min(max_scale, value/100)) * 100
 
-        # Apply effects
-        image = self._apply_effects(image)
-
-        return image
+    def change_size(self, value):
+        """Changes the costume size"""
+        self.set_size(self.size + value)
 
     def set_effect(self, effect, value):
         """Sets and wraps/clamps a graphics effect"""
@@ -304,51 +300,77 @@ class Costumes:
         color = self.effects.get('color', 0)
         if color:
             color = 360 * color / 200
-            image = self._hue_effect(image, color)
+            image = hue_effect(image, color)
 
         return image
 
-    @staticmethod
-    def _hue_effect(image, value):
-        """
-        Changes the hue of an image for the color effect
-        Value should be between 0 and 360. Coverts the image
-        to an 8-bit surface and adjusts the color palette.
-        Transparency is copied first to preserve it.
-        """
+    def get_image(self, util, direction):
+        """Get the current image with a size and direction"""
+        # Get the base image
+        image = self.costume['image']
 
-        # Get a copy of the alpha channel
-        transparency = image.convert_alpha()
-        transparency.fill((255, 255, 255, 0),
-                          special_flags=pg.BLEND_RGBA_MAX)
+        # Scale the image
+        scale = self.size/100 / \
+            self.costume['scale'] * util.runtime.display.scale
+        image = pg.transform.smoothscale(
+            image, (max(4, int(image.get_width() * scale)),
+                    max(4, int(image.get_height() * scale)))
+        )
 
-        # Get an 8-bit surface with a color palette
-        image = image.convert(8)
+        # Rotate the image
+        if self.rotation_style == "all around":
+            # Segmentation fault here if image size is too small
+            image = pg.transform.rotate(image, 90-direction)
+        elif self.rotation_style == "left-right":
+            if direction > 0:
+                image = pg.transform.flip(image, True, False)
 
-        # Change the hue of the palette
-        for index in range(256):
-            # Get the palette color at index
-            color = pg.Color(*image.get_palette_at(index))
-
-            # Get the new hue
-            hue = color.hsva[0] + value
-            if hue > 360:
-                hue -= 360
-
-            # Update the hue
-            color.hsva = (hue, *color.hsva[1:3])
-            image.set_palette_at(index, color)
-
-        # Return the image transparency
-        image.set_alpha()
-        image = image.convert_alpha()
-        image.blit(transparency, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
+        # Apply effects
+        image = self._apply_effects(image)
 
         return image
 
     def copy(self):
         """Return a copy of this list"""
-        cost = Costumes(self.number - 1, self.rotation_style,
-                        self.costume_list)
+        cost = Costumes(self.number - 1, self.size,
+                        self.rotation_style, self.costume_list)
         cost.effects = self.effects.copy()
         return cost
+
+
+def hue_effect(image, value):
+    """
+    Changes the hue of an image for the color effect
+    Value should be between 0 and 360. Coverts the image
+    to an 8-bit surface and adjusts the color palette.
+    Transparency is copied first to preserve it.
+    """
+
+    # Get a copy of the alpha channel
+    transparency = image.convert_alpha()
+    transparency.fill((255, 255, 255, 0),
+                      special_flags=pg.BLEND_RGBA_MAX)
+
+    # Get an 8-bit surface with a color palette
+    image = image.convert(8)
+
+    # Change the hue of the palette
+    for index in range(256):
+        # Get the palette color at index
+        color = pg.Color(*image.get_palette_at(index))
+
+        # Get the new hue
+        hue = color.hsva[0] + value
+        if hue > 360:
+            hue -= 360
+
+        # Update the hue
+        color.hsva = (hue, *color.hsva[1:3])
+        image.set_palette_at(index, color)
+
+    # Return the image transparency
+    image.set_alpha()
+    image = image.convert_alpha()
+    image.blit(transparency, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
+
+    return image

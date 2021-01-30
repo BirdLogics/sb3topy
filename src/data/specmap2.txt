@@ -152,10 +152,10 @@ self.costume.set_effect({EFFECT}, {VALUE})
 self.costume.clear_effects()
 
 #: looks_changesizeby (float CHANGE) -d3
-self.size += {CHANGE}
+self.costume.change_size({CHANGE})
 
 #: looks_setsizeto (float SIZE) -d3
-self.size = {SIZE}
+self.costume.set_size({SIZE})
 
 #: looks_gotofrontback (string FRONT_BACK) -d1
 #? looks_goto{FRONT_BACK}
@@ -199,7 +199,7 @@ util.stage.costume.number
 util.stage.costume.name
 
 #: int looks_size ()
-round(self.size)
+round(self.costume.size)
 
 #: sound_play (any SOUND_MENU)
 self.sounds.play({SOUND_MENU})
@@ -430,7 +430,7 @@ util.targets[{OBJECT}].costume.number
 util.targets[{OBJECT}].costume.name
 
 #: int sensing_size_of
-round(util.targets[{OBJECT}].size)
+round(util.targets[{OBJECT}].costume.size)
 
 #: float sensing_volume_of
 util.targets[{OBJECT}].volume
@@ -648,7 +648,7 @@ self.{name} = parent.{name}.copy()
 
 #: code_costumes_init
 self.costume = engine.Costumes(
-    {costume}, {rotation}, {costumes})
+    {costume}, {size}, {rotation}, {costumes})
 
 #: code_sound
 {{
@@ -668,7 +668,6 @@ self.sounds = parent.sounds.copy()
 self.xpos = {xpos}
 self.ypos = {ypos}
 self.direction = {direction}
-self.size = {size}
 self.visible = {visible}
 self.pen = Pen(util, self)
 
@@ -676,7 +675,6 @@ self.pen = Pen(util, self)
 self.xpos = parent.xpos
 self.ypos = parent.ypos
 self.direction = parent.direction
-self.size = parent.size
 self.visible = parent.visible
 self.pen = parent.pen.copy(self)
 

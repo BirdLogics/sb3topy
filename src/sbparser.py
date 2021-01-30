@@ -239,7 +239,6 @@ class Parser:
             xpos=target.get('x', 0),
             ypos=target.get('y', 0),
             direction=target.get('direction', 90),
-            size=target.get('size', 100),
             visible=target.get('visible', True)
         ) + "\n\n"
         info_clone = self.specmap['code_info_clone']['code'] + "\n\n"
@@ -297,6 +296,7 @@ class Parser:
 
         return self.specmap['code_costumes_init']['code'].format(
             costume=int(target['currentCostume']),
+            size=target.get('size', 100),
             rotation=quote_string(target.get('rotationStyle'), '"'),
             costumes=costumes
         ) + "\n"
@@ -743,7 +743,8 @@ class Parser:
         for arg, itype in blockmap['args'].items():
             # Verify expected parameters are present
             if not arg in parameters:
-                parameters[arg] = self.specmap['special_yield']['code'].format(DIRTY=0) if 'y' in blockmap['flags'] else "None"
+                parameters[arg] = self.specmap['special_yield']['code'].format(
+                    DIRTY=0) if 'y' in blockmap['flags'] else "None"
                 opcode = self.blocks[blockid]['opcode']
                 if opcode not in ("control_if_else", "operator_not"):
                     logging.warning(
