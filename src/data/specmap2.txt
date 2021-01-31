@@ -241,15 +241,13 @@ self.pen.down()
 self.pen.up()
 
 #: pen_setPenColorToColor (any COLOR)
-self.pen.set_color({COLOR})
+self.pen.exact_color({COLOR})
 
 #: pen_changePenColorParamBy (string COLOR_PARAM, float VALUE)
-#? pen_change_{COLOR_PARAM}
-self.pen.color_set({COLOR_PARAM}, {VALUE})
+self.pen.change_color({COLOR_PARAM}, {VALUE})
 
-#: pen_setPenColorParamBy (string COLOR_PARAM, float VALUE)
-#? pen_set_{COLOR_PARAM}
-self.pen.color_change({COLOR_PARAM}, {VALUE})
+#: pen_setPenColorParamTo (string COLOR_PARAM, float VALUE)
+self.pen.set_color({COLOR_PARAM}, {VALUE})
 
 #: pen_changePenSizeBy (float SIZE)
 self.pen.change_size({SIZE})
@@ -264,17 +262,11 @@ self.pen.set_shade({SHADE})
 #: pen_changePenShadeBy (float SHADE)
 self.pen.change_shade({SHADE})
 
-#: pen_setPenHueToNumber (float HUE)
+#: pen_setHueTo (float HUE)
 self.pen.set_hue({HUE})
 
 #: pen_changePenHueBy (float HUE)
 self.pen.change_hue({HUE})
-
-
-
-
-
-
 
 #: event_whenflagclicked (stack SUBSTACK) -h
 green_flag
@@ -669,7 +661,7 @@ self.xpos = {xpos}
 self.ypos = {ypos}
 self.direction = {direction}
 self.visible = {visible}
-self.pen = Pen(util, self)
+self.pen = Pen(self)
 
 #: code_info_clone
 self.xpos = parent.xpos

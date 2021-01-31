@@ -13,32 +13,47 @@ from .util import tonum
 
 
 class Pen:
-    """Handles the pen for a sprite"""
+    """
+    Handles the pen for a sprite
+
+    image - Shared image of the pen
+    dirty - Shared bool, if the image has been modified
+    util - Shared for internal use, must be set
+
+    target - The sprite of this Pen intance
+    isdown - Whether the pen is down
+    size - The current pen size
+
+    color - The rgb pygame.Color instance
+    hsva - Saved for greater accuracy
+    shade - Legacy shade value
+
+    position - Position since last moved
+    """
 
     # Shared image for all sprites
     image = None
     dirty = False
+    util = None
 
-    def __init__(self, util, sprite):
-        self.util = util
-        self.display = util.runtime.display
+    def __init__(self, sprite):
         self.target = sprite
+
         self.isdown = False
-        self.color = pg.Color("blue")
         self.size = 1
+
+        self.color = pg.Color("blue")
+        self.hsva = self.color.hsva
+        self.shade = 50
+
         self.position = (self.target.xpos + STAGE_SIZE[0]//2,
                          STAGE_SIZE[1]//2 - self.target.ypos)
 
         if Pen.image is None:
-            Pen.image = pg.Surface(self.display.rect.size).convert_alpha()
-            Pen.scale = self.display.scale
+            Pen.image = pg.Surface(
+                self.util.runtime.display.rect.size).convert_alpha()
+            Pen.scale = self.util.runtime.display.scale
             self.clear_all()
-
-    @classmethod
-    def resize(cls, size):
-        """Resize the Pen image"""
-        cls.image = pg.transform.smoothscale(cls.image, size)
-        cls.dirty = True
 
     @classmethod
     def clear_all(cls):
@@ -48,50 +63,52 @@ class Pen:
 
     def down(self):
         """Puts the pen down"""
-        self.isdown = True
         self.move()
+        self.isdown = True
 
-    def up(self):
+    def up(self):  # pylint: disable=invalid-name
         """Puts the pen up"""
         self.isdown = False
 
-    def move(self):
-        """Moves and draws with the pen"""
-        end_pos = (self.target.xpos + STAGE_SIZE[0]//2,
-                   STAGE_SIZE[1]//2 - self.target.ypos)
-        if self.isdown:
-            size = round(self.size * self.display.scale / 2)
-            pg.draw.line(Pen.image, self.color, self._scale_point(
-                self.position), self._scale_point(end_pos), size * 2)
-            pg.draw.circle(Pen.image, self.color,
-                           self._scale_point(self.position), size)
-            pg.draw.circle(Pen.image, self.color,
-                           self._scale_point(end_pos), size)
-            Pen.dirty = True
-        self.position = end_pos
-
-    def _scale_point(self, point):
-        """Scales and rounds point to match the display"""
-        return (round(point[0]*self.display.scale),
-                round(point[1]*self.display.scale))
-
     def stamp(self):
         """Stamp the sprite image"""
+        disp_rect = self.util.runtime.display.rect
         self.target.update(self.util)
         self.image.blit(
             self.target.sprite.image, self.target.sprite.rect.move(
-                -self.display.rect.x, -self.display.rect.y))
+                -disp_rect.x, -disp_rect.y))
         Pen.dirty = True
 
-    def change_size(self, value):
-        """Changes and clamps the pen size"""
-        self.set_size(self.size + value)
+    def move(self):
+        """Moves and draws with the pen"""
+        # Get new position
+        end_pos = (self.target.xpos + STAGE_SIZE[0]//2,
+                   STAGE_SIZE[1]//2 - self.target.ypos)
+        if self.isdown:
+            disp_scale = self.util.runtime.display.scale
+            size = round(self.size * disp_scale / 2)
+
+            # Draw the line
+            pg.draw.line(Pen.image, self.color,
+                         scale_point(self.position, disp_scale),
+                         scale_point(end_pos, disp_scale), size * 2)
+            pg.draw.circle(Pen.image, self.color,
+                           scale_point(self.position, disp_scale), size)
+            pg.draw.circle(Pen.image, self.color,
+                           scale_point(end_pos, disp_scale), size)
+            Pen.dirty = True
+
+        self.position = end_pos
 
     def set_size(self, value):
         """Sets and clamps the pen size"""
         self.size = max(1, min(1200, value))
 
-    def set_color(self, value):
+    def change_size(self, value):
+        """Changes and clamps the pen size"""
+        self.set_size(self.size + value)
+
+    def exact_color(self, value):
         """Sets the exact pen color"""
         # Translate the color
         if isinstance(value, str) and value.startswith("#"):
@@ -101,85 +118,104 @@ class Pen:
                 self.color = pg.Color("black")
         else:
             self.color = pg.Color(tonum(value) % 0xFFFFFFFF)
+        self.hsva = self.color.hsva
+        self.shade = self.hsva[2] / 2
 
-    def set_hue(self, value):
-        """Set and wrap pen color"""
-        _, sat, val, alp = self.color.hsva
-        self.color.hsva = (value*3.6 % 360, sat, val, alp)
-
-    def change_hue(self, value):
-        """Change and wrap pen color"""
-        hue, sat, val, alp = self.color.hsva
-        self.color.hsva = ((hue + value*3.6) % 360, sat, val, alp)
-
-    def set_saturation(self, value):
-        """Set and wrap pen saturation"""
-        hue, _, val, alp = self.color.hsva
-        self.color.hsva = (hue, value % 100, val, alp)
-
-    def change_saturation(self, value):
-        """Change and wrap pen saturation"""
-        hue, sat, val, alp = self.color.hsva
-        self.color.hsva = (hue, (sat + value) % 100, val, alp)
-
-    def set_brightness(self, value):
-        """Set and wrap pen brightness"""
-        hue, sat, _, alp = self.color.hsva
-        self.color.hsva = (hue, sat, value % 100, alp)
-
-    def change_brightness(self, value):
-        """Change and wrap pen brightness"""
-        hue, sat, val, alp = self.color.hsva
-        self.color.hsva = (hue, sat, (val + value) % 100, alp)
-
-    def set_alpha(self, value):
-        """Set and wrap pen transparency"""
-        hue, sat, val, _ = self.color.hsva
-        self.color.hsva = (hue, sat, val, value % 100)
-
-    def change_alpha(self, value):
-        """Change and wrap pen transparency"""
-        hue, sat, val, alp = self.color.hsva
-        self.color.hsva = (hue, sat, val, (alp + value) % 100)
-
-    def color_set(self, prop, value):
+    def set_color(self, prop, value):
         """Sets a certain color property"""
+        # Round as a workaround to pygame bug
+        # Color(128, 196, 0).hsva[1] > 100
+        hue, sat, val, alp = map(round, self.hsva, (9, 9, 9, 9))
         if prop == "color":
-            self.set_color(value)
+            self.hsva = (value*3.6 % 360, sat, val, alp)
         elif prop == "saturation":
-            self.set_saturation(value)
+            self.hsva = (hue, value % 100, val, alp)
         elif prop == "brightness":
-            self.set_brightness(value)
+            self.hsva = (hue, sat, max(0, min(100, value)), alp)
         elif prop == "transparency":
-            self.set_alpha(value)
+            self.hsva = (hue, sat, val, value % 100)
         else:
             print("Invalid color property ", prop)
+        self.color.hsva = self.hsva
 
-    def color_change(self, prop, value):
+    def change_color(self, prop, value):
         """Changes a certain color property"""
+        hue, sat, val, alp = map(round, self.hsva, (9, 9, 9, 9))
         if prop == "color":
-            self.change_hue(value)
+            self.hsva = ((hue+(value*3.6)) % 360, sat, val, alp)
         elif prop == "saturation":
-            self.change_saturation(value)
+            self.hsva = (hue, max(0, min(100, sat + value)), val, alp)
         elif prop == "brightness":
-            self.change_brightness(value)
+            self.hsva = (hue, sat, max(0, min(100, val+value)), alp)
         elif prop == "transparency":
-            self.change_alpha(value)
+            self.hsva = (hue, sat, val, max(0, min(100, alp + value)))
         else:
             print("Invalid color property ", prop)
+        self.color.hsva = self.hsva
 
     def set_shade(self, value):
-        """Sets and wraps pen shade"""
-        # TODO Pen shade
+        """Legacy set shade"""
+        # Wrap the shade value
+        # Python mod is different from JS
+        shade = value % 200
+        self.shade = shade
+        self._legacy_update_color()
 
     def change_shade(self, value):
-        """Changes and wraps pen shade"""
+        """Legacy change shade"""
+        self.set_shade(self.shade + value)
+
+    def set_hue(self, hue):
+        """Legacy set color"""
+        self.set_color("color", hue/2)
+        self._legacy_update_color()
+
+    def change_hue(self, value):
+        """Legacy change color"""
+        self.change_color("color", value/2)
+        self._legacy_update_color()
+
+    def _legacy_update_color(self):
+        """Update color using shade"""
+        self.color.hsva = (self.hsva[0], 100, 100, self.hsva[3])
+        shade = (200 - self.shade) if self.shade > 100 else self.shade
+        if shade < 50:
+            self.color = lerp((0, 0, 0), self.color, (10 + shade) / 60)
+        else:
+            self.color = lerp(self.color, (255, 255, 255), (shade - 50) / 60)
+        self.hsva = self.color.hsva
 
     def copy(self, clone):
         """Create a copy of the pen"""
-        pen = Pen(self.util, clone)
+        pen = Pen(clone)
         pen.isdown = self.isdown
         pen.color = pg.Color(self.color.r, self.color.g,
                              self.color.b, self.color.a)
         pen.size = self.size
         return pen
+
+    @classmethod
+    def resize(cls, size):
+        """Resize the Pen image"""
+        cls.image = pg.transform.smoothscale(cls.image, size)
+        cls.dirty = True
+
+
+def lerp(color0, color1, fraction1):
+    """Linear interpolation of colors"""
+    if fraction1 <= 0:
+        return pg.Color(*color0)
+    if fraction1 >= 1:
+        return pg.Color(*color1)
+    fraction0 = 1 - fraction1
+    return pg.Color(
+        round((fraction0 * color0[0]) + (fraction1 * color1[0])),
+        round((fraction0 * color0[1]) + (fraction1 * color1[1])),
+        round((fraction0 * color0[2]) + (fraction1 * color1[2]))
+    )
+
+
+def scale_point(point, disp_scale):
+    """Scales and rounds point to match the display"""
+    return (round(point[0]*disp_scale),
+            round(point[1]*disp_scale))

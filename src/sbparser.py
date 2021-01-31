@@ -616,10 +616,10 @@ class Parser:
             if isinstance(value, str):
                 if value in self.blocks:
                     # It is a valid block id
-                    if self.blocks[value]["shadow"] and inp in self.blocks[value]["fields"]:
-                        # The id points to a menu
-                        return quote_string(
-                            self.blocks[value]['fields'][inp][0])
+                    if self.blocks[value]["shadow"]:
+                        # There should only be 1 field in a shadow block
+                        return quote_string(self.blocks[value]['fields'].popitem()[1][0])
+
                     # The id points to a block
                     stack = self.parse_stack(
                         value, itype, 'y' in blockmap['flags'])

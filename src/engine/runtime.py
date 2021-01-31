@@ -33,6 +33,7 @@ class Runtime:
         self.clock = pg.time.Clock()
 
         self.util = BlockUtil(self)
+        Pen.util = self.util
 
         self.display = Display()
         pg.mixer.set_num_channels(AUDIO_CHANNELS)
@@ -99,6 +100,8 @@ class Runtime:
                     for clone in target.clones:
                         if clone.dirty and clone.visible:
                             dirty = True
+                if Pen.dirty:
+                    dirty = True
 
             if turbo2:
                 continue
@@ -116,32 +119,31 @@ class Runtime:
                 bg_image.blit(
                     self.util.stage.sprite.image,
                     (self.display.rect.x, self.display.rect.y))
+                # self.util.stage.dirty = False
 
                 # Get the Pen bg
-                bg_image.blit(
-                    pg.transform.smoothscale(
-                        Pen.image, self.display.rect.size),
-                    self.display.rect.topleft
-                )
+                bg_image.blit(Pen.image, self.display.rect.topleft)
                 Pen.dirty = False
 
                 self.sprites.set_clip(self.display.rect)
                 self.sprites.clear(self.display.screen, bg_image.convert())
                 self.sprites.draw(self.display.screen)
 
-                if DEBUG_FPS:
-                    self.debug_fps()
+                # if DEBUG_FPS:
+                #     self.debug_fps()
+                pg.display.set_caption("sb3topy (%.2f fps)" % self.clock.get_fps())
 
                 pg.display.flip()
-            elif DEBUG_RECTS or DEBUG_FPS:
-                self.sprites.draw(self.display.screen)
-                if DEBUG_RECTS:
-                    self.debug_rects()
-                if DEBUG_FPS:
-                    self.debug_fps()
-                pg.display.flip()
+            # elif DEBUG_RECTS or DEBUG_FPS:
+            #     self.sprites.draw(self.display.screen)
+            #     if DEBUG_RECTS:
+            #         self.debug_rects()
+            #     if DEBUG_FPS:
+            #         self.debug_fps()
+            #     pg.display.flip()
             else:
                 pg.display.update(self.sprites.draw(self.display.screen))
+                pg.display.set_caption("sb3topy (%.2f fps)" % self.clock.get_fps())
 
             # Limit the frame rate
             if not TURBO_MODE:
