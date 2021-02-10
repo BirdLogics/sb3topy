@@ -60,7 +60,7 @@ class Timer:
         self._timer = time.monotonic()
 
     def __call__(self):
-        return time.monotonic - self._timer
+        return time.monotonic() - self._timer
 
     def reset(self):
         """Reset the timer"""
