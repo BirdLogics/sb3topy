@@ -9,7 +9,7 @@ __all__ = ['Pen']
 import pygame as pg
 
 from .config import STAGE_SIZE
-from .util import tonum
+from .blockutil import tonum
 
 
 class Pen:
@@ -17,7 +17,7 @@ class Pen:
     Handles the pen for a sprite
 
     image - Shared image of the pen
-    dirty - Shared bool, if the image has been modified
+    dirty - Shared list of dirty rects, screen coords
     util - Shared for internal use, must be set
 
     target - The sprite of this Pen intance
@@ -33,7 +33,7 @@ class Pen:
 
     # Shared image for all sprites
     image = None
-    dirty = False
+    dirty = []
     util = None
 
     def __init__(self, sprite):
@@ -49,54 +49,55 @@ class Pen:
         self.position = (self.target.xpos + STAGE_SIZE[0]//2,
                          STAGE_SIZE[1]//2 - self.target.ypos)
 
-        if Pen.image is None:
-            Pen.image = pg.Surface(
-                self.util.runtime.display.rect.size).convert_alpha()
-            Pen.scale = self.util.runtime.display.scale
-            self.clear_all()
-
     @classmethod
     def clear_all(cls):
         """Clear the pen image"""
         cls.image.fill((255, 255, 255, 0))
-        cls.dirty = True
+        cls.dirty = [cls.image.get_rect()]
 
-    def down(self):
+    def down(self, util):
         """Puts the pen down"""
-        self.move()
+        self.move(util)
         self.isdown = True
 
     def up(self):  # pylint: disable=invalid-name
         """Puts the pen up"""
         self.isdown = False
 
-    def stamp(self):
+    def stamp(self, util):
         """Stamp the sprite image"""
-        disp_rect = self.util.runtime.display.rect
-        self.target.update(self.util)
-        self.image.blit(
+        disp_rect = util.display.rect
+        self.target.update(util.display)
+        rect = self.image.blit(
             self.target.sprite.image, self.target.sprite.rect.move(
                 -disp_rect.x, -disp_rect.y))
-        Pen.dirty = True
+        Pen.dirty.append(rect.move(disp_rect.topleft))
 
-    def move(self):
+        # pg.draw.rect(Pen.image, (0, 200, 100), rect, 1)
+
+    def move(self, util):
         """Moves and draws with the pen"""
         # Get new position
         end_pos = (self.target.xpos + STAGE_SIZE[0]//2,
                    STAGE_SIZE[1]//2 - self.target.ypos)
         if self.isdown:
-            disp_scale = self.util.runtime.display.scale
+            disp_scale = util.display.scale
             size = round(self.size * disp_scale / 2)
 
             # Draw the line
-            pg.draw.line(Pen.image, self.color,
-                         scale_point(self.position, disp_scale),
-                         scale_point(end_pos, disp_scale), size * 2)
-            pg.draw.circle(Pen.image, self.color,
-                           scale_point(self.position, disp_scale), size)
-            pg.draw.circle(Pen.image, self.color,
-                           scale_point(end_pos, disp_scale), size)
-            Pen.dirty = True
+            rect = pg.draw.line(
+                Pen.image, self.color,
+                scale_point(self.position, disp_scale),
+                scale_point(end_pos, disp_scale), size * 2)
+            rect.union_ip(pg.draw.circle(
+                Pen.image, self.color,
+                scale_point(self.position, disp_scale), size))
+            rect.union_ip(pg.draw.circle(
+                Pen.image, self.color,
+                scale_point(end_pos, disp_scale), size))
+            Pen.dirty.append(rect.move(util.display.rect.topleft))
+
+            # pg.draw.rect(Pen.image, (0, 200, 100), rect, 1)
 
         self.position = end_pos
 
@@ -195,10 +196,15 @@ class Pen:
         return pen
 
     @classmethod
-    def resize(cls, size):
-        """Resize the Pen image"""
-        cls.image = pg.transform.smoothscale(cls.image, size)
-        cls.dirty = True
+    def resize(cls, display):
+        """Create/resize the Pen image"""
+        if cls.image is None:
+            cls.image = pg.Surface(display.rect.size).convert_alpha()
+            cls.scale = display.scale
+            cls.clear_all()
+        else:
+            cls.image = pg.transform.smoothscale(cls.image, display.rect.size)
+            cls.dirty = []
 
 
 def lerp(color0, color1, fraction1):

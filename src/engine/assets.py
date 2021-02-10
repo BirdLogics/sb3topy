@@ -107,7 +107,8 @@ class Sounds:
             # Try to play it on an open channel
             channel = pg.mixer.find_channel()
             if channel:
-                return asyncio.create_task(self._handle_channel(sound, channel))
+                return asyncio.create_task(
+                    self._handle_channel(sound, channel))
         return asyncio.create_task(asyncio.sleep(0))
 
     async def _handle_channel(self, sound, channel):
@@ -304,14 +305,14 @@ class Costumes:
 
         return image
 
-    def get_image(self, util, direction):
+    def get_image(self, display, direction):
         """Get the current image with a size and direction"""
         # Get the base image
         image = self.costume['image']
 
         # Scale the image
         scale = self.size/100 / \
-            self.costume['scale'] * util.runtime.display.scale
+            self.costume['scale'] * display.scale
         image = pg.transform.smoothscale(
             image, (max(4, int(image.get_width() * scale)),
                     max(4, int(image.get_height() * scale)))
@@ -338,7 +339,7 @@ class Costumes:
         return cost
 
 
-def hue_effect(image, value):
+def hue_effect(src_image, value):
     """
     Changes the hue of an image for the color effect
     Value should be between 0 and 360. Coverts the image
@@ -347,12 +348,14 @@ def hue_effect(image, value):
     """
 
     # Get a copy of the alpha channel
-    transparency = image.convert_alpha()
+    transparency = src_image.convert_alpha()
     transparency.fill((255, 255, 255, 0),
                       special_flags=pg.BLEND_RGBA_MAX)
 
     # Get an 8-bit surface with a color palette
-    image = image.convert(8)
+    # Workaround, see Pygame Issue #2477
+    image = pg.Surface(src_image.get_size(), depth=8)
+    image.blit(src_image, (0, 0))
 
     # Change the hue of the palette
     for index in range(256):

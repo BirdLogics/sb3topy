@@ -31,10 +31,10 @@ self.set_dirty({DIRTY})
 
 # Expression to use for -y
 #: special_yield
-await self._yield({DIRTY})
+await self.yield_({DIRTY})
 
 #: special_pen
-self.pen.move()
+self.pen.move(util)
 
 #: procedures_definition (stack SUBSTACK) -h
 def {NAME}(self, {PARAMETERS}):{SUBSTACK}
@@ -63,7 +63,7 @@ self.set_direction({DIRECTION})
 #: motion_pointtowards (string TOWARDS) -d3
 self.point_towards(util, {TOWARDS})
 
-# other = util.targets[{TOWARDS}]
+# other = util.sprites[{TOWARDS}]
 # radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
 # self.set_direction(math.degrees(radians))
 
@@ -131,16 +131,16 @@ self.costume.switch({COSTUME})
 self.costume.next()
 
 #: looks_switchbackdropto (any BACKDROP) -d3
-util.stage.costume.switch({BACKDROP})
-util.send_event('onbackdrop_' + util.stage.costume.name, True)
+util.sprites.stage.costume.switch({BACKDROP})
+util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 
 #: looks_switchbackdroptoandwait (any BACKDROP) -d3s1
-util.stage.costume.switch({BACKDROP})
-await util.send_event('onbackdrop_' + util.stage.costume.name, True)
+util.sprites.stage.costume.switch({BACKDROP})
+await util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 
 #: looks_nextbackdrop () -d3
-util.stage.costume.next()
-util.send_event('onbackdrop_' + util.stage.costume.name, True)
+util.sprites.stage.costume.next()
+util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 
 #: looks_changeeffectby (string EFFECT, float CHANGE) -d3
 self.costume.change_effect({EFFECT}, {CHANGE})
@@ -193,10 +193,10 @@ self.costume.name
 0$
 
 #: int looks_backdrop_'number' ()
-util.stage.costume.number
+util.sprites.stage.costume.number
 
 #: string looks_backdrop_'name' ()
-util.stage.costume.name
+util.sprites.stage.costume.name
 
 #: int looks_size ()
 round(self.costume.size)
@@ -232,10 +232,10 @@ self.sounds.clear_effects()
 self.pen.clear_all()
 
 #: pen_stamp ()
-self.pen.stamp()
+self.pen.stamp(util)
 
 #: pen_penDown ()
-self.pen.down()
+self.pen.down(util)
 
 #: pen_penUp ()
 self.pen.up()
@@ -287,7 +287,7 @@ onbackdrop_{BACKDROP}
 #? event_whengreaterthan_{WHENGREATERTHANMENU}
 event_whengreaterthan
 
-if not {VALUE} > util.timer:
+if not {VALUE} > util.timer():
     return
 
 #: event_whenbroadcastreceived (stack SUBSTACK, field BROADCAST_OPTION) -h
@@ -322,7 +322,7 @@ else:
 
 #: control_wait_until (bool CONDITION) -s1
 while not {CONDITION}:
-    await self._yield()
+    await self.yield_()
 
 #: control_repeat_until (bool CONDITION, stack SUBSTACK) -s1y
 while not {CONDITION}:
@@ -375,17 +375,17 @@ answer = input({QUESTION})
 answer
 
 #: bool sensing_keypressed (field KEY_OPTION)
-util.get_key({KEY_OPTION})
+util.inputs[{KEY_OPTION}]
 
 #: bool sensing_mousedown ()
-util.input.m_down
+util.inputs.mouse_down
 
 # TODO Mouse stage coords
 #: int sensing_mousex ()
-util.input.m_xpos
+util.inputs.mouse_x
 
 #: int sensing_mousey ()
-util.input.m_ypos
+util.inputs.mouse_y
 
 #: int sensing_loudness ()
 0
@@ -398,40 +398,40 @@ False
 util.timer()
 
 #: sensing_resettimer ()
-util.reset_timer()
+util.timer.reset()
 
 # TODO {OBJECT} Stage = _stage_
 # TODO Properties such 
 #: any sensing_of (field PROPERTY, field OBJECT) -v
 #? sensing_{PROPERTY}_of
-util.targets[{OBJECT}].{PROPERTY}
+util.sprites[{OBJECT}].{PROPERTY}
 
 #: float sensing_x_position_of
-util.targets[{OBJECT}].xpos
+util.sprites[{OBJECT}].xpos
 
 #: float sensing_y_position_of
-util.targets[{OBJECT}].ypos
+util.sprites[{OBJECT}].ypos
 
 #: float sensing_direction_of
-util.targets[{OBJECT}].direction
+util.sprites[{OBJECT}].direction
 
 #: int sensing_costume_#_of
-util.targets[{OBJECT}].costume.number
+util.sprites[{OBJECT}].costume.number
 
 #: string sensing_costume_name_of
-util.targets[{OBJECT}].costume.name
+util.sprites[{OBJECT}].costume.name
 
 #: int sensing_size_of
-round(util.targets[{OBJECT}].costume.size)
+round(util.sprites[{OBJECT}].costume.size)
 
 #: float sensing_volume_of
-util.targets[{OBJECT}].volume
+util.sprites[{OBJECT}].volume
 
 #: int sensing_backdrop_#_of
-round(util.targets[{OBJECT}].costume.number)
+round(util.sprites[{OBJECT}].costume.number)
 
 #: string sensing_backdrop_name_of
-util.targets[{OBJECT}].costume.name
+util.sprites[{OBJECT}].costume.name
 
 #: int sensing_current (field CURRENT_MENU)
 #? sensing_current_{CURRENT_MENU}
@@ -681,15 +681,14 @@ self.hats = {{
 }}
 
 #: code_target_init
-def __init__(self, util, parent=None):
-    super().__init__(util, parent)
+def __init__(self, parent=None):
+    super().__init__(parent)
     if parent is None:
 {init_code}
     else:
 {clone_code}
 {hats}
     self.sprite._layer = {layer}
-    self.update(util)
 
 if __name__ == '__main__':
     pass

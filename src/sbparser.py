@@ -138,6 +138,7 @@ class Parser:
             "\nfrom engine import List"
             "\nfrom engine import Pen"
             "\nfrom engine import tonum, pick_rand, letter_of, gt, lt, eq, div"
+            "\nfrom engine import config"
         )
 
         # Init variable Identifier handlers
@@ -160,7 +161,7 @@ class Parser:
         code = code + (
             "\n}\n\n"
             "if __name__ == '__main__':\n"
-            "    engine.start(SPRITES)\n"
+            "    engine.start_program(SPRITES)\n"
         )
 
         return code
@@ -483,7 +484,7 @@ class Parser:
             elif field == "VARIABLE":
                 value = "var_" + value[0]
                 name = self.variables[self.name].get_existing(value, False)
-                parameters["PREFIX"] = "self" if name else "util.stage"
+                parameters["PREFIX"] = "self" if name else "util.sprites.stage"
                 if not name:
                     name = self.variables['Stage'].get_existing(value)
                 parameters["VARIABLE"] = name
@@ -492,7 +493,7 @@ class Parser:
             elif field == "LIST":
                 value = "list_" + value[0]
                 name = self.variables[self.name].get_existing(value, False)
-                parameters["PREFIX"] = "self" if name else "util.stage"
+                parameters["PREFIX"] = "self" if name else "util.sprites.stage"
                 if not name:
                     name = self.variables['Stage'].get_existing(value)
                 parameters["LIST"] = name
@@ -650,7 +651,7 @@ class Parser:
             # TODO Variable selection by id
             value = "var_" + value[1]
             name = self.variables[self.name].get_existing(value, False)
-            prefix = "self" if name else "util.stage"
+            prefix = "self" if name else "util.sprites.stage"
             if not name:
                 name = self.variables['Stage'].get_existing(value)
             value = self.specmap['data_variable']['code'].format(
@@ -661,7 +662,7 @@ class Parser:
         elif value[0] == 13:
             value = "list_" + value[1]
             name = self.variables[self.name].get_existing(value, False)
-            prefix = "self" if name else "util.stage"
+            prefix = "self" if name else "util.sprites.stage"
             if not name:
                 name = self.variables['Stage'].get_existing(value)
             value = self.specmap['data_listcontents']['code'].format(
@@ -678,7 +679,7 @@ class Parser:
         """Perform block specific parsing"""
         if 'v' in blockmap['flags']:
             name = parameters['OBJECT'][1:-1]
-            if not name in self.variables:
+            if name not in self.variables:
                 logging.warning(
                     "Block input to sensing_of OBJECT, guessing variable name")
                 parameters['PROPERTY'] = self.get_variable(
@@ -742,7 +743,7 @@ class Parser:
 
         for arg, itype in blockmap['args'].items():
             # Verify expected parameters are present
-            if not arg in parameters:
+            if arg not in parameters:
                 parameters[arg] = self.specmap['special_yield']['code'].format(
                     DIRTY=0) if 'y' in blockmap['flags'] else "None"
                 opcode = self.blocks[blockid]['opcode']

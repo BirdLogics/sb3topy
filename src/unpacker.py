@@ -21,7 +21,10 @@ CONFIG = {
     "temp_folder": "temp",
 
     "svg_convert_cmd": '"C:/Program Files/Inkscape/bin/inkscape.exe" -l -o "{OUTPUT}" "{INPUT}"',
-    "mp3_convert_cmd": '"C:/Program Files (x86)/VideoLAN/VLC/vlc.exe" -I dummy --sout "#transcode{{acodec=s16l,channels=2}}:std{{access=file,mux=wav,dst=\'{OUTPUT}\'}}" "{INPUT}" vlc://quit'
+    "mp3_convert_cmd": '"C:/Program Files (x86)/VideoLAN/VLC/vlc.exe" -I dummy --sout "#transcode{{acodec=s16l,channels=2}}:std{{access=file,mux=wav,dst=\'{OUTPUT}\'}}" "{INPUT}" vlc://quit',
+
+    "base_dpi": 96,
+    "svg_scale": 4
 }
 
 IMAGE_TYPES = ('png', 'svg', 'jpg')
@@ -92,6 +95,7 @@ class Project:
         of the file. This also prevents path traversal.
         """
 
+        costume.setdefault('md5ext', costume['assetId'] + '.' + costume['dataFormat'])
         logging.debug("Validating costume %s", costume['md5ext'])
 
         # Avoid validating twice
@@ -117,6 +121,11 @@ class Project:
         elif costume['dataFormat'] == 'svg':
             # Check if the file has been converted before
             new_path = path.join(assets_dir, costume['assetId'] + ".png")
+
+            # costume['bitmapResolution'] = CONFIG['svg_scale']
+            # costume['rotationCenterX'] *= CONFIG['svg_scale']
+            # costume['rotationCenterY'] *= CONFIG['svg_scale']
+
             if not path.isfile(new_path):
                 logging.info("Converting costume '%s' to png",
                              costume['md5ext'])
@@ -124,7 +133,8 @@ class Project:
                 # Get the conversion command
                 cmd = CONFIG['svg_convert_cmd'].format(
                     INPUT=path.normpath(asset_path),
-                    OUTPUT=path.normpath(new_path))
+                    OUTPUT=path.normpath(new_path),
+                )  # DPI=CONFIG['base_dpi']*CONFIG['svg_scale'])
                 logging.debug("Converting costume: %s", cmd)
 
                 # Run the command

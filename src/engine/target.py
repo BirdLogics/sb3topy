@@ -13,7 +13,7 @@ from itertools import zip_longest
 
 import pygame as pg
 
-from .config import STAGE_SIZE, MAX_CLONES, WARP_TIME
+from . import config
 
 
 class Target:
@@ -58,7 +58,7 @@ class Target:
     # videoState
     # textToSpeechLanguage
 
-    def __init__(self, _, parent=None):
+    def __init__(self, parent=None):
         # These must be set by the subsclass
         self.costume = None
         self.sounds = None
@@ -87,7 +87,8 @@ class Target:
     def start_event(self, util, name, restart=True):
         """Starts and returns a list of tasks"""
         tasks = []
-        for cor, task in zip_longest(self.hats.get(name, []), self._tasks.get(name, [])):
+        for cor, task in zip_longest(self.hats.get(name, []),
+                                     self._tasks.get(name, [])):
             # Either restart the task or skip it
             if task is not None and not task.done():
                 if not restart:
@@ -116,40 +117,40 @@ class Target:
             print("Failed to find name for ", this_task)
         self._tasks[this_name] = [this_task]
 
-    def update(self, util):
+    def update(self, display):
         """Clears the dirty flag by updating the sprite, rect and/or image"""
-        self.sprite.visible = self.visible
-        if self.dirty == 1:
-            # Hiden/Shown, needs redrawing
-            self.sprite.dirty = 1
+        # self.sprite.dirty = 1
+        if self.sprite.visible != self.visible:  # dirty == 1
+            self.sprite.visible = self.visible
+            self.sprite.dirty = 1  # Not necesary, technically
+
         if self.dirty == 2:
             # Position change, only update rect
-            self._update_rect(util)
+            self._update_rect(display)
         elif self.dirty == 3:
-            # Major change, update image + rect
-            self._update_image(util)
+            # Image change, update image + rect
+            self._update_image(display)
         self.dirty = 0
 
-    def _update_image(self, util):
+    def _update_image(self, display):
         """Updates and transforms the sprites image"""
         # Update the image
-        image = self.costume.get_image(util, self.direction)
+        image = self.costume.get_image(display, self.direction)
         self.sprite.image = image
         self.sprite.mask = pg.mask.from_surface(image)
 
         # The rect now needs updating
-        self._update_rect(util)
+        self._update_rect(display)
 
-    def _update_rect(self, util):
+    def _update_rect(self, display):
         """Updates the rect to match the sprite's position and orientation"""
-        display = util.runtime.display
-
         # Rotate the rect properly
         offset = self.costume.costume['offset'] * self.costume.size/100
         offset = offset.rotate(self.direction-90)
         self.sprite.rect = self.sprite.image.get_rect(
-            center=(display.scale*(offset + pg.math.Vector2(self.xpos + STAGE_SIZE[0]//2,
-                                                            STAGE_SIZE[1]//2 - self.ypos))))
+            center=display.scale*(offset + pg.math.Vector2(
+                self.xpos + config.STAGE_SIZE[0]//2,
+                config.STAGE_SIZE[1]//2 - self.ypos)))
 
         # Move the rect by the stage offset
         self.sprite.rect.move_ip(*display.rect.topleft)
@@ -164,10 +165,11 @@ class Target:
         if dirty > self.dirty:
             self.dirty = dirty
 
-    async def _yield(self, dirty=0):
+    async def yield_(self, dirty=0):
         """Yields and sets the dirty flag if not in warp mode"""
         # Also checks if running longer than WARP_TIME
-        if not self.warp or time.monotonic() - self.warp_timer > WARP_TIME:
+        if not self.warp or \
+                time.monotonic() - self.warp_timer > config.WARP_TIME:
             if self.warp:
                 print("Overtime!")
             await self.sleep(0, dirty)
@@ -207,7 +209,7 @@ class Target:
             frac = elapsed / duration
             self.xpos = startx + frac*(endx - startx)
             self.ypos = starty + frac*(endy - starty)
-            await self._yield(2)
+            await self.yield_(2)
         self.xpos = endx
         self.ypos = endy
 
@@ -220,10 +222,10 @@ class Target:
     def distance_to(self, util, other):
         """Calculate the distance to another target"""
         if other == "_mouse_":
-            xpos = util.input.m_xpos
-            ypos = util.input.m_ypos
+            xpos = util.inputs.mouse_x
+            ypos = util.inputs.mouse_y
         else:
-            other = util.targets.get(other, self)
+            other = util.sprites.targets.get(other, self)
             xpos = other.xpos
             ypos = other.ypos
         return math.sqrt((self.xpos - xpos)**2 + (self.ypos - ypos)**2)
@@ -235,7 +237,7 @@ class Target:
     def get_touching(self, util, other):
         """Check if this sprite is touching another or its clones"""
         if other == "_mouse_":
-            self.update(util)
+            self.update(util.display)
             xpos, ypos = pg.mouse.get_pos()
 
             offset = self.sprite.rect.topleft
@@ -245,13 +247,13 @@ class Target:
             except IndexError:
                 return False
 
-        other = util.targets.get(other)
+        other = util.sprites.targets.get(other)
         if not other:
             return False
 
         # Must update this sprite and the other before testing
-        self.update(util)
-        other.update(util)
+        self.update(util.display)
+        other.update(util.display)
 
         # Check if touching the original
         if pg.sprite.collide_mask(other.sprite, self.sprite):
@@ -260,7 +262,7 @@ class Target:
         # Check if touching a clone
         for clone in other.clones:
             # Update the clones image too
-            clone.update(util)
+            clone.update(util.display)
 
             # Check if touching a clone
             if pg.sprite.collide_mask(self.sprite, clone.sprite):
@@ -291,21 +293,24 @@ class Target:
 
     def change_layer(self, util, value):
         """Moves number layers fowards"""
-        start = util.sprites.get_layer_of_sprite(self.sprite)
-        top = util.sprites.get_top_layer()
+        group = util.sprites.group
+        start = group.get_layer_of_sprite(self.sprite)
+        top = group.get_top_layer()
         value = max(0, min(top, start + value)) - start
-        self._move_layers(util.sprites, start, value)
+        self._move_layers(group, start, value)
 
     def front_layer(self, util):
         """Moves the sprite to the front layer"""
-        start = util.sprites.get_layer_of_sprite(self.sprite)
-        top = util.sprites.get_top_layer()
-        self._move_layers(util.sprites, start, top - start)
+        group = util.sprites.group
+        start = group.get_layer_of_sprite(self.sprite)
+        top = group.get_top_layer()
+        self._move_layers(group, start, top - start)
 
     def back_layer(self, util):
         """Moves the sprite to the back layer"""
-        start = util.sprites.get_layer_of_sprite(self.sprite)
-        self._move_layers(util.sprites, start, -start)
+        group = util.sprites.group
+        start = group.get_layer_of_sprite(self.sprite)
+        self._move_layers(group, start, -start)
 
     @staticmethod
     def _move_layers(group, start, value):
@@ -328,37 +333,38 @@ class Target:
 
     def goto(self, util, other):
         """Goto the position of another sprite"""
-        other = util.targets.get(other)
+        other = util.sprites.targets.get(other)
         if other:
             self.xpos = other.xpos
             self.ypos = other.ypos
 
     def create_clone_of(self, util, name):
         """Create a clone of this target"""
-        if len(self._clones) < MAX_CLONES:
+        if len(self._clones) < config.MAX_CLONES:
             # Get the target to clone
             if name == "_myself_":
                 target = self
             else:
-                target = util.targets.get(name)
+                target = util.sprites.targets.get(name)
                 if target is None:
                     return
 
             # Get a layer for the clone
             # Move the top sprite where the clone will go,
             # Then move it back to the top leaving an empty space
-            top = util.sprites.get_top_layer()
-            bottom = util.sprites.get_layer_of_sprite(self.sprite)
-            top_sprite = util.sprites.get_top_sprite()
-            self._move_layers(util.sprites, top, bottom-top)
-            util.sprites.change_layer(top_sprite, top+1)
+            group = util.sprites.group
+            top = group.get_top_layer()
+            bottom = group.get_layer_of_sprite(self.sprite)
+            top_sprite = group.get_top_sprite()
+            self._move_layers(group, top, bottom-top)
+            group.change_layer(top_sprite, top+1)
 
             # __class__ is the Sprite's subclass
-            clone = target.__class__(util, target)
+            clone = target.__class__(target)
             self._clones.append(clone)  # Shared between targets
             target.clones.append(clone)
-            util.sprites.add(clone.sprite, layer=bottom)
-            util.send_event_to("clone_start", clone)
+            group.add(clone.sprite, layer=bottom)
+            util.events.send_to(util, clone, "clone_start")
         else:
             print("Max clones!")
 
@@ -380,10 +386,10 @@ class Target:
     def point_towards(self, util, other):
         """Point towards another sprite"""
         if other == "_mouse_":
-            xpos = util.input.m_xpos
-            ypos = util.input.m_ypos
+            xpos = util.inputs.mouse_x
+            ypos = util.inputs.mouse_y
         else:
-            other = util.targets.get(other, self)
+            other = util.sprites.targets.get(other, self)
             xpos = other.xpos
             ypos = other.ypos
         xpos -= self.xpos
