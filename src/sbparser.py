@@ -90,6 +90,8 @@ class Parser:
         self.broadcasts = Identifiers()
         self.variables = {}
 
+        self.warps = {}  # sb2 compatibility
+
     def load_specmap(self, spec_path):
         """Reads and parses the specmap file"""
         # Read the specmap file
@@ -174,6 +176,9 @@ class Parser:
         # Class function names
         self.hats = Identifiers()
         self.blocks = target.get('blocks', {})
+
+        # sb2 compatibility
+        self.pre_parse_warps()
 
         self.name = target['name']
 
@@ -393,6 +398,16 @@ class Parser:
             hats=textwrap.indent(',\n'.join(hat_dict), "    ")
         ) + "\n"
 
+    def pre_parse_warps(self):
+        """Save the warp bool from custom blocks"""
+        # sb2 doesn't have warp in procedure_definition
+        self.warps = {}
+        for block in self.blocks.values():
+            if block['opcode'] == "procedures_definition":
+                mutation = self.blocks[block['inputs']
+                                       ['custom_block'][1]]['mutation']
+                self.warps[mutation['proccode']] = mutation['warp']
+
     def parse_stack(self, blockid, input_type=None, end_yield=False):
         """
         Parses the block of blockid from blocks, and also any blocks
@@ -544,6 +559,7 @@ class Parser:
             blockmap = blockmap.copy()
             mutation = self.blocks[block['inputs']
                                    ['custom_block'][1]]['mutation']
+            self.warps[mutation['proccode']] = mutation['warp']
 
             # TODO CB, var name conflicts
             blockmap['code'] = "async def " + clean_identifier(
@@ -560,7 +576,7 @@ class Parser:
                 name: 'any' for name in json.loads(mutation['argumentids'])}
 
             name = clean_identifier("cb_" + mutation['proccode'])
-            if mutation.get('warp') == "true":  # May not exist for sb2
+            if self.warps[mutation['proccode']]:
                 blockmap['code'] = "await self._warp(self." + \
                     name + "(util, {PARAMETERS}))"
             else:  # = 'false'
@@ -631,7 +647,7 @@ class Parser:
                     logging.warning("Invalid input block id '%s'", value)
             if value is None:
                 # Empty block
-                return "None"
+                return "0"
 
             # Else it is a variable/list, handled below
 
