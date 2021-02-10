@@ -463,7 +463,7 @@ time.localtime()['tm_sec']
 (time.time() / 86400 - 10957)
 
 #: string sensing_username ()
-engine.USERNAME
+config.USERNAME
 
 #: float operator_add (float NUM1, float NUM2)
 ({NUM1} + {NUM2})
