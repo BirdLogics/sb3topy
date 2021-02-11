@@ -13,7 +13,8 @@ from os import path
 CONFIG_PATH = "data/config.json"
 CONFIG = {
     "specmap_path": "data/specmap2.txt",
-    "temp_folder": "temp"
+    "temp_folder": "temp",
+    "warp_all": False
 }
 
 LOWER_FIELDS = ('EFFECT')
@@ -406,7 +407,9 @@ class Parser:
             if isinstance(block, dict) and block['opcode'] == "procedures_definition":
                 mutation = self.blocks[block['inputs']
                                        ['custom_block'][1]]['mutation']
-                self.warps[mutation['proccode']] = mutation['warp']
+                self.warps[mutation['proccode']] = \
+                    mutation['warp'] is True or \
+                    mutation['warp'] == "true" or CONFIG['warp_all']
 
     def parse_stack(self, blockid, input_type=None, end_yield=False):
         """
