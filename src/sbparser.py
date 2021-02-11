@@ -403,7 +403,7 @@ class Parser:
         # sb2 doesn't have warp in procedure_definition
         self.warps = {}
         for block in self.blocks.values():
-            if block['opcode'] == "procedures_definition":
+            if isinstance(block, dict) and block['opcode'] == "procedures_definition":
                 mutation = self.blocks[block['inputs']
                                        ['custom_block'][1]]['mutation']
                 self.warps[mutation['proccode']] = mutation['warp']
