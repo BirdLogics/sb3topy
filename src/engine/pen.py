@@ -6,6 +6,8 @@ Contains the Pen class
 
 __all__ = ['Pen']
 
+import math
+
 import pygame as pg
 
 from .config import STAGE_SIZE
@@ -29,12 +31,16 @@ class Pen:
     shade - Legacy shade value
 
     position - Position since last moved
+
+    _alpha_img - Used internally for transparent blitting
     """
 
     # Shared image for all sprites
     image = None
     dirty = []
     util = None
+
+    _alpha_img = None
 
     def __init__(self, sprite):
         self.target = sprite
@@ -43,6 +49,7 @@ class Pen:
         self.size = 1
 
         self.color = pg.Color("blue")
+        self.alpha = 255
         self.hsva = self.color.hsva
         self.shade = 50
 
@@ -57,8 +64,8 @@ class Pen:
 
     def down(self, util):
         """Puts the pen down"""
-        self.move(util)
         self.isdown = True
+        self.move(util)
 
     def up(self):  # pylint: disable=invalid-name
         """Puts the pen up"""
@@ -82,20 +89,32 @@ class Pen:
                    STAGE_SIZE[1]//2 - self.target.ypos)
         if self.isdown:
             disp_scale = util.display.scale
-            size = round(self.size * disp_scale / 2)
+            size = max(1, round(self.size * disp_scale/2)) * 2
+
+            # Used to draw transparent lines in pg
+            # TODO Pen transparency with colorkey faster?
+            if self.color.a == 255:
+                surf = Pen.image
+            else:
+                surf = Pen._alpha_img
 
             # Draw the line
             rect = pg.draw.line(
-                Pen.image, self.color,
+                surf, self.color,
                 scale_point(self.position, disp_scale),
-                scale_point(end_pos, disp_scale), size * 2)
+                scale_point(end_pos, disp_scale), size)
             rect.union_ip(pg.draw.circle(
-                Pen.image, self.color,
-                scale_point(self.position, disp_scale), size))
+                surf, self.color,
+                scale_point(self.position, disp_scale), size/2))
             rect.union_ip(pg.draw.circle(
-                Pen.image, self.color,
-                scale_point(end_pos, disp_scale), size))
+                surf, self.color,
+                scale_point(end_pos, disp_scale), size/2))
             Pen.dirty.append(rect.move(util.display.rect.topleft))
+
+            # Blit with blending transparency
+            if self.color.a != 255:
+                Pen.image.blit(surf, rect.topleft, rect)
+                Pen._alpha_img.fill((0, 0, 0, 0), rect)
 
             # pg.draw.rect(Pen.image, (0, 200, 100), rect, 1)
 
@@ -114,13 +133,23 @@ class Pen:
         # Translate the color
         if isinstance(value, str) and value.startswith("#"):
             try:
-                self.color = pg.Color(value)
+                self._hex_color(int(value.lstrip('#'), 16))
             except ValueError:
                 self.color = pg.Color("black")
         else:
-            self.color = pg.Color(tonum(value) % 0xFFFFFFFF)
+            self._hex_color(tonum(value))
+
         self.hsva = self.color.hsva
         self.shade = self.hsva[2] / 2
+
+    def _hex_color(self, value):
+        """Gets alpha from a int color"""
+        # Rotate the 8 most significant bits to the end
+        # Pygame reads RGBA rather than ARGB
+        value = value % 0xFFFFFFFF
+        self.color = pg.Color(
+            ((value & 0xFFFFFF) << 8) + ((value >> 24) or 255))
+        # self.alpha = (value >> 24) or 255
 
     def set_color(self, prop, value):
         """Sets a certain color property"""
@@ -205,6 +234,10 @@ class Pen:
         else:
             cls.image = pg.transform.smoothscale(cls.image, display.rect.size)
             cls.dirty = []
+
+        # Create the alpha img
+        cls._alpha_img = pg.Surface(display.rect.size).convert_alpha()
+        cls._alpha_img.fill((0, 0, 0, 0))
 
 
 def lerp(color0, color1, fraction1):
