@@ -383,6 +383,9 @@ class Target:
                 for task in tasks:
                     task.cancel()
 
+            # Stop all playing sounds
+            self.sounds.stop()
+
     def point_towards(self, util, other):
         """Point towards another sprite"""
         if other == "_mouse_":

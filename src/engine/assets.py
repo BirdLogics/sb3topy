@@ -135,6 +135,12 @@ class Sounds:
             task.cancel()
             channel.stop()
 
+    def stop(self):
+        """Stop all sounds for this sprite"""
+        for channel, task in self._channels.items():
+            task.cancel()
+            channel.stop()
+
     def copy(self):
         """Returns a copy of this Sounds"""
         return Sounds(self.volume, self.sounds_list, self.sounds)
