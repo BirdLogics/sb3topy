@@ -165,35 +165,30 @@ class Target:
         if dirty > self.dirty:
             self.dirty = dirty
 
-    async def yield_(self, dirty=0):
-        """Yields and sets the dirty flag if not in warp mode"""
-        # Also checks if running longer than WARP_TIME
-        if not self.warp or \
-                time.monotonic() - self.warp_timer > config.WARP_TIME:
-            if self.warp:
-                print("Overtime!")
-            await self.sleep(0, dirty)
-
-    async def sleep(self, delay, dirty=0):
-        """Yields for the given delay and set the dirty flag"""
-        # TODO Sleep for min 1 whole tick
-        # Should not run again in same tick, flags/states?
-
-        # Check if the sprite has become dirtier
-        if dirty > self.dirty:
-            self.dirty = dirty
-
-        # Yield for the duration
+    async def yield_(self, util):
+        """Yields if not in warp mode"""
+        # If warp is on, avoid yielding
         if self.warp:
-            # Toggle warp off for other scripts in this sprite
-            self.warp = False
-            await asyncio.sleep(delay)
-            self.warp = True
-
-            # Reset the warp timer
-            self.warp_timer = time.monotonic()
+            if time.monotonic() - self.warp_timer > config.WARP_TIME:
+                print("Overtime!")
+                await self.sleep(util, 0)  # 1 tick min
         else:
-            await asyncio.sleep(delay)
+            await asyncio.sleep(0)
+
+    async def sleep(self, util, delay):
+        """Yields for at least 1 tick and delay"""
+        # Disable warp
+        warp = self.warp
+        self.warp = False
+
+        # Sleep for at least 1 tick
+        await asyncio.gather(
+            asyncio.sleep(delay),
+            util.runtime.tick.wait())
+
+        # Reset warp
+        self.warp = warp
+        self.warp_timer = time.monotonic()
 
     def set_direction(self, degrees):
         """Sets and wraps the direction"""

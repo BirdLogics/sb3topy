@@ -424,7 +424,7 @@ class Parser:
         """
 
         code = ""  # Parsing results
-        dirty = 0  # For set_dirty or _yield
+        dirty = 0  # For set_dirty
 
         block = self.blocks.get(blockid)
 
@@ -470,18 +470,18 @@ class Parser:
             blockid = block['next']
             block = self.blocks.get(blockid)
 
-        # Check if the parent block requires yielding
         code = code.rstrip()
-        if end_yield and input_type == "stack":
-            code = code + "\n" +\
-                self.specmap['special_yield']['code'].format(
-                    DIRTY=dirty) + "\n"
 
         # Check if dirty needs to be set
-        elif dirty:
+        if dirty:
             code = code + "\n" + \
                 self.specmap['special_dirty']['code'].format(
                     DIRTY=dirty) + "\n"
+
+        # Check if the parent block requires yielding
+        if end_yield and input_type == "stack":
+            code = code + "\n" +\
+                self.specmap['special_yield']['code'] + "\n"
 
         # Check if this block's value needs to be casted
         if blockmap['return'] != input_type:  # TODO block = None here

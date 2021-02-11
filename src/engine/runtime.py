@@ -45,7 +45,7 @@ class Runtime:
 
         # Get the loop clock
         self.clock = pg.time.Clock()
-        self.tick = asyncio.Event()
+        self.tick = None  # Must be set from asyncio loop
 
         # Initialize base classes
         self.inputs = Inputs()
@@ -75,6 +75,9 @@ class Runtime:
         """Run the main loop"""
         # Setup asyncio debug
         asyncio.get_running_loop().slow_callback_duration = 0.49
+
+        # Init tick from this loop
+        self.tick = asyncio.Event()
 
         # Start green flag
         self.events.send(self.util, self.sprites, "green_flag")
@@ -146,7 +149,7 @@ class Runtime:
             self.render.draw_redraw_rects(self.display)
         if config.PEN_RECTS:
             self.render.draw_pen_rects(self.display)
-        
+
         if config.DRAW_FPS:
             self.render.draw_fps(self.display, self.clock)
         if config.DYNAMIC_TITLE:
@@ -157,9 +160,10 @@ class Runtime:
     def update_title(self):
         """Updates the dynamic title"""
         pg.display.set_caption(config.TITLE.format(
-            FPS=self.clock.get_fps(), 
+            FPS=self.clock.get_fps(),
             TURBO=" turbo" if config.TURBO_MODE else ""
         ))
+
 
 class Sprites:
     """
