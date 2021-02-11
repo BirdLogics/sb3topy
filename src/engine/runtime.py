@@ -140,17 +140,26 @@ class Runtime:
         self.sprites.update(self.display)
         self.render.draw(self.display)
 
-        # self.render.draw_sprite_rects(self.display)
-        # self.render.draw_redraw_rects(self.display)
-        # self.render.draw_pen_rects(self.display)
-
-        self.render.draw_fps(self.display, self.clock)
+        if config.SPRITE_RECTS:
+            self.render.draw_sprite_rects(self.display)
+        if config.REDRAW_RECTS:
+            self.render.draw_redraw_rects(self.display)
+        if config.PEN_RECTS:
+            self.render.draw_pen_rects(self.display)
+        
+        if config.DRAW_FPS:
+            self.render.draw_fps(self.display, self.clock)
+        if config.DYNAMIC_TITLE:
+            self.update_title()
 
         self.render.flip()
 
-    def debug_rects(self):
-        """Draws debug rects"""
-
+    def update_title(self):
+        """Updates the dynamic title"""
+        pg.display.set_caption(config.TITLE.format(
+            FPS=self.clock.get_fps(), 
+            TURBO=" turbo" if config.TURBO_MODE else ""
+        ))
 
 class Sprites:
     """

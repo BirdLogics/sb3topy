@@ -73,9 +73,11 @@ class Inputs:
         # Get a name for the key
         key = config.KEY_MAP.get(event.key)
         if key is None:
-            key = event.__dict__.get('unicode').upper()
+            key = event.__dict__.get('unicode')
             if key is None:
                 key = pg.key.name(event.key)
+            else:
+                key = key.lower()
 
         # Add the key to the key list
         if not self.pressed_keys:
@@ -86,14 +88,19 @@ class Inputs:
         util.send_event("key" + key + "_pressed")
         util.send_event("keyany_pressed")
 
+        # Handle hotkeys
+        self.hotkey(util, event)
+
     def e_keyup(self, event):
         """Handles a keyup event"""
         # Get a name for the key
         key = config.KEY_MAP.get(event.key)
         if key is None:
-            key = event.__dict__.get('unicode').upper()
+            key = event.__dict__.get('unicode')
             if key is None:
                 key = pg.key.name(event.key)
+            else:
+                key = key.lower()
 
         # Remove the key from the key list
         self.pressed_keys.remove(key)
@@ -135,4 +142,18 @@ class Inputs:
             180 - (ypos - display.rect.y)/display.scale)
 
     def __getitem__(self, key):
-        return key.upper() in self.pressed_keys
+        return key.lower() in self.pressed_keys
+
+    def hotkey(self, util, event):
+        """Checks for hotkeys with KEYDOWN events"""
+        if event.key == pg.K_F10:
+            config.TURBO_MODE = not config.TURBO_MODE
+
+        elif event.key == pg.K_F11:
+            util.display.toggle_fullscreen()
+
+        elif event.key == pg.K_ESCAPE:
+            if util.display.fullscreen:
+                util.display.toggle_fullscreen()
+            else:
+                util.runtime.running = False
