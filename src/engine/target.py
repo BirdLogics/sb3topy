@@ -165,26 +165,29 @@ class Target:
         if dirty > self.dirty:
             self.dirty = dirty
 
-    async def yield_(self, util):
+    async def yield_(self):
         """Yields if not in warp mode"""
         # If warp is on, avoid yielding
         if self.warp:
             if time.monotonic() - self.warp_timer > config.WARP_TIME:
                 print("Overtime!")
-                await self.sleep(util, 0)  # 1 tick min
+
+                # Sleep handles warp and forces screen refresh
+                await self.sleep(0)
         else:
             await asyncio.sleep(0)
 
-    async def sleep(self, util, delay):
+    async def sleep(self, delay):
         """Yields for at least 1 tick and delay"""
         # Disable warp
         warp = self.warp
         self.warp = False
 
-        # Sleep for at least 1 tick
-        await asyncio.gather(
-            asyncio.sleep(delay),
-            util.runtime.tick.wait())
+        # Force screen refresh before running again
+        self.dirty = self.dirty or 1
+
+        # Sleep the correct amount of time
+        await asyncio.sleep(delay)
 
         # Reset warp
         self.warp = warp
@@ -204,7 +207,8 @@ class Target:
             frac = elapsed / duration
             self.xpos = startx + frac*(endx - startx)
             self.ypos = starty + frac*(endy - starty)
-            await self.yield_(2)
+            self.set_dirty(2)
+            await self.yield_()
         self.xpos = endx
         self.ypos = endy
 

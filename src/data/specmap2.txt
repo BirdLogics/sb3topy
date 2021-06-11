@@ -30,8 +30,11 @@ import engine
 self.set_dirty({DIRTY})
 
 # Expression to use for -y
-#: special_yield
-await self.yield_({DIRTY})
+#: code_yield
+await self.yield_()
+
+#: special_unkown
+pass # unkown opcode
 
 #: special_pen
 self.pen.move(util)
