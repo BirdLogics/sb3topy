@@ -169,13 +169,20 @@ class Target:
         """Yields if not in warp mode"""
         # If warp is on, avoid yielding
         if self.warp:
-            if time.monotonic() - self.warp_timer > config.WARP_TIME:
-                print("Overtime!")
+            if time.monotonic() - self.warp_timer < config.WARP_TIME:
+                return
+            print("Overtime!")
 
-                # Sleep handles warp and forces screen refresh
-                await self.sleep(0)
-        else:
-            await asyncio.sleep(0)
+        # Disable warp
+        warp = self.warp
+        self.warp = False
+
+        # Sleep for a tick
+        await asyncio.sleep(0)
+
+        # Reset warp
+        self.warp = warp
+        self.warp_timer = time.monotonic()
 
     async def sleep(self, delay):
         """Yields for at least 1 tick and delay"""
