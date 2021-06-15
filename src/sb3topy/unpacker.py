@@ -15,20 +15,8 @@ import zipfile
 from hashlib import md5
 from os import path
 
-CONFIG_PATH = "data/config.json"
-CONFIG = {
-    "project_path": "../examples/The Taco Incident_ Remake.sb3",
-    "temp_folder": "temp",
+from . import config
 
-    "svg_convert_cmd": '"C:/Program Files/Inkscape/bin/inkscape.exe" -l -o "{OUTPUT}" "{INPUT}"',
-    "mp3_convert_cmd": '"C:/Program Files/VideoLAN/VLC/vlc.exe" -I dummy --sout "#transcode{{acodec=s16l,channels=2}}:std{{access=file,mux=wav,dst=\'{OUTPUT}\'}}" "{INPUT}" vlc://quit',
-
-    "base_dpi": 96,
-    "svg_scale": 4
-}
-
-IMAGE_TYPES = ('png', 'svg', 'jpg')
-SOUND_TYPES = ('wav', 'mp3')
 LOG_LEVEL = 10
 
 
@@ -95,7 +83,8 @@ class Project:
         of the file. This also prevents path traversal.
         """
 
-        costume.setdefault('md5ext', costume['assetId'] + '.' + costume['dataFormat'])
+        costume.setdefault(
+            'md5ext', costume['assetId'] + '.' + costume['dataFormat'])
         logging.debug("Validating costume %s", costume['md5ext'])
 
         # Avoid validating twice
@@ -104,7 +93,7 @@ class Project:
             return
 
         # Verify the asset's type is known
-        if not costume.setdefault('dataFormat') in IMAGE_TYPES:
+        if not costume.setdefault('dataFormat') in config.IMAGE_TYPES:
             logging.warning("Unkown image type '%s'",
                             costume['dataFormat'])
             asset_path = None
@@ -131,7 +120,7 @@ class Project:
                              costume['md5ext'])
 
                 # Get the conversion command
-                cmd = CONFIG['svg_convert_cmd'].format(
+                cmd = config.SVG_COMMAND.format(
                     INPUT=path.normpath(asset_path),
                     OUTPUT=path.normpath(new_path),
                 )  # DPI=CONFIG['base_dpi']*CONFIG['svg_scale'])
@@ -139,17 +128,17 @@ class Project:
 
                 # Run the command
                 try:
-                    subprocess.run(cmd, check=True,
-                                   capture_output=True, text=True)
+                    result = subprocess.run(
+                        cmd, check=True, text=True, capture_output=True)
                 except subprocess.CalledProcessError as error:
                     logging.error("SVG conversion error: %s",
                                   error.stderr.rstrip())
                     raise
                 if not path.isfile(new_path):
-                    logging.error("Failed to convert file '%s'",
-                                  costume['md5ext'])
+                    logging.error("SVG coversion failed: %s",
+                                  result.stderr.rstrip())
             else:
-                logging.debug("Asset '%s' already converted to png",
+                logging.info("Asset '%s' already converted to png",
                              costume['md5ext'])
 
             # Update asset details
@@ -182,7 +171,7 @@ class Project:
             return
 
         # Verify the asset's type is known
-        if not sound.setdefault('dataFormat') in SOUND_TYPES:
+        if not sound.setdefault('dataFormat') in config.SOUND_TYPES:
             logging.warning("Unkown sound type '%s'",
                             sound['dataFormat'])
             asset_path = None
@@ -202,7 +191,7 @@ class Project:
                 logging.info("Converting sound '%s' to wav", sound['md5ext'])
 
                 # Get the conversion command
-                cmd = CONFIG['mp3_convert_cmd'].format(
+                cmd = config.MP3_COMMAND.format(
                     INPUT=path.normpath(asset_path),
                     OUTPUT=path.normpath(new_path))
                 logging.debug("Converting sound: %s", cmd)
@@ -246,7 +235,7 @@ class Project:
 
         md5ext = asset_md5 + "." + asset_ext
 
-        if not md5ext in self.namelist:
+        if md5ext not in self.namelist:
             logging.error("Failed to locate asset '%s'", md5ext)
             return None
 
@@ -278,20 +267,14 @@ def main():
     """Setup the Unpacker and run it"""
     logging.basicConfig(format="[%(levelname)s] %(message)s", level=LOG_LEVEL)
 
-    if path.isfile(CONFIG_PATH):
-        with open(CONFIG_PATH, 'r') as file:
-            CONFIG.update(json.load(file))
-
-    sb3, _ = unpack({})
+    sb3, _ = unpack()
 
 
-def unpack(config):
+def unpack():
     """Unpack using a config json"""
-    CONFIG.update(config)
-
     return Project().unpack(
-        CONFIG['project_path'],
-        path.join(CONFIG['temp_folder'], "assets")
+        config.PROJECT_PATH,
+        path.join(config.TEMP_FOLDER, "assets")
     )
 
 

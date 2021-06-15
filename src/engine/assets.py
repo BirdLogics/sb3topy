@@ -182,34 +182,38 @@ class Costumes:
 
     _cache = {}
 
-    def __init__(self, costume_number, size, rotation_style, costumes):
+    def __init__(self, costume_number, size,
+                 rotation_style, costumes, copy_dicts=None):
         self.number = costume_number + 1
         self.costume = costumes[costume_number]
         self.name = self.costume['name']
         self.size = size
         self.rotation_style = rotation_style
 
-        self.costumes = {}
-        self.costume_list = []
+        self.costume_list = costumes
 
-        self.effects = {}
+        if copy_dicts is None:
+            self.effects = {}
+            self.costumes = {}
 
-        # Initialize the costume lists
-        for index, asset in enumerate(costumes):
-            # Load the image
-            asset['image'] = self._load_image(asset['path'])
+            # Initialize the costume lists
+            for index, asset in enumerate(costumes):
+                # Load the image
+                asset['image'] = self._load_image(asset['path'])
 
-            # Calculate the rotation offset
-            center = pg.math.Vector2(asset['image'].get_size()) / 2
-            asset['offset'] = pg.math.Vector2(asset['center'])
-            asset['offset'] *= -1
-            asset['offset'] += center
-            asset['offset'] /= asset['scale']
+                # Calculate the rotation offset
+                center = pg.math.Vector2(asset['image'].get_size()) / 2
+                asset['offset'] = pg.math.Vector2(asset['center'])
+                asset['offset'] *= -1
+                asset['offset'] += center
+                asset['offset'] /= asset['scale']
 
-            # Add the costume to the dict
-            asset['number'] = index + 1
-            self.costumes[asset['name']] = asset
-            self.costume_list.append(asset)
+                # Add the costume to the dict
+                asset['number'] = index + 1
+                self.costumes[asset['name']] = asset
+        else:
+            self.costumes = copy_dicts[0]
+            self.effects = copy_dicts[1]
 
     def _load_image(self, path):
         """Loads an image or retrieves it from cache"""
@@ -340,8 +344,8 @@ class Costumes:
     def copy(self):
         """Return a copy of this list"""
         cost = Costumes(self.number - 1, self.size,
-                        self.rotation_style, self.costume_list)
-        cost.effects = self.effects.copy()
+                        self.rotation_style, self.costume_list,
+                        (self.costumes, self.effects.copy()))
         return cost
 
 

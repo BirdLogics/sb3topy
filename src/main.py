@@ -17,7 +17,7 @@ import unpacker
 
 CONFIG = {
     "temp_folder": "./temp/",
-    "specmap_file": "./data/specmap2.txt",
+    "specmap_file": "./data/specmap2_old.txt",
     "project_path": "../examples/Taco2.sb3.zip",
 
     "zip_path": "",
@@ -29,7 +29,7 @@ CONFIG = {
 
     "debug_json": True,
     "debug_manifest": True,
-    "log_level": 30
+    "log_level": 20
 }
 
 COMPRESS_MAP = {
@@ -73,6 +73,7 @@ def main(args=None):
 
     # Parse the sb3 json into python code
     logging.info("Parsing to Python")
+    # logging.getLogger().setLevel(0)
     code = sbparser.parse(sb3, CONFIG)
 
     # Save the results
@@ -98,7 +99,7 @@ def main(args=None):
     print("Done!")
 
     os.chdir(CONFIG['temp_folder'])
-    os.system("py -3 project.py")
+    os.system("py -3 -X dev project.py")
 
 
 def zip_result(manifest):

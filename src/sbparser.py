@@ -12,7 +12,7 @@ from os import path
 
 CONFIG_PATH = "data/config.json"
 CONFIG = {
-    "specmap_path": "data/specmap2.txt",
+    "specmap_path": "data/specmap2_old.txt",
     "temp_folder": "temp",
     "warp_all": False
 }
@@ -64,7 +64,7 @@ def to_number(value):
                 value = int(value)
         except ValueError:
             return 0
-    if value == float('NaN'):
+    if math.isnan(value):
         return 0
     if isinstance(value, (int, float)):
         return value
@@ -516,7 +516,7 @@ class Parser:
                     name = self.variables['Stage'].get_existing(value)
                 parameters["LIST"] = name
 
-            elif field in "PROPERTY":
+            elif field == "PROPERTY":
                 # These need to not be lowered/quoted
                 parameters[field] = value[0]
 
@@ -562,7 +562,6 @@ class Parser:
             blockmap = blockmap.copy()
             mutation = self.blocks[block['inputs']
                                    ['custom_block'][1]]['mutation']
-            self.warps[mutation['proccode']] = mutation['warp']
 
             # TODO CB, var name conflicts
             blockmap['code'] = "async def " + clean_identifier(

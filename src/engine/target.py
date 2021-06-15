@@ -117,7 +117,7 @@ class Target:
             print("Failed to find name for ", this_task)
         self._tasks[this_name] = [this_task]
 
-    def update(self, display):
+    def update(self, display, create_mask=False):
         """Clears the dirty flag by updating the sprite, rect and/or image"""
         # self.sprite.dirty = 1
         if self.sprite.visible != self.visible:  # dirty == 1
@@ -132,12 +132,15 @@ class Target:
             self._update_image(display)
         self.dirty = 0
 
+        if create_mask and not self.sprite.mask:
+            self.sprite.mask = pg.mask.from_surface(self.sprite.image)
+
     def _update_image(self, display):
         """Updates and transforms the sprites image"""
         # Update the image
         image = self.costume.get_image(display, self.direction)
         self.sprite.image = image
-        self.sprite.mask = pg.mask.from_surface(image)
+        self.sprite.mask = None
 
         # The rect now needs updating
         self._update_rect(display)
@@ -243,7 +246,7 @@ class Target:
     def get_touching(self, util, other):
         """Check if this sprite is touching another or its clones"""
         if other == "_mouse_":
-            self.update(util.display)
+            self.update(util.display, True)
             xpos, ypos = pg.mouse.get_pos()
 
             offset = self.sprite.rect.topleft
@@ -258,8 +261,8 @@ class Target:
             return False
 
         # Must update this sprite and the other before testing
-        self.update(util.display)
-        other.update(util.display)
+        self.update(util.display, True)
+        other.update(util.display, True)
 
         # Check if touching the original
         if pg.sprite.collide_mask(other.sprite, self.sprite):
@@ -268,7 +271,7 @@ class Target:
         # Check if touching a clone
         for clone in other.clones:
             # Update the clones image too
-            clone.update(util.display)
+            clone.update(util.display, True)
 
             # Check if touching a clone
             if pg.sprite.collide_mask(self.sprite, clone.sprite):

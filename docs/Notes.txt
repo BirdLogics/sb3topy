@@ -1,15 +1,7 @@
 TODO List
-Global variables
-Reverse initial layering
-Rotation styles
-Sounds
-When key pressed
 Custom blocks
-Clones
-Pen
 Variable reporters
 List reporters
-GUI
 EXE conversion
 
 Options to add:
@@ -124,3 +116,53 @@ Scratch MIDI to Pygame MIDI
 {
     1: 
 }
+
+See scratch-vm for dict in JSON
+
+=================================================
+Costume Cache
+
+Path, Scale, Direction, Effects
+
+Base Image      - Always in cache
+Scaled Image    - 
+Rotated Image
+Final Image
+
+
+=================================================
+Task Sequence
+
+scripts: {"event": [tasks]}
+
+
+
+==================================================
+
+runtime
+    - util
+        - events
+        - sprites
+        - display
+        - inputs
+
+Avoid:
+                  \/
+util.events.send(util, ...)
+
+Options:
+  
+Events(util)
+Events(util.sprites)
+
+global util = BlockUtil()
+
+
+====================================================
+
+bg_image
+    - Stage
+    - Pen
+Sprites
+Monitors
+Debug

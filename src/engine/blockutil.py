@@ -3,15 +3,21 @@ blockutil.py
 
 Contains functions and classes
 primarily used within project.py
+
+TODO New Operators class?
 """
 
 __all__ = [
     'List',
-    'tonum', 'letter_of', 'pick_rand',
-    'gt', 'lt', 'eq', 'div'
+    'tonum', 'toint', 'letter_of', 'pick_rand',
+    'gt', 'lt', 'eq', 'div',
+    'math'  # TODO Bad way to import math
 ]
 
 import random
+import math
+
+from .config import MAX_LIST
 
 
 class List:
@@ -21,62 +27,69 @@ class List:
         self.list = values
 
     def __getitem__(self, key):
-        key = self._to_index(key)
-        if key is not None:
-            return self.list[key]
+        if self.list:
+            if key == "first":
+                return self.list[0]
+            if key == "last":
+                return self.list[-1]
+            if key == "random":
+                return self.list[random.randint(0, len(self.list) - 1)]
+            key = round(tonum(key)) - 1
+            if 0 <= key < len(self.list):
+                return self.list[key]
         return ""
 
     def __setitem__(self, key, value):
-        key = self._to_index(key)
-        if key is not None:
-            self.list[key] = value
+        if self.list:
+            if key == "first":
+                self.list[0] = value
+            elif key == "last":
+                self.list[-1] = value
+            elif key == "random":
+                self.list[random.randint(0, len(self.list) - 1)] = value
+            else:
+                key = round(tonum(key)) - 1
+                if 0 <= key < len(self.list):
+                    self.list[key] = value
 
     def append(self, value):
         """Add up to 200,000 items to list"""
-        if len(self.list) < 200000:
+        if len(self.list) < MAX_LIST:
             self.list.append(value)
 
     def insert(self, key, value):
         """Insert up to 200,000 items in list"""
-        if len(self.list) < 200000:
+        if len(self.list) < MAX_LIST:
             if key == "first":
-                key = 0
+                self.list.insert(0, value)
             elif key == "last":
-                key = -1
+                self.list.append(value)
             elif key == "random":
-                key = random.randint(0, len(self.list))
+                self.list.insert(random.randint(0, len(self.list)), value)
             else:
                 key = round(tonum(key)) - 1
-
-            if key is not None and 0 <= key <= len(self.list):
-                self.list.insert(key, value)
+                if 0 <= key <= len(self.list):
+                    self.list.insert(key, value)
 
     def delete(self, key):
         """Remove an item from list"""
         if key == "all":
             self.list = []
-        else:
-            key = self._to_index(key)
-            if key is not None:
-                self.list.pop(key)
+        elif self.list:
+            if key == "first":
+                del self.list[0]
+            elif key == "last":
+                del self.list[-1]
+            elif key == "random":
+                del self.list[random.randint(0, len(self.list) - 1)]
+            else:
+                key = round(tonum(key)) - 1
+                if 0 <= key < len(self.list):
+                    del self.list[key]
 
     def delete_all(self):
         """Delete all items in list"""
         self.list = []
-
-    def _to_index(self, key):
-        """Gets the index of first, last, random strings"""
-        if self.list:
-            if key == "first":
-                return 0
-            if key == "last":
-                return -1
-            if key == "random":
-                return random.randint(0, len(self.list) - 1)
-            key = round(tonum(key))
-            if 0 < key <= len(self.list):
-                return key - 1
-        return None
 
     def __contains__(self, item):
         item = str(item).casefold()
@@ -86,6 +99,16 @@ class List:
         return False
 
     def __str__(self):
+        char_join = True
+        for item in self.list:
+            if len(str(item)) != 1:
+                char_join = False
+                break
+        if char_join:
+            return ''.join(self.list)
+        return ' '.join(self.list)
+
+    def __call__(self):
         char_join = True
         for item in self.list:
             if len(str(item)) != 1:
@@ -114,13 +137,6 @@ class List:
                 return i + 1
         return 0
 
-    def index1(self, item):
-        """Find the index of an item in the list"""
-        try:
-            return self.list.index(item) + 1
-        except ValueError:
-            return 0
-
     def copy(self):
         """Return a copy of this List"""
         return List(self.list.copy())
@@ -128,16 +144,21 @@ class List:
 
 def tonum(value):
     """Attempt to cast a value to a number"""
-    if isinstance(value, str):
-        try:
-            value = float(value)
-            if value.is_integer():
-                value = int(value)
-        except ValueError:
+    try:
+        value = float(value)
+        if value.is_integer():
+            return int(value)
+        if value == float('NaN'):
             return 0
-    if value == float('NaN'):
+        return value
+    except ValueError:
         return 0
-    return value
+
+
+def toint(value):
+    """Attempts to floor a value to an int"""
+    # TODO toint on infinite floats?
+    return math.floor(tonum(value))
 
 
 def letter_of(text, index):

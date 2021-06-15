@@ -65,6 +65,8 @@ class Display:
         # Setup and redraw screen
         self.screen = pg.display.set_mode(self.size, flags)
         self.screen.fill((250, 250, 250))
+        pg.display.flip()
+        Pen.resize(self)
 
     def toggle_fullscreen(self):
         """Toggle between fullscreen and windowed mode"""
@@ -94,7 +96,6 @@ class Display:
         for sprite in sprites.sprites():
             sprite.target.dirty = 3
         sprites.stage.dirty = 3
-        Pen.resize(self)
 
 
 class Render:
@@ -201,5 +202,6 @@ class Render:
     def flip(self):
         """Update the display after drawing"""
         pg.display.update(self.rects)
+        # pg.display.flip()
         self.rects = []
         Pen.dirty = []

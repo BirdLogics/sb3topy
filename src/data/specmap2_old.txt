@@ -11,34 +11,33 @@ import engine
 #pylint: disable=all
 
 # flags:
-# -d1 Means the sprite will become dirty after running
-# -d2 Means the rectangle will need updating after running
-# -d3 Means the image will need updating after running
+# -d1 Means the sprite will become Dirty after running
+# -d2 Means the Rectangle will need updating after running
+# -d3 Means the Image will need updating after running
+# -s1 Means that dirty must be Set before running the block
+# -s2 Means the block accepts and Sets {DIRTY}
+# -y  Means the block should Yield after its substack
+# -h  Means the block is a Hat and requires special parsing
 
-# -s1 Means that dirty must be set before running the block
-# -s2 Means the block accepts and sets {DIRTY}
-# -y  Means the block should yield after its substack
-
-# -h  Means the block is a hat and requires special parsing
-
+# -u Means any Updates need to be made before running [Unused]
+# Updates are normally performed right before redrawing the screen
+# -u flag is currently unused, however the functions with it will
+# need to update the sprite(s) themself. For example, the 
+# is_touching function will update this and all checked sprites.
 
 # Expression to use for -s1
-#: code_dirty
+#: special_dirty
 self.set_dirty({DIRTY})
 
 # Expression to use for -y
-#: code_yield
+#: special_yield
 await self.yield_()
-
-#: special_unkown
-pass # unkown opcode
 
 #: special_pen
 self.pen.move(util)
 
-#: procedures_definition (any custom_block) -h
-procedure
-    {custom_block}
+#: procedures_definition (stack SUBSTACK) -h
+def {NAME}(self, {PARAMETERS}):{SUBSTACK}
 
 #: any argument_reporter_string_number (any VALUE)
 {VALUE}
@@ -46,56 +45,56 @@ procedure
 #: any argument_reporter_boolean (any VALUE)
 {VALUE}
 
-#: stack procedures_call (string NAME, list PARAMETERS) -s1
+#: procedures_call (string NAME, list PARAMETERS) -s1
 await {NAME}({PARAMETERS})
 
-#: stack motion_movesteps (float STEPS) -d2
+#: motion_movesteps (float STEPS) -d2
 self.move({STEPS})
 
-#: stack motion_turnright (float DEGREES) -d3
+#: motion_turnright (float DEGREES) -d3
 self.set_direction(self.direction + {DEGREES})
 
-#: stack motion_turnleft (float DEGREES) -d3
+#: motion_turnleft (float DEGREES) -d3
 self.set_direction(self.direction - {DEGREES})
 
-#: stack motion_pointindirection (float DIRECTION) -d3
+#: motion_pointindirection (float DIRECTION) -d3
 self.set_direction({DIRECTION})
 
-#: stack motion_pointtowards (string TOWARDS) -d3
+#: motion_pointtowards (string TOWARDS) -d3
 self.point_towards(util, {TOWARDS})
 
 # other = util.sprites[{TOWARDS}]
 # radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
 # self.set_direction(math.degrees(radians))
 
-#: stack motion_gotoxy (float X, float Y) -d2
+#: motion_gotoxy (float X, float Y) -d2
 self.xpos = {X}
 self.ypos = {Y}
 
-#: stack motion_goto (string TO) -d2
+#: motion_goto (string TO) -d2
 self.goto(util, {TO})
 
-#: stack motion_glidesecstoxy (float SECS, float X, float Y) -d2
+#: motion_glidesecstoxy (float SECS, float X, float Y) -d2
 await self.glide({SECS}, {X}, {Y})
 
 # TODO Glide to target?
 
-#: stack motion_changexby (float DX) -d2
+#: motion_changexby (float DX) -d2
 self.xpos += {DX}
 
-#: stack motion_setx (float X) -d2
+#: motion_setx (float X) -d2
 self.xpos = {X}
 
-#: stack motion_changeyby (float DY) -d2
+#: motion_changeyby (float DY) -d2
 self.ypos += {DY}
 
-#: stack motion_sety (float Y) -d2
+#: motion_sety (float Y) -d2
 self.ypos = {Y}
 
-#: stack motion_ifonedgebounce () -d3
+#: motion_ifonedgebounce () -d3
 0$ # motion_ifonedgebounce()
 
-#: stack motion_setrotationstyle (string STYLE) -d3
+#: motion_setrotationstyle (string STYLE) -d3
 self.costume.rotation_style = {STYLE}
 
 #: float motion_xposition ()
@@ -107,76 +106,76 @@ self.ypos
 #: float motion_direction ()
 self.direction
 
-#: stack looks_sayforsecs (string MESSAGE, float SECS)
+#: looks_sayforsecs (string MESSAGE, float SECS)
 pass # looks_sayforsecs({MESSAGE}, {SECS})
 
-#: stack looks_say (string MESSAGE)
+#: looks_say (string MESSAGE)
 pass # looks_say({MESSAGE})
 
-#: stack looks_thinkforsecs (string MESSAGE, float SECS)
+#: looks_thinkforsecs (string MESSAGE, float SECS)
 pass # looks_thinkforsecs({MESSAGE}, {SECS})
 
-#: stack looks_think (string MESSAGE)
+#: looks_think (string MESSAGE)
 pass # looks_think({MESSAGE})
 
-#: stack looks_show () -d1
+#: looks_show () -d1
 self.visible = 1
 
-#: stack looks_hide () -d1
+#: looks_hide () -d1
 self.visible = 0
 
-#: stack looks_switchcostumeto (any COSTUME) -d3
+#: looks_switchcostumeto (any COSTUME) -d3
 self.costume.switch({COSTUME})
 
-#: stack looks_nextcostume () -d3
+#: looks_nextcostume () -d3
 self.costume.next()
 
-#: stack looks_switchbackdropto (any BACKDROP) -d3
+#: looks_switchbackdropto (any BACKDROP) -d3
 util.sprites.stage.costume.switch({BACKDROP})
 util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 
-#: stack looks_switchbackdroptoandwait (any BACKDROP) -d3s1
+#: looks_switchbackdroptoandwait (any BACKDROP) -d3s1
 util.sprites.stage.costume.switch({BACKDROP})
 await util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 
-#: stack looks_nextbackdrop () -d3
+#: looks_nextbackdrop () -d3
 util.sprites.stage.costume.next()
 util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 
-#: stack looks_changeeffectby (string EFFECT, float CHANGE) -d3
+#: looks_changeeffectby (string EFFECT, float CHANGE) -d3
 self.costume.change_effect({EFFECT}, {CHANGE})
 
-#: stack looks_seteffectto (string EFFECT, float VALUE) -d3
+#: looks_seteffectto (string EFFECT, float VALUE) -d3
 self.costume.set_effect({EFFECT}, {VALUE})
 
-#: stack looks_cleargraphiceffects () -d3
+#: looks_cleargraphiceffects () -d3
 self.costume.clear_effects()
 
-#: stack looks_changesizeby (float CHANGE) -d3
+#: looks_changesizeby (float CHANGE) -d3
 self.costume.change_size({CHANGE})
 
-#: stack looks_setsizeto (float SIZE) -d3
+#: looks_setsizeto (float SIZE) -d3
 self.costume.set_size({SIZE})
 
-#: stack looks_gotofrontback (string FRONT_BACK) -d1
+#: looks_gotofrontback (string FRONT_BACK) -d1
 #? looks_goto{FRONT_BACK}
 pass # looks_gotofrontback()
 
-#: stack looks_goto'front' ()
+#: looks_goto'front' ()
 self.front_layer(util)
 
-#: stack looks_goto'back' ()
+#: looks_goto'back' ()
 self.back_layer(util)
 
 # TODO Decimal behavior
-#: stack looks_goforwardbackwardlayers (field FORWARD_BACKWARD, int NUM) -d1
+#: looks_goforwardbackwardlayers (field FORWARD_BACKWARD, int NUM) -d1
 #? looks_go{FORWARD_BACKWARD}layers
 0$
 
-#: stack looks_go'forward'layers (int NUM)
+#: looks_go'forward'layers (int NUM)
 self.change_layer(util, {NUM})
 
-#: stack looks_go'backward'layers (int NUM)
+#: looks_go'backward'layers (int NUM)
 self.change_layer(util, -{NUM})
 
 #: int looks_costumenumbername (field NUMBER_NAME)
@@ -202,163 +201,156 @@ util.sprites.stage.costume.name
 #: int looks_size ()
 round(self.costume.size)
 
-#: stack sound_play (any SOUND_MENU)
+#: sound_play (any SOUND_MENU)
 self.sounds.play({SOUND_MENU})
 
-#: stack sound_playuntildone (any SOUND_MENU) -s1
+#: sound_playuntildone (any SOUND_MENU) -s1
 await self.sounds.play({SOUND_MENU})
 
-#: stack sound_stopallsounds ()
+#: sound_stopallsounds ()
 self.sounds.stop_all()
 
-#: stack sound_changevolumeby (float VOLUME) 
+#: sound_changevolumeby (float VOLUME) 
 self.sounds.change_volume({VOLUME})
 
-#: stack sound_setvolumeto (float VOLUME) 
+#: sound_setvolumeto (float VOLUME) 
 self.sounds.set_volume({VOLUME})
 
 #: float sound_volume ()
 self.sounds.volume
 
-#: stack sound_seteffectto (field EFFECT, float VALUE)
+#: sound_seteffectto (field EFFECT, float VALUE)
 self.sounds.set_effect({EFFECT}, {VALUE})
 
-#: stack sound_changeeffectby (field EFFECT, float VALUE)
+#: sound_changeeffectby (field EFFECT, float VALUE)
 self.sounds.change_effect({EFFECT}, {VALUE})
 
-#: stack sound_cleareffects
+#: sound_cleareffects
 self.sounds.clear_effects()
 
-#: stack pen_clear ()
+#: pen_clear ()
 self.pen.clear_all()
 
-#: stack pen_stamp ()
+#: pen_stamp ()
 self.pen.stamp(util)
 
-#: stack pen_penDown ()
+#: pen_penDown ()
 self.pen.down(util)
 
-#: stack pen_penUp ()
+#: pen_penUp ()
 self.pen.up()
 
-#: stack pen_setPenColorToColor (any COLOR)
+#: pen_setPenColorToColor (any COLOR)
 self.pen.exact_color({COLOR})
 
-#: stack pen_changePenColorParamBy (string COLOR_PARAM, float VALUE)
+#: pen_changePenColorParamBy (string COLOR_PARAM, float VALUE)
 self.pen.change_color({COLOR_PARAM}, {VALUE})
 
-#: stack pen_setPenColorParamTo (string COLOR_PARAM, float VALUE)
+#: pen_setPenColorParamTo (string COLOR_PARAM, float VALUE)
 self.pen.set_color({COLOR_PARAM}, {VALUE})
 
-#: stack pen_changePenSizeBy (float SIZE)
+#: pen_changePenSizeBy (float SIZE)
 self.pen.change_size({SIZE})
 
-#: stack pen_setPenSizeTo (float SIZE)
+#: pen_setPenSizeTo (float SIZE)
 self.pen.set_size({SIZE})
 
 # Legacy blocks
-#: stack pen_setPenShadeToNumber (float SHADE)
+#: pen_setPenShadeToNumber (float SHADE)
 self.pen.set_shade({SHADE})
 
-#: stack pen_changePenShadeBy (float SHADE)
+#: pen_changePenShadeBy (float SHADE)
 self.pen.change_shade({SHADE})
 
-#: stack pen_setHueTo (float HUE)
+#: pen_setHueTo (float HUE)
 self.pen.set_hue({HUE})
 
-#: stack pen_changePenHueBy (float HUE)
+#: pen_changePenHueBy (float HUE)
 self.pen.change_hue({HUE})
 
 #: event_whenflagclicked (stack SUBSTACK) -h
 green_flag
-    {SUBSTACK}
 
-#: event_whenkeypressed (stack SUBSTACK, field KEY_OPTION) -h
-key_{KEY_OPTION}_pressed
-    {SUBSTACK}
+#: event_whenkeypressed (stack SUBSTACK, string KEY_OPTION) -h
+key{KEY_OPTION}_pressed
 
 #: event_whenthisspriteclicked (stack SUBSTACK) -h
 sprite_clicked
-    {SUBSTACK}
 
 #: event_whenstageclicked (stack SUBSTACK) -h
 sprite_clicked
-    {SUBSTACK}
 
-#: event_whenbackdropswitchesto (stack SUBSTACK, field BACKDROP) -h
+#: event_whenbackdropswitchesto (stack SUBSTACK, string BACKDROP) -h
 onbackdrop_{BACKDROP}
-    {SUBSTACK}
 
 #: event_whengreaterthan (stack SUBSTACK, field WHENGREATERTHANMENU, float VALUE) -h
 #? event_whengreaterthan_{WHENGREATERTHANMENU}
 event_whengreaterthan
-    while not {VALUE} > util.timer():
-        await self.yield_()
-        {SUBSTACK}
+
+if not {VALUE} > util.timer():
+    return
 
 #: event_whenbroadcastreceived (stack SUBSTACK, field BROADCAST_OPTION) -h
 broadcast_{BROADCAST_OPTION}
-    {SUBSTACK}
 
-#: stack event_broadcast (string BROADCAST_INPUT)
+#: event_broadcast (string BROADCAST_INPUT)
 util.send_broadcast({BROADCAST_INPUT})
 
-#: stack event_broadcastandwait (string BROADCAST_INPUT) -s1
+#: event_broadcastandwait (string BROADCAST_INPUT) -s1
 await util.send_broadcast({BROADCAST_INPUT})
 
-#: stack control_wait (float DURATION) -s1
+#: control_wait (float DURATION) -s1
 await self.sleep({DURATION})
 
-#: stack control_repeat (intR TIMES, stack SUBSTACK) -s1y
+#: control_repeat (intR TIMES, stack SUBSTACK) -s1y
 for _ in range({TIMES}):
-    {SUBSTACK}
+{SUBSTACK}
 
-#: stack control_forever (stack SUBSTACK) -s1y
+#: control_forever (stack SUBSTACK) -s1y
 while True:
-    {SUBSTACK}
+{SUBSTACK}
 
-#: stack control_if (bool CONDITION, stack SUBSTACK) -s1
+#: control_if (bool CONDITION, stack SUBSTACK) -s1
 if {CONDITION}:
-    {SUBSTACK}
+{SUBSTACK}
 
-#: stack control_if_else (bool CONDITION, stack SUBSTACK, stack SUBSTACK2) -s1
+#: control_if_else (bool CONDITION, stack SUBSTACK, stack SUBSTACK2) -s1
 if {CONDITION}:
-    {SUBSTACK}
+{SUBSTACK}
 else:
-    {SUBSTACK2}
+{SUBSTACK2}
 
-#: stack control_wait_until (bool CONDITION) -s1
+#: control_wait_until (bool CONDITION) -s1
 while not {CONDITION}:
     await self.yield_()
 
-#: stack control_repeat_until (bool CONDITION, stack SUBSTACK) -s1y
+#: control_repeat_until (bool CONDITION, stack SUBSTACK) -s1y
 while not {CONDITION}:
-    {SUBSTACK}
+{SUBSTACK}
 
 # TODO Stop other scripts
-#: stack control_stop (field STOP_OPTION)
+#: control_stop (field STOP_OPTION)
 #? control_stop_{STOP_OPTION}
-5$
+0$ {STOP_OPTION}
 
-#: stack control_stop_'this_script' (field STOP_OPTION)
+#: control_stop_'this_script' (field STOP_OPTION)
 return None
 
-#: stack control_stop_'other_scripts_in_sprite' (field STOP_OPTION)
+#: control_stop_'other_scripts_in_sprite' (field STOP_OPTION)
 self.stop_other()
 
-#: stack control_stop_'all' (field STOP_OPTION)
+#: control_stop_'all' (field STOP_OPTION)
 util.stop_all()
 return None
 
 # TODO Clones
-#: stack control_start_as_clone (stack SUBSTACK) -h
+#: control_start_as_clone (stack SUBSTACK) -h
 clone_start
-    {SUBSTACK}
 
-#: stack control_create_clone_of (string CLONE_OPTION)
+#: control_create_clone_of (string CLONE_OPTION)
 self.create_clone_of(util, {CLONE_OPTION})
 
-#: stack control_delete_this_clone ()
+#: control_delete_this_clone ()
 self.delete_clone(util)
 
 #: bool sensing_touchingobject (field TOUCHINGOBJECTMENU) -u
@@ -376,10 +368,10 @@ False
 self.distance_to(util, {DISTANCETOMENU})
 
 # TODO sensing_askandwait
-#: stack sensing_askandwait (string QUESTION)
+#: sensing_askandwait (string QUESTION)
 answer = input({QUESTION})
 
-#: string sensing_answer
+#: sensing_answer
 answer
 
 #: bool sensing_keypressed (field KEY_OPTION)
@@ -405,7 +397,7 @@ False
 #: float sensing_timer ()
 util.timer()
 
-#: stack sensing_resettimer ()
+#: sensing_resettimer ()
 util.timer.reset()
 
 # TODO {OBJECT} Stage = _stage_
@@ -511,8 +503,7 @@ not {OPERAND}
 #: string operator_join (string STRING1, string STRING2)
 ({STRING1} + {STRING2})
 
-# TODO letter is floored int
-#: string operator_letter_of (int LETTER, string STRING)
+#: string operator_letter_of (intF LETTER, STRING)
 letter_of({STRING}, {LETTER})
 
 #: int operator_length (string STRING)
@@ -574,60 +565,56 @@ math.exp({NUM})
 #: float operator_mathop_'10_^' (float NUM)
 math.pow(10, {NUM})
 
-#: any data_variable (field VARIABLE)
-{VARIABLE}
+#: any data_variable (field VARIABLE, field PREFIX)
+{PREFIX}.{VARIABLE}
 
-#: stack data_setvariableto (field VARIABLE, any VALUE)
-{VARIABLE} = {VALUE}
+#: data_setvariableto (field VARIABLE, any VALUE, field PREFIX)
+{PREFIX}.{VARIABLE} = {VALUE}
 
-#: stack data_changevariableby (field VARIABLE, float VALUE)
-{VARIABLE} = tonum({VARIABLE}) + {VALUE}
+#: data_changevariableby (field VARIABLE, float VALUE, field PREFIX)
+{PREFIX}.{VARIABLE} = tonum({PREFIX}.{VARIABLE}) + {VALUE}
 
-#: stack data_showvariable (field VARIABLE)
-print({VARIABLE})
+#: data_showvariable (field VARIABLE, field PREFIX)
+print({PREFIX}.{VARIABLE})
 
-#: stack data_hidevariable (field VARIABLE)
+#: data_hidevariable (field VARIABLE, field PREFIX)
 pass # hide variable
 
-#: stack string data_listcontents (field LIST)
-str({LIST})
+#: string data_listcontents (field LIST, field PREFIX)
+str({PREFIX}.{LIST})
 
-#: stack data_addtolist (any ITEM, field LIST)
-{LIST}.append({ITEM})
+#: data_addtolist (any ITEM, field LIST, field PREFIX)
+{PREFIX}.{LIST}.append({ITEM})
 
-#: stack data_deleteoflist (any INDEX, field LIST)
-{LIST}.delete({INDEX})
+#: data_deleteoflist (any INDEX, field LIST, field PREFIX)
+{PREFIX}.{LIST}.delete({INDEX})
 
-#: stack data_deletealloflist (field LIST)
-{LIST}.delete_all()
+#: data_deletealloflist (field LIST, field PREFIX)
+{PREFIX}.{LIST}.delete_all()
 
-#: stack data_insertatlist (any ITEM, any INDEX, field LIST)
-{LIST}.insert({INDEX}, {ITEM})
+#: data_insertatlist (any ITEM, any INDEX, field LIST, field PREFIX)
+{PREFIX}.{LIST}.insert({INDEX}, {ITEM})
 
-#: stack data_replaceitemoflist (any INDEX, field LIST, any ITEM)
-{LIST}[{INDEX}] = {ITEM}
+#: data_replaceitemoflist (any INDEX, field LIST, any ITEM, field PREFIX)
+{PREFIX}.{LIST}[{INDEX}] = {ITEM}
 
-#: any data_itemoflist (any INDEX, field LIST)
-{LIST}[{INDEX}]
+#: any data_itemoflist (any INDEX, field LIST, field PREFIX)
+{PREFIX}.{LIST}[{INDEX}]
 
-#: int data_itemnumoflist (field LIST, any ITEM)
-{LIST}.index({ITEM})
+#: int data_itemnumoflist (field LIST, any ITEM, field PREFIX)
+{PREFIX}.{LIST}.index({ITEM})
 
-#: int data_lengthoflist (field LIST)
-len({LIST})
+#: int data_lengthoflist (field LIST, field PREFIX)
+len({PREFIX}.{LIST})
 
-#: bool data_listcontainsitem (field LIST, any ITEM)
-{ITEM} in {LIST}
+#: bool data_listcontainsitem (field LIST, any ITEM, field PREFIX)
+{ITEM} in {PREFIX}.{LIST}
 
-#: data_showlist (field LIST)
-{LIST}.show()
+#: data_showlist (field LIST, field PREFIX)
+{PREFIX}.{LIST}.show()
 
-#: data_hidelist (field LIST)
-{LIST}.hide()
-
-#: code_class
-class {name}(Target):
-{code}
+#: data_hidelist (field LIST, field PREFIX)
+{PREFIX}.{LIST}.hide()
 
 #: code_var_init
 self.{name} = {value}
@@ -674,7 +661,7 @@ self.xpos = {xpos}
 self.ypos = {ypos}
 self.direction = {direction}
 self.visible = {visible}
-self.pen = engine.Pen(self)
+self.pen = Pen(self)
 
 #: code_info_clone
 self.xpos = parent.xpos
@@ -700,21 +687,8 @@ def __init__(self, parent=None):
 {init_code}
     else:
 {clone_code}
+{hats}
     self.sprite._layer = {layer}
 
-#: code_header
-import time
-import engine
-from engine import Target
-from engine.blockutil import *
-
-#: code_sprites
-SPRITES = {{
-    {items}
-}}
-
-#: code_main
 if __name__ == '__main__':
-    engine.start_program(SPRITES)
-
-# This line is necesary
+    pass

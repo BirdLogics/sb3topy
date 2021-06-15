@@ -48,7 +48,7 @@ class Events:
 
     def broadcast(self, util, sprites, event):
         """Parses a broadcast name and sends it"""
-        event = 'broadcast_' + event.title()
+        event = 'broadcast_' + event.lower()
         return self.send(util, sprites, event, True)
 
 
@@ -103,7 +103,7 @@ class Inputs:
                 key = key.lower()
 
         # Remove the key from the key list
-        self.pressed_keys.remove(key)
+        self.pressed_keys.discard(key)
         if len(self.pressed_keys) == 1:
             self.pressed_keys = set()
 
@@ -120,6 +120,7 @@ class Inputs:
                 continue
             offset = sprite.rect.topleft
             offset = (point[0] - offset[0], point[1] - offset[1])
+            sprite.target.update(util.display, True)
             try:
                 if sprite.mask.get_at(offset):
                     events.send_to(util, sprite.target, "sprite_clicked")
