@@ -4,7 +4,6 @@ main.py
 Run the parser with the settings in config
 """
 
-import json
 import logging
 import shutil
 from os import path
@@ -32,7 +31,7 @@ def main():
         file.write(code)
     print(f"Saved to '{save_path}'")
 
-     # Copy engine files
+    # Copy engine files
     logging.info("Copying engine files")
     shutil.rmtree(path.join(config.TEMP_FOLDER, "engine"), )
     shutil.copytree("engine", path.join(config.TEMP_FOLDER, "engine"))

@@ -1,22 +1,24 @@
 """
 download.py
 
-Downloads projects from the internet 
+Downloads projects from the internet
 """
 
-import requests
 from zipfile import ZipFile
+
+import requests
 
 # from . import config
 
 PROJECT_SERVER = "https://projects.scratch.mit.edu/{}"
 ASSET_SERVER = "https://assets.scratch.mit.edu/internalapi/asset/{}/get/"
 
+
 def download(project_id, zip_path):
     """Downloads a project into a zip file"""
     with ZipFile(zip_path, 'w') as sb3_zip:
         # First, get the project json
-        print(f"Downloading 'project.json'")
+        print("Downloading 'project.json'")
         resp = requests.get(PROJECT_SERVER.format(project_id))
         sb3_zip.writestr('project.json', resp.content)
         sb3_json = resp.json()
@@ -26,10 +28,8 @@ def download(project_id, zip_path):
             print(f"Downloading '{md5ext}'")
             asset = requests.get(ASSET_SERVER.format(md5ext)).content
             sb3_zip.writestr(md5ext, asset)
-        
 
 
-    
 def asset_list(sb3_json):
     """Gets a list of assets to download"""
     assets = set()

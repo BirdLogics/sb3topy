@@ -2,7 +2,6 @@
 Unit tests for sanitization
 """
 
-import logging
 import sys
 import unittest
 

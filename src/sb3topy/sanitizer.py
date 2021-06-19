@@ -22,8 +22,6 @@ import logging
 import math
 import re
 
-from . import naming
-
 
 def clean_identifier(text, default='identifier'):
     """Strips invalid character from an identifier"""
@@ -135,7 +133,7 @@ def cast_wrapper(value, to_type):
 
     if to_type == 'int':
         return "toint(" + value + ")"
-    
+
     if to_type == 'intR':
         return f"round(tonum({value}))"
 

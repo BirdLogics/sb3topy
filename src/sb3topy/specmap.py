@@ -31,7 +31,6 @@ BlockMap
 """
 
 import logging
-from os import stat
 import re
 from textwrap import indent
 
@@ -132,7 +131,7 @@ class Specmap:
         # Create arg definition parsed by the BlockMap
         args_def = prototype.args_list(', stack ')
         if args_def:
-                args_def = "stack " + args_def
+            args_def = "stack " + args_def
 
         # Create arg code formatted by the BlockMap
         args_code = prototype.args_list('}, {')

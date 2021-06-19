@@ -50,7 +50,7 @@ WARP_TIME = _CONFIG.get('warp_time', 0.5)
 FLIP_THRESHOLD = _CONFIG.get('flip_threshold', 1000 / 40)
 
 # Display options
-STAGE_SIZE = (480, 360) # Legacy support
+STAGE_SIZE = (480, 360)  # Legacy support
 STAGE_WIDTH = _CONFIG.get('stage_width', 480)
 STAGE_HEIGHT = _CONFIG.get('stage_height', 360)
 

@@ -12,7 +12,6 @@ import itertools
 import logging
 from time import monotonic_ns
 
-from sbparser import clean_identifier
 
 from . import sanitizer
 
@@ -294,7 +293,7 @@ class Prototypes:
                 new_name = arg_name
 
             # Remove invalid characters
-            new_name = clean_identifier(new_name)
+            new_name = sanitizer.clean_identifier(new_name)
 
             # Ensure the name is unique
             new_name = arg_names.number(new_name)
@@ -365,7 +364,7 @@ class Identifiers:
             name = ident + sep + str(suffix) if suffix else ident
 
             # Return when the suffix makes the name unique
-            if not name in self.set:
+            if name not in self.set:
                 self.set.add(name)
                 return name
 
