@@ -66,10 +66,10 @@ class Pen:
         cls.image.fill((255, 255, 255, 0))
         cls.dirty = [cls.image.get_rect()]
 
-    def down(self, util):
+    def down(self):
         """Puts the pen down"""
         self.isdown = True
-        self.move(util)
+        self.move()
 
     def up(self):  # pylint: disable=invalid-name
         """Puts the pen up"""
@@ -77,12 +77,11 @@ class Pen:
 
     def stamp(self, util):
         """Stamp the sprite image"""
-        disp_rect = util.display.rect
         self.target.update(util.display)
         rect = self.image.blit(
             self.target.sprite.image, self.target.sprite.rect.move(
-                -disp_rect.x, -disp_rect.y))
-        Pen.dirty.append(rect.move(disp_rect.topleft))
+                -self._rect.x, -self._rect.y))
+        Pen.dirty.append(rect.move(self._rect.topleft))
 
         # pg.draw.rect(Pen.image, (0, 200, 100), rect, 1)
 

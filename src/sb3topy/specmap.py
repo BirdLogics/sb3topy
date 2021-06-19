@@ -28,6 +28,8 @@ BlockMap
     Represents a certain block
     Handles creating block code
     Parses flags
+
+TODO Args not copied to switches
 """
 
 import logging

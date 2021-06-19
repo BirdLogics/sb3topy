@@ -33,6 +33,9 @@ Methods:
 TODO Set sprite._layer in __init__?
 TODO Costume/Sound initializer indentation
 TODO Some literals are wrapped with a conversion
+TODO Preparse sensing of variables to keep same name
+Eg. If two sprites have a var named 't123$%@' the clened name
+should be guaranteed to be the same if used in a sensing of
 """
 
 import logging
@@ -280,7 +283,7 @@ class Parser:
         mutation = block['mutation']
 
         proccode = mutation['proccode']
-        warp = bool(json.loads(mutation['warp']))
+        warp = mutation['warp'] in (True, 'true')
         arg_ids = json.loads(mutation['argumentids'])
         arg_names = json.loads(mutation['argumentnames'])
 
@@ -350,6 +353,10 @@ class Parser:
         code = code.strip()
         if parent_bm and parent_bm.do_yield and is_stack and not (prototype and prototype.warp):
             code = code + "\n" + self.specmap.code("yield") + "\n"
+
+        # TODO Better warp handling
+        if parent_bm and parent_bm.prototype and parent_bm.prototype.warp:
+            code = "self.warp = True\n" + code + "\nself.warp = False"
 
         return blockmap.return_type, code
 
@@ -473,6 +480,8 @@ class Parser:
                 value = sanitizer.cast_wrapper(value, out_type)
 
             # Update the parsed input
+            if isinstance(value, tuple):
+                raise Exception()
             args[name] = value
 
         return args

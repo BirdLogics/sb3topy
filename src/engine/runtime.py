@@ -135,6 +135,7 @@ class Runtime:
             # Check if any sprites need drawing
             if Costumes.redraw_requested or Pen.dirty:
                 dirty = True
+                Costumes.redraw_requested = False
 
         # Release any targets waiting for 1 tick
         self.tick.set()

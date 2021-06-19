@@ -91,6 +91,8 @@ class Target:
         # Reset the task dict
         self._tasks = {}
 
+        self.warp = False
+
     @property
     def xpos(self):
         """Current x coordinate on the stage"""
@@ -102,7 +104,8 @@ class Target:
 
         # Set dirty, move pen
         self.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
         self.pen.move()
 
     @property
@@ -116,7 +119,8 @@ class Target:
 
         # Set dirty, move pen
         self.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
         self.pen.move()
 
     @property
@@ -132,17 +136,19 @@ class Target:
 
         # Set dirty
         self.costume.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
 
     def move(self, steps):
         """Moves steps in the current direction"""
-        radians = math.radians(90-self.direction)
+        radians = math.radians(90-self._direction)
         self._xpos += steps * math.cos(radians)
         self._ypos += steps * math.sin(radians)
 
         # Set dirty and move the pen
         self.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
         self.pen.move()
 
     def gotoxy(self, xpos, ypos):
@@ -152,7 +158,8 @@ class Target:
 
         # Set dirty, move pen
         self.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
         self.pen.move()
 
     def goto(self, util, other):
@@ -165,7 +172,9 @@ class Target:
 
         # Set dirty
         self.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
+        self.pen.move()
 
     def point_towards(self, util, other):
         """Point towards another sprite"""
@@ -185,7 +194,8 @@ class Target:
 
         # Set dirty
         self.costume.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
 
     async def glide(self, duration, endx, endy):
         """Glides to a position"""
@@ -200,7 +210,8 @@ class Target:
 
             # Set dirty, move pen
             self.dirty = True
-            Costumes.redraw_requested = True
+            if self.sprite.visible:
+                Costumes.redraw_requested = True
             self.pen.move()
 
             await self.yield_()
@@ -230,7 +241,8 @@ class Target:
 
         # Set dirty
         self.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
 
     @property
     def size(self):
@@ -243,7 +255,8 @@ class Target:
 
         # Set dirty
         self.costume.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
 
     def distance_to(self, util, other):
         """Calculate the distance to another target"""
@@ -357,7 +370,8 @@ class Target:
     @types.coroutine
     def yield_(self):
         """Yields for a tick"""
-        yield
+        if not self.warp:
+            yield
 
     async def sleep(self, delay):
         """Yields for at least 1 tick and delay"""
@@ -412,7 +426,8 @@ class Target:
 
         # Set dirty
         self.sprite.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
 
     def front_layer(self, util):
         """Moves the sprite to the front layer"""
@@ -423,7 +438,8 @@ class Target:
 
         # Set dirty
         self.sprite.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
 
     def back_layer(self, util):
         """Moves the sprite to the back layer"""
@@ -432,7 +448,8 @@ class Target:
         self._move_layers(group, start, -start)
 
         self.sprite.dirty = True
-        Costumes.redraw_requested = True
+        if self.sprite.visible:
+            Costumes.redraw_requested = True
 
     @staticmethod
     def _move_layers(group, start, value):

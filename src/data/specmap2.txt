@@ -30,7 +30,7 @@ await self.yield_()
 pass # unkown opcode
 
 #: special_pen
-self.pen.move(util)
+self.pen.move()
 
 #: procedures_definition (any custom_block) -h
 procedure
@@ -60,13 +60,8 @@ self.direction = {DIRECTION}
 #: stack motion_pointtowards (string TOWARDS)
 self.point_towards(util, {TOWARDS})
 
-# other = util.sprites[{TOWARDS}]
-# radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
-# self.set_direction(math.degrees(radians))
-
 #: stack motion_gotoxy (float X, float Y)
-self.xpos = {X}
-self.ypos = {Y}
+self.gotoxy({X}, {Y})
 
 #: stack motion_goto (string TO)
 self.goto(util, {TO})
@@ -232,7 +227,7 @@ self.pen.clear_all()
 self.pen.stamp(util)
 
 #: stack pen_penDown ()
-self.pen.down(util)
+self.pen.down()
 
 #: stack pen_penUp ()
 self.pen.up()
@@ -410,31 +405,31 @@ util.timer.reset()
 #? sensing_{PROPERTY}_of
 util.sprites[{OBJECT}].{PROPERTY}
 
-#: float sensing_x_position_of
+#: float sensing_var_xposition_of (field PROPERTY, field OBJECT)
 util.sprites[{OBJECT}].xpos
 
-#: float sensing_y_position_of
+#: float sensing_var_yposition_of (field PROPERTY, field OBJECT)
 util.sprites[{OBJECT}].ypos
 
-#: float sensing_direction_of
+#: float sensing_var_direction_of (field PROPERTY, field OBJECT)
 util.sprites[{OBJECT}].direction
 
-#: int sensing_costume_#_of
+#: int sensing_var_costume_of (field PROPERTY, field OBJECT)
 util.sprites[{OBJECT}].costume.number
 
-#: string sensing_costume_name_of
+#: string sensing_var_costumename_of (field PROPERTY, field OBJECT)
 util.sprites[{OBJECT}].costume.name
 
-#: int sensing_size_of
+#: int sensing_var_size_of (field PROPERTY, field OBJECT)
 round(util.sprites[{OBJECT}].costume.size)
 
-#: float sensing_volume_of
+#: float sensing_var_volume_of (field PROPERTY, field OBJECT)
 util.sprites[{OBJECT}].volume
 
-#: int sensing_backdrop_#_of
+#: int sensing_var_backdrop_of (field PROPERTY, field OBJECT)
 round(util.sprites[{OBJECT}].costume.number)
 
-#: string sensing_backdrop_name_of
+#: string sensing_var_backdropname_of (field PROPERTY, field OBJECT)
 util.sprites[{OBJECT}].costume.name
 
 #: int sensing_current (field CURRENT_MENU)
