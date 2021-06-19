@@ -6,12 +6,11 @@ Contains the Pen class
 
 __all__ = ['Pen']
 
-import math
 
 import pygame as pg
 
-from .config import STAGE_SIZE
 from .blockutil import tonum
+from .config import STAGE_SIZE
 
 
 class Pen:
@@ -33,14 +32,19 @@ class Pen:
     position - Position since last moved
 
     _alpha_img - Used internally for transparent blitting
+
+    _scale - The screen scale
+    _rect - The stage rect
     """
 
     # Shared image for all sprites
-    image = None
+    image: pg.Surface = None
     dirty = []
-    util = None
 
-    _alpha_img = None
+    _scale: float
+    _rect: pg.Rect
+
+    _alpha_img: pg.Surface
 
     def __init__(self, sprite):
         self.target = sprite
@@ -82,14 +86,13 @@ class Pen:
 
         # pg.draw.rect(Pen.image, (0, 200, 100), rect, 1)
 
-    def move(self, util):
+    def move(self):
         """Moves and draws with the pen"""
         # Get new position
         end_pos = (self.target.xpos + STAGE_SIZE[0]//2,
                    STAGE_SIZE[1]//2 - self.target.ypos)
         if self.isdown:
-            disp_scale = util.display.scale
-            size = max(1, round(self.size * disp_scale/2)) * 2
+            size = max(1, round(self.size * self._scale/2)) * 2
 
             # Used to draw transparent lines in pg
             # TODO Pen transparency with colorkey faster?
@@ -101,15 +104,15 @@ class Pen:
             # Draw the line
             rect = pg.draw.line(
                 surf, self.color,
-                scale_point(self.position, disp_scale),
-                scale_point(end_pos, disp_scale), size)
+                scale_point(self.position, self._scale),
+                scale_point(end_pos, self._scale), size)
             rect.union_ip(pg.draw.circle(
                 surf, self.color,
-                scale_point(self.position, disp_scale), size/2))
+                scale_point(self.position, self._scale), size/2))
             rect.union_ip(pg.draw.circle(
                 surf, self.color,
-                scale_point(end_pos, disp_scale), size/2))
-            Pen.dirty.append(rect.move(util.display.rect.topleft))
+                scale_point(end_pos, self._scale), size/2))
+            Pen.dirty.append(rect.move(self._rect.topleft))
 
             # Blit with blending transparency
             if self.color.a != 255:
@@ -238,6 +241,10 @@ class Pen:
         # Create the alpha img
         cls._alpha_img = pg.Surface(display.rect.size).convert_alpha()
         cls._alpha_img.fill((0, 0, 0, 0))
+
+        # Save info about the display
+        cls._rect = display.rect
+        cls._scale = display.scale
 
 
 def lerp(color0, color1, fraction1):

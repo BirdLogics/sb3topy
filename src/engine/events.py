@@ -116,7 +116,7 @@ class Inputs:
         # Check for a clicked sprite
         point = event.pos
         for sprite in sprites.sprites():
-            if not sprite.target.visible:
+            if not sprite.visible:
                 continue
             offset = sprite.rect.topleft
             offset = (point[0] - offset[0], point[1] - offset[1])

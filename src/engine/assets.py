@@ -162,6 +162,11 @@ class Sounds:
         self._update_volume()
 
 
+# Costume = namedtuple(
+#     'Costume', ['name', 'number', 'image',
+#                 'offset', 'scale', 'center'])
+
+
 class Costumes:
     """
     Handles costumes for a target
@@ -175,20 +180,28 @@ class Costumes:
     size - The current costume size
     rotation_style - The current rotation style
 
+    target - The parent target, used to set dirty TODO Here
+
     effects - A dict of current effects and values
 
+    dirty - Whether the image needs to be updated
+
+    redraw_requested - Class method, used to indicate
+        a sprite has requested a screen redraw
     _cache - A shared cache containing loaded images
     """
 
+    redraw_requested = False
     _cache = {}
 
     def __init__(self, costume_number, size,
                  rotation_style, costumes, copy_dicts=None):
         self.number = costume_number + 1
         self.costume = costumes[costume_number]
-        self.name = self.costume['name']
-        self.size = size
+        self._size = size
         self.rotation_style = rotation_style
+
+        self.dirty = True
 
         self.costume_list = costumes
 
@@ -227,7 +240,6 @@ class Costumes:
         """Sets the costume"""
         asset = self.costumes.get(costume)
         if asset:
-            self.name = costume
             self.costume = asset
             self.number = asset['number']
         else:
@@ -235,11 +247,14 @@ class Costumes:
                 self.number = (round(float(costume)) %
                                len(self.costume_list))
                 self.costume = self.costume_list[self.number - 1]
-                self.name = self.costume['name']
             except ValueError:
                 pass
             except OverflowError:
                 pass
+
+        # Set dirty
+        self.dirty = True
+        Costumes.redraw_requested = True
 
     def next(self):
         """Go to the next costume"""
@@ -247,10 +262,18 @@ class Costumes:
         if self.number > len(self.costume_list):
             self.number = 1
         self.costume = self.costume_list[self.number - 1]
-        self.name = self.costume['name']
 
-    def set_size(self, value):
-        """Set the costume size"""
+        # Set dirty
+        self.dirty = True
+        Costumes.redraw_requested = True
+
+    @property
+    def size(self):
+        """The current costume size"""
+        return self._size
+
+    @size.setter
+    def size(self, value):
         image = self.costume['image']
 
         cost_w = image.get_width() / self.costume['scale']
@@ -260,11 +283,16 @@ class Costumes:
         max_scale = min(1.5 * STAGE_SIZE[0] / cost_w,
                         1.5 * STAGE_SIZE[1] / cost_h)
 
-        self.size = max(min_scale, min(max_scale, value/100)) * 100
+        self._size = max(min_scale, min(max_scale, value/100)) * 100
 
-    def change_size(self, value):
-        """Changes the costume size"""
-        self.set_size(self.size + value)
+        # Set dirty
+        self.dirty = True
+        Costumes.redraw_requested = True
+
+    @property
+    def name(self):
+        """The name of the current costume"""
+        return self.costume['name']
 
     def set_effect(self, effect, value):
         """Sets and wraps/clamps a graphics effect"""
@@ -275,6 +303,10 @@ class Costumes:
         elif effect == 'color':
             self.effects[effect] = value % 200
 
+        # Set dirty
+        self.dirty = True
+        Costumes.redraw_requested = True
+
     def change_effect(self, effect, value):
         """Changes and wraps/clamps a graphics effect"""
         value = self.effects.get(effect, 0) + value
@@ -282,7 +314,11 @@ class Costumes:
 
     def clear_effects(self):
         """Clear all graphic effects"""
-        self.effects = {}
+        self.effects.clear()
+
+        # Set dirty
+        self.dirty = True
+        self.redraw_requested = True
 
     def _apply_effects(self, image):
         """Apply current effects to an image"""
@@ -321,7 +357,7 @@ class Costumes:
         image = self.costume['image']
 
         # Scale the image
-        scale = self.size/100 / \
+        scale = self._size/100 / \
             self.costume['scale'] * display.scale
         image = pg.transform.smoothscale(
             image, (max(4, int(image.get_width() * scale)),
@@ -343,7 +379,7 @@ class Costumes:
 
     def copy(self):
         """Return a copy of this list"""
-        cost = Costumes(self.number - 1, self.size,
+        cost = Costumes(self.number - 1, self._size,
                         self.rotation_style, self.costume_list,
                         (self.costumes, self.effects.copy()))
         return cost

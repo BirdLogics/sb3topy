@@ -22,10 +22,6 @@ import engine
 # -h  Means the block is a hat and requires special parsing
 
 
-# Expression to use for -s1
-#: code_dirty
-self.set_dirty({DIRTY})
-
 # Expression to use for -y
 #: code_yield
 await self.yield_()
@@ -49,53 +45,53 @@ procedure
 #: stack procedures_call (string NAME, list PARAMETERS) -s1
 await {NAME}({PARAMETERS})
 
-#: stack motion_movesteps (float STEPS) -d2
+#: stack motion_movesteps (float STEPS)
 self.move({STEPS})
 
-#: stack motion_turnright (float DEGREES) -d3
-self.set_direction(self.direction + {DEGREES})
+#: stack motion_turnright (float DEGREES)
+self.direction += {DEGREES}
 
-#: stack motion_turnleft (float DEGREES) -d3
-self.set_direction(self.direction - {DEGREES})
+#: stack motion_turnleft (float DEGREES)
+self.direction -= {DEGREES}
 
-#: stack motion_pointindirection (float DIRECTION) -d3
-self.set_direction({DIRECTION})
+#: stack motion_pointindirection (float DIRECTION)
+self.direction = {DIRECTION}
 
-#: stack motion_pointtowards (string TOWARDS) -d3
+#: stack motion_pointtowards (string TOWARDS)
 self.point_towards(util, {TOWARDS})
 
 # other = util.sprites[{TOWARDS}]
 # radians = math.atan2(self.xpos - other.xpos, self.ypos - other.ypos)
 # self.set_direction(math.degrees(radians))
 
-#: stack motion_gotoxy (float X, float Y) -d2
+#: stack motion_gotoxy (float X, float Y)
 self.xpos = {X}
 self.ypos = {Y}
 
-#: stack motion_goto (string TO) -d2
+#: stack motion_goto (string TO)
 self.goto(util, {TO})
 
-#: stack motion_glidesecstoxy (float SECS, float X, float Y) -d2
+#: stack motion_glidesecstoxy (float SECS, float X, float Y)
 await self.glide({SECS}, {X}, {Y})
 
 # TODO Glide to target?
 
-#: stack motion_changexby (float DX) -d2
+#: stack motion_changexby (float DX)
 self.xpos += {DX}
 
-#: stack motion_setx (float X) -d2
+#: stack motion_setx (float X)
 self.xpos = {X}
 
-#: stack motion_changeyby (float DY) -d2
+#: stack motion_changeyby (float DY)
 self.ypos += {DY}
 
-#: stack motion_sety (float Y) -d2
+#: stack motion_sety (float Y)
 self.ypos = {Y}
 
-#: stack motion_ifonedgebounce () -d3
-0$ # motion_ifonedgebounce()
+#: stack motion_ifonedgebounce ()
+self.bounce_on_edge()
 
-#: stack motion_setrotationstyle (string STYLE) -d3
+#: stack motion_setrotationstyle (string STYLE)
 self.costume.rotation_style = {STYLE}
 
 #: float motion_xposition ()
@@ -120,10 +116,10 @@ pass # looks_thinkforsecs({MESSAGE}, {SECS})
 pass # looks_think({MESSAGE})
 
 #: stack looks_show () -d1
-self.visible = 1
+self.shown = True
 
 #: stack looks_hide () -d1
-self.visible = 0
+self.shown = False
 
 #: stack looks_switchcostumeto (any COSTUME) -d3
 self.costume.switch({COSTUME})
@@ -139,7 +135,7 @@ util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 util.sprites.stage.costume.switch({BACKDROP})
 await util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 
-#: stack looks_nextbackdrop () -d3
+#: stack looks_nextbackdrop ()
 util.sprites.stage.costume.next()
 util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)
 
@@ -152,13 +148,13 @@ self.costume.set_effect({EFFECT}, {VALUE})
 #: stack looks_cleargraphiceffects () -d3
 self.costume.clear_effects()
 
-#: stack looks_changesizeby (float CHANGE) -d3
-self.costume.change_size({CHANGE})
+#: stack looks_changesizeby (float CHANGE)
+self.costume.size += {CHANGE}
 
-#: stack looks_setsizeto (float SIZE) -d3
-self.costume.set_size({SIZE})
+#: stack looks_setsizeto (float SIZE)
+self.costume.size = {SIZE}
 
-#: stack looks_gotofrontback (string FRONT_BACK) -d1
+#: stack looks_gotofrontback (string FRONT_BACK)
 #? looks_goto{FRONT_BACK}
 pass # looks_gotofrontback()
 
@@ -169,7 +165,7 @@ self.front_layer(util)
 self.back_layer(util)
 
 # TODO Decimal behavior
-#: stack looks_goforwardbackwardlayers (field FORWARD_BACKWARD, int NUM) -d1
+#: stack looks_goforwardbackwardlayers (field FORWARD_BACKWARD, int NUM)
 #? looks_go{FORWARD_BACKWARD}layers
 0$
 
@@ -670,17 +666,17 @@ self.costume = parent.costume.copy()
 self.sounds = parent.sounds.copy()
 
 #: code_info
-self.xpos = {xpos}
-self.ypos = {ypos}
-self.direction = {direction}
-self.visible = {visible}
+self._xpos = {xpos}
+self._ypos = {ypos}
+self._direction = {direction}
+self._shown = {visible}
 self.pen = engine.Pen(self)
 
 #: code_info_clone
-self.xpos = parent.xpos
-self.ypos = parent.ypos
-self.direction = parent.direction
-self.visible = parent.visible
+self._xpos = parent.xpos
+self._ypos = parent.ypos
+self._direction = parent.direction
+self._shown = parent.shown
 self.pen = parent.pen.copy(self)
 
 #: code_hat

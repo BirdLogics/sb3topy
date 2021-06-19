@@ -312,7 +312,6 @@ class Parser:
 
         code = ""
         block = self.blocks.get(blockid)
-        dirty = 0
 
         while block:
             logging.debug("Parsing block '%s' with opcode '%s'",
@@ -329,13 +328,6 @@ class Parser:
             # Get the prototype if there is one4
             if blockmap.prototype is not None:
                 prototype = blockmap.prototype
-
-            # Check dirty flags
-            dirty = max(dirty, blockmap.dirty)
-            if blockmap.set_dirty and dirty:
-                code = code + "\n" + self.specmap.code('dirty').format(
-                    DIRTY=dirty) + "\n"
-                dirty = 0
 
             # Get inputs
             inputs = {}
@@ -354,10 +346,6 @@ class Parser:
 
             # Get the next block
             block = self.blocks.get(block['next'])
-
-        if dirty:
-            code = code + "\n" + self.specmap.code('dirty').format(
-                DIRTY=dirty) + "\n"
 
         code = code.strip()
         if parent_bm and parent_bm.do_yield and is_stack and not (prototype and prototype.warp):

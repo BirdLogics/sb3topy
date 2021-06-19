@@ -19,6 +19,8 @@ import time
 
 import pygame as pg
 
+from .assets import Costumes
+
 from . import config
 from .events import Events, Inputs
 from .pen import Pen
@@ -131,7 +133,7 @@ class Runtime:
             await asyncio.sleep(0)
 
             # Check if any sprites need drawing
-            if self.sprites.get_dirty() or Pen.dirty:
+            if Costumes.redraw_requested or Pen.dirty:
                 dirty = True
 
         # Release any targets waiting for 1 tick
@@ -203,16 +205,6 @@ class Sprites:
             for clone in target.clones:
                 clone.update(display)
         self.stage.update(display)
-
-    def get_dirty(self):
-        """Checks whether any sprites are dirty"""
-        for target in self.targets.values():
-            if target.dirty and target.visible:
-                return True
-            for clone in target.clones:
-                if clone.dirty and clone.visible:
-                    return True
-        return bool(self.stage.dirty)
 
 
 def start_program(sprites):
