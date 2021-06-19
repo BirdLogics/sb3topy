@@ -53,6 +53,7 @@ class Parser:
     Handles parsing a target
 
     TODO No newlines on non stack block
+    TODO Sprite class
     """
 
     def __init__(self):
@@ -63,6 +64,7 @@ class Parser:
         self.vars = naming.Variables()
         self.prototypes = naming.Prototypes(self.events)
         self.blocks = {}
+        self.vars_dict = {}
 
     def parse(self, sb3):
         """Parses the sb3 and returns Python code"""
@@ -70,6 +72,10 @@ class Parser:
             logging.error("First target in sb3 is not stage.")
 
         code = self.specmap.code("header") + "\n\n\n"
+
+        # TODO Better pre parse
+        for target in sb3['targets']:
+            self.vars_dict[target['name']] = naming.Variables(target['isStage'])
 
         for target in sb3['targets']:
             code = code + self.parse_target(target) + "\n\n\n"
@@ -81,7 +87,7 @@ class Parser:
     def parse_target(self, target):
         """Converts a sb3 target dict into the code for a Python class"""
         # Parse variables, lists, costumes, and sounds
-        self.vars = naming.Variables(target['isStage'])
+        self.vars = self.vars_dict[target['name']]
         init_code = self.create_init(target)
 
         # Parse all blocks into code
@@ -371,11 +377,15 @@ class Parser:
         if name == 'VARIABLE':
             return 'field', self.vars.get_reference('var', value[0])
 
-        # TODO Improve property parsing
+        # TODO Fix very hacky property parsing
         # Need to redo variable system first?
         # Possibly also make a two pass system?
         if name == 'PROPERTY':
-            return 'field', "var_" + sanitizer.clean_identifier(value[0])
+            vars_: naming.Variables = self.vars_dict.get(block['inputs']['OBJECT'][0])
+            if not vars_:
+                # logging.warning("Unkown sprite %s")
+                return 'field', "var_" + sanitizer.clean_identifier(value[0])
+            return 'field', vars_.get_local('var_', value[0])
 
         if name == 'LIST':
             return 'field', self.vars.get_reference('list', value[0])
