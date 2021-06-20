@@ -498,16 +498,14 @@ gt({OPERAND1}, {OPERAND2})
 #: bool operator_not (bool OPERAND)
 not {OPERAND}
 
-# TODO Limited length join
 #: string operator_join (string STRING1, string STRING2)
 ({STRING1} + {STRING2})
 
-# TODO letter is floored int
 #: string operator_letter_of (int LETTER, string STRING)
 letter_of({STRING}, {LETTER})
 
 #: int operator_length (string STRING)
-len(str({STRING}))
+len({STRING})
 
 #: bool operator_contains (string STRING1, string STRING2)
 ({STRING2} in {STRING1})
@@ -515,8 +513,8 @@ len(str({STRING}))
 #: float operator_mod (float NUM1, float NUM2)
 ({NUM1} % {NUM2})
 
-#: int operator_round (float NUM)
-round({NUM})
+#: int operator_round (intR NUM)
+{NUM}
 
 #: float operator_mathop (string OPERATOR, float NUM)
 #? operator_mathop_{OPERATOR}
