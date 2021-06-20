@@ -5,6 +5,7 @@ Contains functions and classes
 primarily used within project.py
 
 TODO New Operators class?
+TODO Cache lowercase list items?
 """
 
 __all__ = [
@@ -92,9 +93,9 @@ class List:
         self.list = []
 
     def __contains__(self, item):
-        item = str(item).casefold()
+        item = str(item).lower()
         for value in self.list:
-            if item == str(value).casefold():
+            if item == str(value).lower():
                 return True
         return False
 
@@ -131,9 +132,9 @@ class List:
 
     def index(self, item):
         """Find the index of an item, case insensitive"""
-        item = str(item).casefold()
+        item = str(item).lower()
         for i, value in enumerate(self.list):
-            if str(value).casefold() == item:
+            if str(value).lower() == item:
                 return i + 1
         return 0
 
@@ -146,9 +147,9 @@ def tonum(value):
     """Attempt to cast a value to a number"""
     try:
         value = float(value)
-        if value.is_integer():
-            return int(value)
-        if value == float('NaN'):
+        # if value.is_integer():
+        #     return int(value)
+        if math.isnan(value):
             return 0
         return value
     except ValueError:
@@ -157,22 +158,24 @@ def tonum(value):
 
 def toint(value):
     """Attempts to floor a value to an int"""
-    # TODO toint on infinite floats?
-    return math.floor(tonum(value))
+    try:
+        return int(float(value))
+    except ValueError:
+        return 0
+    except OverflowError:
+        return 0
 
 
 def letter_of(text, index):
     """Gets a letter from string"""
     try:
-        return str(text)[tonum(index) - 1]
+        return text[index - 1]
     except IndexError:
         return ""
 
 
 def pick_rand(val1, val2):
     """Rand int or float depending on values"""
-    val1 = tonum(val1)
-    val2 = tonum(val2)
     val1, val2 = min(val1, val2), max(val1, val2)
     if isinstance(val1, float) or isinstance(val2, float):
         return random.random() * abs(val2-val1) + val1
