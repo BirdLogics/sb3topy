@@ -30,12 +30,12 @@ Methods:
  parse_inputs
  parse_inputs
 
-TODO Set sprite._layer in __init__?
 TODO Costume/Sound initializer indentation
 TODO Some literals are wrapped with a conversion
 TODO Preparse sensing of variables to keep same name
 Eg. If two sprites have a var named 't123$%@' the clened name
 should be guaranteed to be the same if used in a sensing of
+TODO Smart variable type detection
 """
 
 import logging
@@ -46,6 +46,7 @@ from . import config
 from . import sanitizer
 from . import naming
 from . import specmap
+from . import targets
 
 
 class Parser:
@@ -56,42 +57,35 @@ class Parser:
     TODO Sprite class
     """
 
+    target: targets.Target
+
     def __init__(self):
         self.specmap = specmap.Specmap(config.SPECMAP_PATH)
-
-        self.targets = naming.Sprites()
-        self.events = naming.Events()
-        self.vars = naming.Variables()
-        self.prototypes = naming.Prototypes(self.events)
-        self.blocks = {}
-        self.vars_dict = {}
+        self.targets = targets.Targets()
 
     def parse(self, sb3):
         """Parses the sb3 and returns Python code"""
-        if not sb3['targets'][0]['isStage']:
-            logging.error("First target in sb3 is not stage.")
-
         code = self.specmap.code("header") + "\n\n\n"
 
         # TODO Better pre parse
         for target in sb3['targets']:
-            self.vars_dict[target['name']] = naming.Variables(target['isStage'])
+            self.targets.add_target(target)
 
-        for target in sb3['targets']:
+        for target in self.targets:
+            self.target = target
             code = code + self.parse_target(target) + "\n\n\n"
 
         code = code + self.create_footer() + "\n"
 
         return code
 
-    def parse_target(self, target):
+    def parse_target(self, target: targets.Target):
         """Converts a sb3 target dict into the code for a Python class"""
         # Parse variables, lists, costumes, and sounds
-        self.vars = self.vars_dict[target['name']]
         init_code = self.create_init(target)
 
         # Parse all blocks into code
-        block_code = self.parse_blocks(target['blocks'])
+        block_code = self.parse_blocks(target.blocks)
 
         # Get the event dict from hats
         init_code = init_code + "\n\n" + \
@@ -100,11 +94,9 @@ class Parser:
         # Indent init and block code
         code = indent(init_code+block_code, "    ")
 
-        # Get a sanitized sprite name
-        name = self.targets.get_sprite(target['name'])
-
         # Return the final code for the class
-        return self.specmap.code("class").format(code=code, name=name).rstrip()
+        return self.specmap.code("class").format(
+            code=code, name=target.clean_name).rstrip()
 
     def create_init(self, target):
         """Creates Python __init__ code for a target dict"""
@@ -207,7 +199,7 @@ class Parser:
         init_code = self.specmap['code_var_init'].code
         clone_code = self.specmap['code_var_clone'].code
         for var in target['variables'].values():
-            name = self.vars.get_local('var', var[0])
+            name = target.vars.get_local('var', var[0])
             vars_init.append(init_code.format(
                 name=name,
                 value=sanitizer.quote_number(var[1])
@@ -233,7 +225,7 @@ class Parser:
                 items.append(sanitizer.quote_number(value))
 
             # Create code with
-            name = self.vars.get_local('list', lst[0])
+            name = self.target.vars.get_local('list', lst[0])
             list_init.append(init_code.format(
                 name=name,
                 items=indent("[" + ', '.join(items) + "]", "    ")
@@ -250,7 +242,7 @@ class Parser:
 
         init_code = self.specmap.code("hat")
 
-        for event, hats in self.events.event_items():
+        for event, hats in self.target.events.event_items():
             idents = []
             for hat in hats:
                 idents.append("self." + hat)
@@ -264,22 +256,18 @@ class Parser:
         return self.specmap.code("hats_dict").format(hats=hats)
 
     def parse_blocks(self, blocks):
-        """Creates a function for each topLevel hat in self.blocks"""
+        """Creates a function for each topLevel hat in self.target.blocks"""
         # Preparse custom block mutations
-        self.prototypes = naming.Prototypes(self.events)
         for blockid, block in blocks.items():
             if isinstance(block, dict) and \
                     block['opcode'] == "procedures_prototype":
                 self.parse_prototype(block, blockid)
 
-        # Save blocks to self and reset hats
-        self.blocks = blocks
-        self.events = naming.Events()
-
         # Parse all topLevel blocks into code
         code = ""
         for blockid, block in blocks.items():
             if isinstance(block, dict) and block.get('topLevel'):
+                assert blockid in self.target.blocks
                 code = code + self.parse_hat(blockid, block) + "\n\n"
 
         return code.rstrip()
@@ -293,7 +281,7 @@ class Parser:
         arg_ids = json.loads(mutation['argumentids'])
         arg_names = json.loads(mutation['argumentnames'])
 
-        self.prototypes.add_prototype(
+        self.target.prototypes.add_prototype(
             blockid, proccode, warp, zip(arg_ids, arg_names))
 
     def parse_hat(self, blockid, block):
@@ -320,7 +308,7 @@ class Parser:
         """
 
         code = ""
-        block = self.blocks.get(blockid)
+        block = self.target.blocks[blockid]
 
         while block:
             logging.debug("Parsing block '%s' with opcode '%s'",
@@ -332,7 +320,7 @@ class Parser:
                 fields[name] = self.parse_field(block, name, prototype)
 
             # Get the block's conversion map
-            blockmap = self.specmap.get(block, fields, self.prototypes)
+            blockmap = self.specmap.get(block, fields, self.target.prototypes)
 
             # Get the prototype if there is one4
             if blockmap.prototype is not None:
@@ -348,13 +336,13 @@ class Parser:
 
             # Get a name for functions
             if blockmap.name:
-                args['NAME'] = self.events.name_hat(blockmap.name, args)
+                args['NAME'] = self.target.events.name_hat(blockmap.name, args)
 
             # Create the code for the block
             code = code + blockmap.format(args) + "\n"
 
             # Get the next block
-            block = self.blocks.get(block['next'])
+            block = self.target.blocks.get(block['next'])
 
         code = code.strip()
         if parent_bm and parent_bm.do_yield and is_stack and not (prototype and prototype.warp):
@@ -375,20 +363,20 @@ class Parser:
             return 'field', value[0]
 
         if name == 'VARIABLE':
-            return 'field', self.vars.get_reference('var', value[0])
+            return 'field', self.target.vars.get_reference('var', value[0])
 
         # TODO Fix very hacky property parsing
         # Need to redo variable system first?
         # Possibly also make a two pass system?
         if name == 'PROPERTY':
-            vars_: naming.Variables = self.vars_dict.get(block['inputs']['OBJECT'][0])
-            if not vars_:
+            target = self.targets.get(block['inputs']['OBJECT'][0])
+            if not target:
                 # logging.warning("Unkown sprite %s")
                 return 'field', "var_" + sanitizer.clean_identifier(value[0])
-            return 'field', vars_.get_local('var_', value[0])
+            return 'field', target.vars.get_local('var_', value[0])
 
         if name == 'LIST':
-            return 'field', self.vars.get_reference('list', value[0])
+            return 'field', self.target.vars.get_reference('list', value[0])
 
         if block['opcode'] in (
                 'argument_reporter_string_number',
@@ -433,9 +421,9 @@ class Parser:
 
             if isinstance(value, str):
                 # Shadow block (dropdown)
-                if self.blocks[value]['shadow']:
+                if self.target.blocks[value]['shadow']:
                     return 'value', \
-                        self.blocks[value]['fields'].popitem()[1][0]
+                        self.target.blocks[value]['fields'].popitem()[1][0]
 
                 # A block
                 return 'blockid', value
@@ -446,11 +434,11 @@ class Parser:
 
         # 12 Variable
         if value[0] == 12:
-            return "any", self.vars.get_reference('var', value[1])
+            return "any", self.target.vars.get_reference('var', value[1])
 
         # 13 List
         if value[0] == 13:
-            return "string", self.vars.get_reference('var', value[1]) + ".join()"
+            return "string", self.target.vars.get_reference('var', value[1]) + ".join()"
 
         # Unkown
         logging.error("Unexpected input type %i", value[0])
@@ -500,7 +488,7 @@ class Parser:
         """Creates the code at the end to run the program"""
         # Create a dict linking sprite names to their identifers
         sprites = []
-        for name, identifier in self.targets.items():
+        for name, identifier in self.targets.name_items():
             sprites.append(sanitizer.quote_field(name) + ": " + identifier)
         items = indent(',\n'.join(sprites), "    ")
         sprites_code = self.specmap.code(
@@ -510,3 +498,10 @@ class Parser:
         main_code = self.specmap.code("main")
 
         return sprites_code + "\n\n" + main_code
+
+
+class Target:
+    """Represents a target being parsed"""
+
+    def __init__(self, targer):
+        self.variables = naming.Variables()

@@ -5,7 +5,7 @@ Contains the Target class
 
 TODO Position clamping
 TODO Random/mouse pos for glide/goto
-
+TODO Warp deorator?
 """
 
 # pylint: disable=protected-access
