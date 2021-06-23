@@ -43,6 +43,7 @@ class Project:
         Run the module.
         Returns json, manifest
         """
+        logging.info("Unpacking project...")
         with zipfile.ZipFile(project_path, 'r') as project_zip:
             self._zip = project_zip
             self.namelist = project_zip.namelist()
@@ -138,7 +139,7 @@ class Project:
                     logging.error("SVG coversion failed: %s",
                                   result.stderr.rstrip())
             else:
-                logging.info("Asset '%s' already converted to png",
+                logging.debug("Asset '%s' already converted to png",
                              costume['md5ext'])
 
             # Update asset details

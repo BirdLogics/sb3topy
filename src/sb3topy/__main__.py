@@ -4,6 +4,7 @@ main.py
 Run the parser with the settings in config
 """
 
+import json
 import logging
 import shutil
 from os import path
@@ -18,10 +19,11 @@ def main():
 
     sb3, manifest = unpacker.unpack()
 
-    # json_path = path.join(config.TEMP_FOLDER, "project.json")
-    # logging.info("Saving debug json to '%s'", json_path)
-    # with open(json_path, 'w') as file:
-    #     json.dump(sb3, file)
+    if config.DEBUG_JSON:
+        json_path = path.join(config.TEMP_FOLDER, "project.json")
+        logging.info("Saving debug json to '%s'", json_path)
+        with open(json_path, 'w') as file:
+            json.dump(sb3, file)
 
     # logging.getLogger().setLevel(0)
     code = parser.Parser().parse(sb3)
@@ -29,7 +31,7 @@ def main():
     save_path = path.join(config.TEMP_FOLDER, "project.py")
     with open(save_path, 'w', encoding="utf-8", errors="ignore") as file:
         file.write(code)
-    print(f"Saved to '{save_path}'")
+    logging.info(f"Saved to '{save_path}'")
 
     # Copy engine files
     logging.info("Copying engine files")
