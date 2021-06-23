@@ -44,9 +44,9 @@ from textwrap import indent
 
 from . import config
 from . import sanitizer
-from . import naming
 from . import specmap
 from . import targets
+from .variables import Variables
 
 
 class Parser:
@@ -65,11 +65,13 @@ class Parser:
 
     def parse(self, sb3):
         """Parses the sb3 and returns Python code"""
+        logging.info("Compiling project...")
         code = self.specmap.code("header") + "\n\n\n"
 
         # TODO Better pre parse
         for target in sb3['targets']:
             self.targets.add_target(target)
+        self.targets.parse_variables()
 
         for target in self.targets:
             self.target = target
@@ -298,8 +300,8 @@ class Parser:
 
         # TODO Add hats to identifiers
 
-        logging.warning("Skipping topLevel block '%s' with opcode '%s'",
-                        blockid, block['opcode'])
+        logging.debug("Skipping topLevel block '%s' with opcode '%s'",
+                      blockid, block['opcode'])
         return ""
 
     def parse_stack(self, blockid, prototype=None, parent_bm=None, is_stack=False):
@@ -311,8 +313,8 @@ class Parser:
         block = self.target.blocks[blockid]
 
         while block:
-            logging.debug("Parsing block '%s' with opcode '%s'",
-                          blockid, block['opcode'])
+            # logging.debug("Parsing block '%s' with opcode '%s'",
+            #               blockid, block['opcode'])
 
             # Get fields, used for blockmap switches
             fields = {}
@@ -365,15 +367,8 @@ class Parser:
         if name == 'VARIABLE':
             return 'field', self.target.vars.get_reference('var', value[0])
 
-        # TODO Fix very hacky property parsing
-        # Need to redo variable system first?
-        # Possibly also make a two pass system?
         if name == 'PROPERTY':
-            target = self.targets.get(block['inputs']['OBJECT'][0])
-            if not target:
-                # logging.warning("Unkown sprite %s")
-                return 'field', "var_" + sanitizer.clean_identifier(value[0])
-            return 'field', target.vars.get_local('var_', value[0])
+            return 'field', Variables.get_universal('var', value[0])
 
         if name == 'LIST':
             return 'field', self.target.vars.get_reference('list', value[0])
@@ -498,10 +493,3 @@ class Parser:
         main_code = self.specmap.code("main")
 
         return sprites_code + "\n\n" + main_code
-
-
-class Target:
-    """Represents a target being parsed"""
-
-    def __init__(self, targer):
-        self.variables = naming.Variables()

@@ -16,6 +16,72 @@ from time import monotonic_ns
 from . import sanitizer
 
 
+class Identifiers:
+    """
+    Handles the naming of a set of identifiers
+
+    dict - A dictionary linking original identifiers
+        to their cleaned, safe variants
+
+    set - A set containing all cleaned, unique identifiers
+    """
+
+    def __init__(self):
+        self.dict = {}
+        self.set = set()
+
+    def suffix(self, ident):
+        """
+        Creates an unique identifier which is not in the internal set.
+        To make the identifier unique, a letter is appended to it.
+        The new unique identifier is then added to the internal set.
+        """
+        for suffix in self._letter_iter():
+            if not ident + suffix in self.set:
+                self.set.add(ident + suffix)
+                return ident + suffix
+
+        raise Exception("_letter_iter empty")  # impossible
+
+    def number(self, ident, start=0):
+        """
+        Creates a unique identifier which is not in the internal set.
+        To make the identifier unique, a number is appended to it.
+        The new unique identifier is then added to the internal set.
+        """
+        # If the identifier ends with a number, add an underscore
+        sep = '_' if ident[-1].isdigit() else ''
+
+        # Add a unique
+        for suffix in itertools.count(start):
+            # Don't append anything when suffix = 0
+            name = ident + sep + str(suffix) if suffix else ident
+
+            # Return when the suffix makes the name unique
+            if name not in self.set:
+                self.set.add(name)
+                return name
+
+        raise Exception("itertools.count empty")  # impossible
+
+    @staticmethod
+    def _letter_iter():
+        """
+        Creates an iterator of this pattern:
+            '', 'A', 'B', 'C', ... 'AA', ... 'AZZ', ...
+        """
+        return map(
+            ''.join,
+            itertools.chain.from_iterable(
+                map(
+                    lambda r: itertools.permutations(
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ", r),
+                    itertools.count()
+                )
+            )
+        )
+
+
 class Sprites:
     """
     Handles sprite class naming
@@ -139,95 +205,6 @@ class Events:
                 yield event.lower(), self.identifiers.dict[cleaned]
 
 
-class Variables:
-    """
-    Handles variable and list naming
-
-    global_vars - Class attribute, a dict linking global variable names to safe identifiers
-
-    global_idents - Class attribute, a set containing all global variable identifiers
-
-    local_vars - A dict linking local variable names to safe identifiers
-
-    local_idents - A set containing all local variable identifiers
-
-    """
-    global_vars = None
-
-    def __init__(self, is_stage=False):
-        if self.global_vars is None:
-            Variables.global_vars = Identifiers()
-
-        if is_stage:
-            self.local_vars = self.global_vars
-        else:
-            self.local_vars = Identifiers()
-
-    def get_reference(self, prefix, name):
-        """
-        Gets a variable reference,
-        eg. self.var_x or util.sprites.stage.var_x
-        """
-        # Ensure the name starts with the prefix
-        if not name.startswith(prefix):
-            name = prefix + '_' + name
-
-        # Check if a local variable exists with the name
-        if name in self.local_vars.dict:
-            return "self." + self.local_vars.dict[name]
-
-        # Check if a global variable exists with the name
-        if name in self.global_vars.dict:
-            return "util.sprites.stage." + self.global_vars.dict[name]
-
-        # This should not occur, but can be handled
-        logging.warning("Unregistered var '%s'", name)
-
-        # Create a new local variable
-        return "self." + self.create_local('', name)
-
-    def get_local(self, prefix, name):
-        """
-        Gets the identifier for a local variable
-        No self. prefix is added.
-        """
-        # Ensure the name starts with the prefix
-        if not name.startswith(prefix):
-            name = prefix + '_' + name
-
-        # Check if a local variable exists with the name
-        if name in self.local_vars.dict:
-            return self.local_vars.dict[name]
-
-        # This should not normally occur, but can be handled
-        logging.warning("Unregistered local var '%s'", name)
-
-        # Create a new local variable
-        return self.create_local('', name)
-
-    def create_local(self, prefix, name):
-        """Creates a safe identifier name"""
-        # Ensure the name starts with the prefix
-        if not name.startswith(prefix):
-            name = prefix + '_' + name
-
-        # Verify the variable doesn't already exist
-        if name in self.local_vars.dict:
-            logging.warning("Duplicate local var '%s'", name)
-            return self.local_vars.dict[name]
-
-        # Remove invalid characters
-        ident = sanitizer.clean_identifier(name)
-
-        # Ensure the identifier is unique
-        ident = self.local_vars.suffix(ident)
-
-        # Save the identifier for future use
-        self.local_vars.dict[name] = ident
-
-        return ident
-
-
 class Prototype:
     """
     Represents a custom block
@@ -320,69 +297,3 @@ class Prototypes:
     def from_proccode(self, proccode) -> Prototype:
         """Gets a prototype by proccode"""
         return self.prototypes[proccode]
-
-
-class Identifiers:
-    """
-    Handles the naming of a set of identifiers
-
-    dict - A dictionary linking original identifiers
-        to their cleaned, safe variants
-
-    set - A set containing all cleaned, unique identifiers
-    """
-
-    def __init__(self):
-        self.dict = {}
-        self.set = set()
-
-    def suffix(self, ident):
-        """
-        Creates an unique identifier which is not in the internal set.
-        To make the identifier unique, a letter is appended to it.
-        The new unique identifier is then added to the internal set.
-        """
-        for suffix in self._letter_iter():
-            if not ident + suffix in self.set:
-                self.set.add(ident + suffix)
-                return ident + suffix
-
-        raise Exception("_letter_iter empty")  # impossible
-
-    def number(self, ident, start=0):
-        """
-        Creates a unique identifier which is not in the internal set.
-        To make the identifier unique, a number is appended to it.
-        The new unique identifier is then added to the internal set.
-        """
-        # If the identifier ends with a number, add an underscore
-        sep = '_' if ident[-1].isdigit() else ''
-
-        # Add a unique
-        for suffix in itertools.count(start):
-            # Don't append anything when suffix = 0
-            name = ident + sep + str(suffix) if suffix else ident
-
-            # Return when the suffix makes the name unique
-            if name not in self.set:
-                self.set.add(name)
-                return name
-
-        raise Exception("itertools.count empty")  # impossible
-
-    @staticmethod
-    def _letter_iter():
-        """
-        Creates an iterator of this pattern:
-            '', 'A', 'B', 'C', ... 'AA', ... 'AZZ', ...
-        """
-        return map(
-            ''.join,
-            itertools.chain.from_iterable(
-                map(
-                    lambda r: itertools.permutations(
-                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ", r),
-                    itertools.count()
-                )
-            )
-        )

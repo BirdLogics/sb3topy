@@ -81,14 +81,19 @@ def cast_number(value, default=0):
     # Get number or return default
     try:
         value = float(value)
-    except ValueError:
-        return default
 
-    if value.is_integer():
-        return int(value)
-    if math.isnan(value):
-        return default
-    return value
+        if value.is_integer():
+            return int(value)
+        if math.isnan(value):
+            return default
+
+        return value
+
+    except ValueError:
+        try:
+            return int(value, base=0)
+        except ValueError:
+            return default
 
 
 def valid_md5ext(md5ext):

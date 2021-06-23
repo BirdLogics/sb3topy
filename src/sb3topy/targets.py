@@ -6,6 +6,7 @@ Handles targets
 """
 
 from . import naming
+from .variables import Variables
 
 
 class Targets:
@@ -13,7 +14,7 @@ class Targets:
 
     def __init__(self):
         self.names = naming.Sprites()
-        self.targets = {}
+        self.targets: dict[str, Target] = {}
 
     def add_target(self, target):
         """Adds a target from a target dict"""
@@ -22,6 +23,11 @@ class Targets:
 
         self.targets[target['name']] = target
         return target
+
+    def parse_variables(self):
+        """Preparses variables for each target"""
+        for target in self.targets.values():
+            target.vars.parse(target)
 
     def name_items(self):
         """Returns name items (original, cleaned)"""
@@ -45,7 +51,7 @@ class Target:
         self.target = target
         self.clean_name = name
 
-        self.vars = naming.Variables(target['isStage'])
+        self.vars = Variables(target, target['isStage'])
         self.events = naming.Events()
         self.prototypes = naming.Prototypes(self.events)
         self.blocks = target['blocks']
