@@ -93,7 +93,7 @@ class Variables:
         logging.warning("Unregistered local var '%s'", name)
 
         # Create a new local variable
-        return self.create_local('', name)
+        return self.create_local(prefix, name)
 
     def create_local(self, prefix, name):
         """Creates a safe identifier name"""
@@ -101,14 +101,23 @@ class Variables:
         if not name.startswith(prefix):
             name = prefix + '_' + name
 
+        # Check if a universal identifier already exists
+        if name in self.universal_vars.dict:
+            # Get the universal identifier
+            ident = self.universal_vars.dict[name]
+
+            # Save the identifier
+            self.local_vars.dict[name] = ident
+
+            logging.debug(
+                "Creating local var '%s' as universal '%s'", name, ident)
+
+            return ident
+
         # Verify the variable doesn't already exist
         if name in self.local_vars.dict:
             logging.warning("Duplicate local var '%s'", name)
             return self.local_vars.dict[name]
-
-        # Check if a universal identifier is assigned to name
-        if name in self.universal_vars.dict:
-            return self.universal_vars.dict[name]
 
         # Remove invalid characters
         ident = sanitizer.clean_identifier(name)
