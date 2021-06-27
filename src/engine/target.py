@@ -10,7 +10,7 @@ TODO Warp deorator?
 
 # pylint: disable=protected-access
 
-__all__ = ['Target']
+__all__ = ['Target', 'on_event']
 
 import asyncio
 import math
@@ -24,6 +24,15 @@ from pygame.sprite import DirtySprite
 from . import config
 from .assets import Costumes, Sounds
 from .pen import Pen
+from .blockutil import List
+
+
+def on_event(event_name):
+    """Decorator to bind a Target's function to an event"""
+    def decorator(func):
+        func.event = event_name
+        return func
+    return decorator
 
 
 class Target:
@@ -68,13 +77,32 @@ class Target:
     costume: Costumes
     sounds: Sounds
 
+    def __init_subclass__(cls):
+        # Initialize the _bound_events dict
+        cls._bound_events = {}
+        for func_name, func in cls.__dict__.items():
+            # Check if the function has an event attriute
+            event = getattr(func, 'event', None)
+
+            # If it does, save the function name and event name
+            if event is not None:
+                cls._bound_events[func_name] = event
+
+        # Create the clones list
+        cls.clones = []
+
     def __init__(self, parent=None):
+        # Initialize the events dict
+        self._events = {}
+        for name, event in self._bound_events.items():
+            self._events.setdefault(event, []).append(
+                getattr(self, name))
 
-        self.hats = {}
+        # Create the task dict
+        self._tasks = {}
 
-        # Share the parent's clone list
-        self.clones = parent.clones if parent else []
-        self.parent = parent
+        # Used to determine if this is a clone
+        self.is_clone = parent is not None
 
         # Create the pygame sprite
         self.sprite = DirtySprite()
@@ -86,17 +114,15 @@ class Target:
         # Clear effects
         self.effects = {}
 
-        # Reset the task dict
-        self._tasks = {}
-
         self.warp = False
 
+        # Initialize clone data
         if parent is not None:
             # Copy variables from parent
             for name, var in parent.__dict__.items():
                 if name.startswith('var'):
                     self.__dict__[name] = var
-                elif name.startswith('list'):
+                elif isinstance(var, List):
                     self.__dict__[name] = var.copy()
 
             # Copy attributes
@@ -306,7 +332,7 @@ class Target:
     def start_event(self, util, name, restart=True):
         """Starts and returns a list of tasks"""
         tasks = []
-        for cor, task in zip_longest(self.hats.get(name, []),
+        for cor, task in zip_longest(self._events.get(name, []),
                                      self._tasks.get(name, [])):
             # Either restart the task or skip it
             if task is not None and not task.done():
@@ -501,7 +527,7 @@ class Target:
             # __class__ is the Sprite's subclass
             clone = target.__class__(target)
             self._clones.append(clone)  # Shared between targets
-            target.clones.append(clone)
+            self.clones.append(clone)
             group.add(clone.sprite, layer=bottom)
             util.events.send_to(util, clone, "clone_start")
         else:
@@ -509,7 +535,7 @@ class Target:
 
     def delete_clone(self, util):
         """Delete this clone, will not delete original"""
-        if self.parent:
+        if self.is_clone:
             self._clones.remove(self)
             self.clones.remove(self)
 

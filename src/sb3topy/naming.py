@@ -166,7 +166,7 @@ class Events:
         return ident
 
     @classmethod
-    def get_event(cls, name, args):
+    def clean_event(cls, name, args):
         """Gets a safe, unique event name for a hat"""
         # Seperate the text into two parts
         prefix, *text = name.partition('{')
@@ -193,9 +193,24 @@ class Events:
 
         return event
 
+    @classmethod
+    def get_event(cls, name, args):
+        """Get a raw, uncleaned event name for a hat"""
+        # Seperate the text into two parts
+        prefix, *text = name.partition('{')
+
+        # Format the right part using args
+        text = ''.join(text).format(**args)
+
+        # Prepend the left part if it isn't already
+        if not text.startswith(prefix.rstrip('_')):
+            text = prefix + text
+
+        return text.lower()
+
     def name_hat(self, name, args):
         """Gets an safe, unique identifier for a hat"""
-        event = self.get_event(name, args)
+        event = self.clean_event(name, args)
         return self.get_identifier(event)
 
     def event_items(self):
@@ -256,8 +271,8 @@ class Prototypes:
     def add_prototype(self, blockid, proccode, warp, args):
         """Names, saves, and returns a prototype"""
         # Get a clean prototype name
-        cb_name = self.events.get_event(
-            "cb_{name}", {'name': sanitizer.strip_pcodes(proccode)})
+        cb_name = self.events.clean_event(
+            "my_{name}", {'name': sanitizer.strip_pcodes(proccode)})
 
         # Get clean argument names
         arg_names = Identifiers()

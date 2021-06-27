@@ -213,7 +213,7 @@ class BlockMap:
             # 1st line of data = hat name
             lines = code.splitlines()
             self.name = lines[0]
-            lines[0] = "async def {NAME}(self, util):"
+            lines[0] = "@on_event({EVENT})\nasync def {NAME}(self, util):"
             self.code = '\n'.join(lines)
         else:
             self.name = None
@@ -242,6 +242,3 @@ class BlockMap:
 
         # Replace {tags} with args
         return self.code.format(**args)
-
-    def get_identifier(self, hats: naming.Events, args):
-        """Gets an identifier for a hat"""

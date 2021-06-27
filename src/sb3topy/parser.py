@@ -90,9 +90,6 @@ class Parser:
         # Parse all blocks into code
         block_code = self.parse_blocks(target.blocks)
 
-        # Get the event dict from hats
-        init_code = init_code + indent(self.parse_events(), "    ") + "\n\n"
-
         # Indent init and block code
         code = indent(header_code + init_code + block_code, "    ")
 
@@ -121,16 +118,13 @@ class Parser:
 
         costumes = self.parse_costumes(target) + "\n\n"
         sounds = self.parse_sounds(target) + "\n\n"
-        assets_clone = self.specmap.code('assets_clone') + "\n\n"
 
         lists_init = self.parse_lists(target)
 
         init_code = info + costumes + sounds + "\n" + lists_init
-        clone_code = assets_clone + "\n"
 
         return self.specmap.code('target_init').format(
             init_code=indent(init_code, "    "*2),
-            clone_code=indent(clone_code, "    "*2),
             layer=int(target['layerOrder'])
         ).rstrip()
 
@@ -237,25 +231,6 @@ class Parser:
 
         return "".join(list_init).rstrip()
 
-    def parse_events(self):
-        """Creates code to link hat coroutines to named events"""
-        hats_init = []
-
-        init_code = self.specmap.code("hat")
-
-        for event, hats in self.target.events.event_items():
-            idents = []
-            for hat in hats:
-                idents.append("self." + hat)
-            hats_init.append(init_code.format(
-                name=sanitizer.quote_field(event),
-                hats=indent(', '.join(idents), "    ")
-            ))
-
-        hats = indent(",\n".join(hats_init).rstrip(), "    ")
-
-        return self.specmap.code("hats_dict").format(hats=hats)
-
     def parse_blocks(self, blocks):
         """Creates a function for each topLevel hat in self.target.blocks"""
         # Preparse custom block mutations
@@ -338,6 +313,8 @@ class Parser:
             # Get a name for functions
             if blockmap.name:
                 args['NAME'] = self.target.events.name_hat(blockmap.name, args)
+                args['EVENT'] = sanitizer.quote_field(
+                    self.target.events.get_event(blockmap.name, args))
 
             # Create the code for the block
             code = code + blockmap.format(args) + "\n"
