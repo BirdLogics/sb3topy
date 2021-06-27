@@ -686,6 +686,7 @@ def __init__(self, parent=None):
     self.sprite._layer = {layer}
 
 #: code_header
+import math
 import time
 import engine
 from engine import Target, StrVariable
