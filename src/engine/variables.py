@@ -6,7 +6,7 @@ Custom types for:
     str
 """
 
-__all__ = ('Float', 'Str', 'StrVariable')
+__all__ = ('Float', 'Str')
 
 import math
 
@@ -169,52 +169,3 @@ class Str(str):
             return float(self) >= float(other)
         except ValueError:
             return self.lower() >= str(other).lower()
-
-
-class BaseVariable:
-    """Represents a variable"""
-
-    __slots__ = ('initial_value', 'shown', 'private_name')
-
-    def __init__(self, value, shown=False):
-        self.initial_value = value
-        self.shown = shown
-        self.private_name = None
-
-    def __set_name__(self, owner, name):
-        self.private_name = '_' + name
-        setattr(owner, self.private_name, self.initial_value)
-
-    def __get__(self, instance, owner=None):
-        return getattr(instance, self.private_name)
-
-    def __set__(self, instance, value):
-        return setattr(instance, self.private_name, value)
-
-    def __repr__(self):
-        return f"BaseVariable(name={repr(self.private_name)}, shown={self.shown})"
-
-    def show(self):
-        """Show the variable"""
-        self.shown = True
-        print(self)
-
-    def hide(self):
-        """Hide the variable"""
-        self.shown = False
-
-
-class StrVariable(BaseVariable):
-    """Represents a string variable"""
-
-    def __init__(self, value, shown=False):
-        super().__init__(Str(value), shown)
-
-    def __set__(self, instance, value):
-        return setattr(instance, self.private_name, Str(value))
-
-    def __repr__(self):
-        return f"StrVariable(name={self.private_name}, shown={self.shown})"
-
-
-print()

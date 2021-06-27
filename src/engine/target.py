@@ -24,8 +24,6 @@ from pygame.sprite import DirtySprite
 from . import config
 from .assets import Costumes, Sounds
 from .pen import Pen
-from .variables import BaseVariable
-from .blockutil import List
 
 
 class Target:
@@ -53,29 +51,24 @@ class Target:
 
         need_redraw - A class method used to determine if
             any targets need to be redrawn
+
+    TODO Additional Target properties
+        draggable = False
+        tempo = 60
+        videoTransparency = 50
+        videoState
+        textToSpeechLanguage
     """
 
     # Clones for all sprites
     _clones = []
 
-    # Contains the internal names of all variables for this sprite
-    _var_names = []
-
-    # Should be set by child
+    # Type hints
     pen: Pen
     costume: Costumes
     sounds: Sounds
 
-    # draggable = False
-    # tempo = 60
-    # videoTransparency = 50
-    # videoState
-    # textToSpeechLanguage
-
     def __init__(self, parent=None):
-        # These must be set by the subsclass
-        # self.costume = None
-        # self.sounds = None
 
         self.hats = {}
 
@@ -101,10 +94,9 @@ class Target:
         if parent is not None:
             # Copy variables from parent
             for name, var in parent.__dict__.items():
-                if isinstance(var, BaseVariable):
-                    self.__dict__[name].value = var.value
-                    print(name)
-                elif isinstance(var, List):
+                if name.startswith('var'):
+                    self.__dict__[name] = var
+                elif name.startswith('list'):
                     self.__dict__[name] = var.copy()
 
             # Copy attributes
