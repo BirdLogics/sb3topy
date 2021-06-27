@@ -619,7 +619,7 @@ class {name}(Target):
 {code}
 
 #: code_var_init
-self.{name} = {value}
+{name} = StrVariable({value})
 
 #:code_var_clone
 self.{name} = parent.{name}
@@ -666,11 +666,7 @@ self._shown = {visible}
 self.pen = engine.Pen(self)
 
 #: code_info_clone
-self._xpos = parent.xpos
-self._ypos = parent.ypos
-self._direction = parent.direction
-self._shown = parent.shown
-self.pen = parent.pen.copy(self)
+# N/A clone info init
 
 #: code_hat
 {name}: [
@@ -687,14 +683,12 @@ def __init__(self, parent=None):
     super().__init__(parent)
     if parent is None:
 {init_code}
-    else:
-{clone_code}
     self.sprite._layer = {layer}
 
 #: code_header
 import time
 import engine
-from engine import Target
+from engine import Target, StrVariable
 from engine.blockutil import *
 
 #: code_sprites

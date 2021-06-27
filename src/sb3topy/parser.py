@@ -83,22 +83,35 @@ class Parser:
 
     def parse_target(self, target: targets.Target):
         """Converts a sb3 target dict into the code for a Python class"""
+
+        # Get property definitions, class description, etc.
+        header_code = self.create_header(target) + "\n\n"
+
         # Parse variables, lists, costumes, and sounds
-        init_code = self.create_init(target)
+        init_code = self.create_init(target) + "\n\n"
 
         # Parse all blocks into code
         block_code = self.parse_blocks(target.blocks)
 
         # Get the event dict from hats
-        init_code = init_code + "\n\n" + \
-            indent(self.parse_events(), "    ") + "\n\n"
+        init_code = init_code + indent(self.parse_events(), "    ") + "\n\n"
 
         # Indent init and block code
-        code = indent(init_code+block_code, "    ")
+        code = indent(header_code + init_code + block_code, "    ")
 
         # Return the final code for the class
         return self.specmap.code("class").format(
             code=code, name=target.clean_name).rstrip()
+
+    def create_header(self, target: targets.Target):
+        """Creates code between "class ...:" and "def __init__" """
+
+        comment = '"""Sprite ' + \
+            sanitizer.quote_string(target['name']).strip('"') + '"""\n\n'
+
+        variable_code = self.parse_variables(target)
+
+        return comment + variable_code
 
     def create_init(self, target):
         """Creates Python __init__ code for a target dict"""
@@ -108,17 +121,15 @@ class Parser:
             direction=target.get('direction', 90),
             visible=target.get('visible', True)
         ) + "\n\n"
-        info_clone = self.specmap.code('info_clone') + "\n\n"
 
         costumes = self.parse_costumes(target) + "\n\n"
         sounds = self.parse_sounds(target) + "\n\n"
         assets_clone = self.specmap.code('assets_clone') + "\n\n"
 
-        vars_init, vars_clone = self.parse_variables(target)
-        lists_init, lists_clone = self.parse_lists(target)
+        lists_init = self.parse_lists(target)
 
-        init_code = info + costumes + sounds + vars_init + "\n" + lists_init
-        clone_code = info_clone + assets_clone + vars_clone + "\n" + lists_clone
+        init_code = info + costumes + sounds + "\n" + lists_init
+        clone_code = assets_clone + "\n"
 
         return self.specmap.code('target_init').format(
             init_code=indent(init_code, "    "*2),
@@ -196,29 +207,23 @@ class Parser:
     def parse_variables(self, target):
         """Creates code to init variables for a target and clones"""
         vars_init = []
-        vars_clone = []
 
         init_code = self.specmap['code_var_init'].code
-        clone_code = self.specmap['code_var_clone'].code
+
         for var in target['variables'].values():
             name = target.vars.get_local('var', var[0])
             vars_init.append(init_code.format(
                 name=name,
                 value=sanitizer.quote_number(var[1])
             ))
-            vars_clone.append(clone_code.format(
-                name=name
-            ))
 
-        return '\n'.join(vars_init).rstrip(), '\n'.join(vars_clone).rstrip()
+        return '\n'.join(vars_init).rstrip()
 
     def parse_lists(self, target):
         """Creates code to init lists for a target and clones"""
         list_init = []
-        list_clone = []
 
         init_code = self.specmap.code('list_init')
-        clone_code = self.specmap.code('list_clone')
 
         for lst in target['lists'].values():
             # Validate list items
@@ -232,11 +237,8 @@ class Parser:
                 name=name,
                 items=indent("[" + ', '.join(items) + "]", "    ")
             ) + "\n")
-            list_clone.append(clone_code.format(
-                name=name
-            ) + "\n")
 
-        return "".join(list_init).rstrip(), "".join(list_clone).rstrip()
+        return "".join(list_init).rstrip()
 
     def parse_events(self):
         """Creates code to link hat coroutines to named events"""

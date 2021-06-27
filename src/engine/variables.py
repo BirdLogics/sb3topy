@@ -1,192 +1,198 @@
 """
 Handles the variable and list class
 
-TODO Fix mod for NaN values
+Custom types for:
+    float
+    str
 """
+
+__all__ = ('Float', 'Str', 'StrVariable')
 
 import math
 
 
-class Value:
-    """Represents a value and handles operations"""
+class Float(float):
+    """Represents a value of the float type"""
 
-    __slots__ = ('value', )
+    __slots__ = ('value',)
 
-    def __init__(self, value):
-        if isinstance(value, Value):
-            value = value.value
-        self.value = value
-
-    # Casting methods
-    def __float__(self):
+    def __new__(cls, value):
         try:
-            value = float(self.value)
+            # Try to cast the value to float
+            instance = float.__new__(cls, value)
 
-            # NaN should return 0
-            if math.isnan(value):
-                return 0.0
+            # NaN should be treated as 0
+            if math.isnan(instance):
+                return float.__new__(cls, 0)
 
-            # Python has more inf casts than JS
-            if math.isinf(value) and not isinstance(self.value, float) and \
-                    self.value not in ('Infinity', '+Infinity', '-Infinity'):
-                return 0.0
-
-            return value
+            return instance
 
         except ValueError:
             try:
-                # Convert values like '0xFF'
-                return float(int(self.value, base=0))
+                # Try to cast numbers of alternate base
+                return float.__new__(cls, (int(value, base=0)))
             except ValueError:
-                return 0.0
+                # Default to 0
+                return float.__new__(cls, 0)
+
+    def __init__(self, value):
+        float.__init__(self)
+        self.value = value
 
     def __str__(self):
-        try:
-            return str(int(self.value))
-        except ValueError:
-            # Give float nan proper case
-            # if isinstance(self.value, float) and math.isnan(self.value):
-            #     return 'NaN'
+        # Check if self.value is float NaN
+        # If it is, return 'NaN' rather than 'nan'
+        if self == 0 and isinstance(self.value, float) and math.isnan(self.value):
+            return 'NaN'
 
-            return str(self.value)
-        except OverflowError:
-            if self.value == float('inf'):
+        # Return the correct case for float Inf too
+        if math.isfinite(self):
+            if self > 0:
                 return 'Infinity'
             return '-Infinity'
 
-    def __bool__(self):
-        if isinstance(self.value, float) and math.isnan(self.value):
-            return False
-        if str(self.value).lower() == 'false':
-            return False
-        if self.value == 0 or self.value == '0':
-            return False
-        return bool(self.value)
+        # If an integer, ommit the '.0'
+        integer = int(self)
+        if integer != self:
+            return str(self)
 
-    def __round__(self, digits=0):
-        try:
-            return round(float(self.value), digits)
-        except ValueError:
-            return 0
+        return str(integer)
 
     def __index__(self):
         try:
-            return int(float(self.value))
+            # Floors the value
+            return int(self)
         except ValueError:
+            # Caused if self == float('nan')
             return 0
         except OverflowError:
+            # Caused if self == float('inf')
             return 0
 
-    # Math operators
-    def __add__(self, other):
-        return self.__float__() + float(other)
-
-    def __radd__(self, other):
-        return float(other) + self.__float__()
-
-    def __sub__(self, other):
-        return self.__float__() - float(other)
-
-    def __rsub__(self, other):
-        return float(other) - self.__float__()
-
-    def __mul__(self, other):
-        return self.__float__() * float(other)
-
-    def __rmul__(self, other):
-        return float(other) * self.__float__()
-
     def __truediv__(self, other):
+        # TODO What if other is 'inf'?
         try:
-            return self.__float__() / float(other)
+            return float(self) / float(other)
+        except ValueError:
+            return Float('Infinity' if self > 0 else '-Infinity')
         except ZeroDivisionError:
-            # Handle zero division
-            if self.__float__() == 0:
-                return Value(float('nan'))
-            return math.copysign(float('inf'), self.__float__())
+            return Float('Infinity' if self > 0 else '-Infinity')
 
     def __rtruediv__(self, other):
-        try:
-            return float(other) / self.__float__()
-        except ZeroDivisionError:
-            # Handle zero division
-            if float(other) == 0:
-                return Value(float('nan'))
-            return math.copysign(float('inf'), float(other))
+        return Float(other) / self
 
-    def __mod__(self, other):
-        return self.__float__() % float(other)
 
-    def __rmod__(self, other):
-        return float(other) % self.__float__()
+class Str(str):
+    """Represents a value of the str type"""
 
-    def __pow__(self, other):
-        return pow(self.__float__(), float(other))
+    __slots__ = ('value',)
 
-    def __rpow__(self, other):
-        return pow(float(other), self.__float__())
+    def __new__(cls, value):
+        return str.__new__(cls, value)
 
-    # Comparison operators
+    def __bool__(self):
+        if self == '' or self.lower() == 'false' or self == '0':
+            return False
+        return True
+
+    # Float() should be called instead
+    # def __float__(self):
+    #     try:
+    #         value = float(str(self))
+
+    #         # NaN should be treated as 0
+    #         if math.isnan(value):
+    #             return 0.0
+
+    #         # JS has fewer inf strings than Python
+    #         if math.isinf(value) and self not in ('Infinity', '+Infinity', '-Infinity'):
+    #             return 0.0
+
+    #         return value
+
+    #     except ValueError:
+    #         try:
+    #             # Try to cast numbers of alternate base
+    #             return float(int(self, base=0))
+    #         except ValueError:
+    #             return 0.0
+
+    # float and int fall back to this if defined
+    # def __index__(self):
+    #     try:
+    #         return int(float(self))
+
+    #     except OverflowError:
+    #         return 0
+
+    #     except ValueError:
+    #         try:
+    #             return int(self, base=0)
+    #         except ValueError:
+    #             return 0
+
+    def __getitem__(self, i):
+        return str.__getitem__(self, i + 1)
+
     def __eq__(self, other):
-        return self.__str__().lower() == str(other).lower()
+        try:
+            return float(self) == float(other)
+        except ValueError:
+            return self.lower() == str(other).lower()
 
     def __ne__(self, other):
-        return self.__str__() != str(other)
+        try:
+            return float(self) != float(other)
+        except ValueError:
+            return self.lower() != str(other).lower()
 
     def __lt__(self, other):
-        if isinstance(other, Value):
-            other = other.value
-
         try:
-            return float(self.value) < float(other)
+            return float(self) < float(other)
         except ValueError:
-            return str(self.value).lower() < str(other).lower()
+            return self.lower() < str(other).lower()
 
     def __gt__(self, other):
-        if isinstance(other, Value):
-            other = other.value
-
         try:
-            return float(self.value) > float(other)
+            return float(self) > float(other)
         except ValueError:
-            return str(self.value).lower() > str(other).lower()
+            return self.lower() > str(other).lower()
 
     def __le__(self, other):
-        if isinstance(other, Value):
-            other = other.value
-
         try:
-            return float(self.value) <= float(other)
+            return float(self) <= float(other)
         except ValueError:
-            return str(self.value).lower() <= str(other).lower()
+            return self.lower() <= str(other).lower()
 
     def __ge__(self, other):
-        if isinstance(other, Value):
-            other = other.value
-
         try:
-            return float(self.value) >= float(other)
+            return float(self) >= float(other)
         except ValueError:
-            return str(self.value).lower() >= str(other).lower()
+            return self.lower() >= str(other).lower()
 
 
-class Variable(Value):
+class BaseVariable:
     """Represents a variable"""
 
-    __slots__ = ('shown', )
+    __slots__ = ('initial_value', 'shown', 'private_name')
 
-    def __init__(self, value, shown):
-        super().__init__(value)
+    def __init__(self, value, shown=False):
+        self.initial_value = value
         self.shown = shown
+        self.private_name = None
+
+    def __set_name__(self, owner, name):
+        self.private_name = '_' + name
+        setattr(owner, self.private_name, self.initial_value)
 
     def __get__(self, instance, owner=None):
-        return self
+        return getattr(instance, self.private_name)
 
     def __set__(self, instance, value):
-        self.value = value
+        return setattr(instance, self.private_name, value)
 
     def __repr__(self):
-        return f"Variable(value={repr(self.value)}, shown={bool(self.shown)})"
+        return f"BaseVariable(name={repr(self.private_name)}, shown={self.shown})"
 
     def show(self):
         """Show the variable"""
@@ -196,6 +202,19 @@ class Variable(Value):
     def hide(self):
         """Hide the variable"""
         self.shown = False
+
+
+class StrVariable(BaseVariable):
+    """Represents a string variable"""
+
+    def __init__(self, value, shown=False):
+        super().__init__(Str(value), shown)
+
+    def __set__(self, instance, value):
+        return setattr(instance, self.private_name, Str(value))
+
+    def __repr__(self):
+        return f"StrVariable(name={self.private_name}, shown={self.shown})"
 
 
 print()

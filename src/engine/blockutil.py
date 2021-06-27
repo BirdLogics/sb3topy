@@ -225,7 +225,7 @@ def gt(val1, val2):  # pylint: disable=invalid-name
     try:
         return float(val1) > float(val2)
     except ValueError:
-        return str(val1).casefold() > str(val2).casefold()
+        return str(val1).lower() > str(val2).lower()
 
 
 def lt(val1, val2):  # pylint: disable=invalid-name
@@ -233,7 +233,7 @@ def lt(val1, val2):  # pylint: disable=invalid-name
     try:
         return float(val1) < float(val2)
     except ValueError:
-        return str(val1).casefold() < str(val2).casefold()
+        return str(val1).lower() < str(val2).lower()
 
 
 def eq(val1, val2):  # pylint: disable=invalid-name
@@ -241,7 +241,7 @@ def eq(val1, val2):  # pylint: disable=invalid-name
     try:
         return float(val1) == float(val2)
     except ValueError:
-        return str(val1).casefold() == str(val2).casefold()
+        return str(val1).lower() == str(val2).lower()
 
 
 def div(val1, val2):

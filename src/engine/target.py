@@ -24,6 +24,8 @@ from pygame.sprite import DirtySprite
 from . import config
 from .assets import Costumes, Sounds
 from .pen import Pen
+from .variables import BaseVariable
+from .blockutil import List
 
 
 class Target:
@@ -55,6 +57,9 @@ class Target:
 
     # Clones for all sprites
     _clones = []
+
+    # Contains the internal names of all variables for this sprite
+    _var_names = []
 
     # Should be set by child
     pen: Pen
@@ -92,6 +97,25 @@ class Target:
         self._tasks = {}
 
         self.warp = False
+
+        if parent is not None:
+            # Copy variables from parent
+            for name, var in parent.__dict__.items():
+                if isinstance(var, BaseVariable):
+                    self.__dict__[name].value = var.value
+                    print(name)
+                elif isinstance(var, List):
+                    self.__dict__[name] = var.copy()
+
+            # Copy attributes
+            self._xpos = parent._xpos
+            self._ypos = parent._ypos
+            self._direction = parent._direction
+            self._shown = parent._shown
+            self.pen = parent.pen.copy(self)
+
+            self.costume = parent.costume.copy()
+            self.sounds = parent.sounds.copy()
 
     @property
     def xpos(self):
