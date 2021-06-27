@@ -11,8 +11,7 @@ TODO Cache lowercase list items?
 __all__ = [
     'List',
     'tonum', 'toint', 'letter_of', 'pick_rand',
-    'gt', 'lt', 'eq', 'div',
-    'math'  # TODO Bad way to import math
+    'gt', 'lt', 'eq', 'div'
 ]
 
 import random

@@ -32,9 +32,6 @@ Methods:
 
 TODO Costume/Sound initializer indentation
 TODO Some literals are wrapped with a conversion
-TODO Preparse sensing of variables to keep same name
-Eg. If two sprites have a var named 't123$%@' the clened name
-should be guaranteed to be the same if used in a sensing of
 TODO Smart variable type detection
 """
 
