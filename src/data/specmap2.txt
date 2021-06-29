@@ -669,7 +669,7 @@ def __init__(self, parent=None):
 import math
 import time
 import engine
-from engine import Target, on_event
+from engine import Target, on_event, warp
 from engine.blockutil import *
 
 #: code_sprites

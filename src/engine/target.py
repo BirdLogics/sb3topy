@@ -10,12 +10,13 @@ TODO Warp deorator?
 
 # pylint: disable=protected-access
 
-__all__ = ['Target', 'on_event']
+__all__ = ['Target', 'on_event', 'warp']
 
 import asyncio
 import math
 import time
 import types
+from functools import wraps
 from itertools import zip_longest
 
 import pygame as pg
@@ -23,8 +24,8 @@ from pygame.sprite import DirtySprite
 
 from . import config
 from .assets import Costumes, Sounds
-from .pen import Pen
 from .blockutil import List
+from .pen import Pen
 
 
 def on_event(event_name):
@@ -114,7 +115,7 @@ class Target:
         # Clear effects
         self.effects = {}
 
-        self.warp = False
+        self.warp = Warp(self)
 
         # Initialize clone data
         if parent is not None:
@@ -409,11 +410,12 @@ class Target:
 
         self.sprite.dirty = 1
 
+    @staticmethod
     @types.coroutine
-    def yield_(self):
+    def yield_():
         """Yields for a tick"""
-        if not self.warp:
-            yield
+        # Note, this will be overriden by Warp
+        yield
 
     async def sleep(self, delay):
         """Yields for at least 1 tick and delay"""
@@ -550,3 +552,52 @@ class Target:
 
             # Stop all playing sounds
             self.sounds.stop()
+
+
+def warp(func):
+    """Makes a function run with no refresh enabled"""
+
+    @wraps(func)
+    async def wrapper(self: Target, *args):
+        with self.warp:
+            return await func(self, *args)
+    return wrapper
+
+
+@types.coroutine
+def _do_yield():
+    """Yields for a tick"""
+    yield
+
+
+async def _no_yield():
+    """Does nothing"""
+
+
+class Warp:
+    """Context manager to handle warp for a Target"""
+
+    __slots__ = ('_target',)
+
+    def __init__(self, target):
+        self._target = target
+        # self._warp = False
+        # self.timer = time.monotonic()
+
+    # def __bool__(self):
+    #     return self._warp
+
+    def __enter__(self):
+        # self._warp = True
+        # self.timer = time.monotonic()
+        self._target.yield_ = _no_yield
+
+    def __exit__(self, _, _1, _2):
+        # self._warp = False
+        self._target.yield_ = _do_yield
+
+    def _warp_yield(self):
+        """Checks the warp timer before yielding"""
+        if time.monotonic() - self.timer > config.WARP_TIME:
+            yield
+            self.timer = time.monotonic()

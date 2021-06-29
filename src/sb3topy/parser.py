@@ -35,14 +35,11 @@ TODO Some literals are wrapped with a conversion
 TODO Smart variable type detection
 """
 
-import logging
 import json
+import logging
 from textwrap import indent
 
-from . import config
-from . import sanitizer
-from . import specmap
-from . import targets
+from . import config, sanitizer, specmap, targets
 from .variables import Variables
 
 
@@ -325,10 +322,6 @@ class Parser:
         code = code.strip()
         if parent_bm and parent_bm.do_yield and is_stack and not (prototype and prototype.warp):
             code = code + "\n" + self.specmap.code("yield") + "\n"
-
-        # TODO Better warp handling
-        if parent_bm and parent_bm.prototype and parent_bm.prototype.warp:
-            code = "self.warp = True\n" + code + "\nself.warp = False"
 
         return blockmap.return_type, code
 

@@ -108,16 +108,17 @@ class Specmap:
         # block['next'] = None
 
         # Get information about the procedure
-        protoype = protoypes.get_definition(
+        prototype = protoypes.get_definition(
             block['inputs'].pop('custom_block')[1])
-        parameters = protoype.args_list()
-        name = protoype.name
+        parameters = prototype.args_list()
+        name = prototype.name
+        warp = "@warp\n" if prototype.warp else ""
 
         return BlockMap(
             "stack", "procedures_definition",
             "stack SUBSTACK", "", "",
-            f"async def {name}(self, util, {parameters}):\n    {{SUBSTACK}}",
-            protoype
+            f"{warp}async def {name}(self, util, {parameters}):\n    {{SUBSTACK}}",
+            prototype
         )
 
     @staticmethod

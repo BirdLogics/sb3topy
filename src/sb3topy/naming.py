@@ -12,8 +12,7 @@ import itertools
 import logging
 from time import monotonic_ns
 
-
-from . import sanitizer
+from . import config, sanitizer
 
 
 class Identifiers:
@@ -229,7 +228,7 @@ class Prototype:
 
     def __init__(self, name, warp, args, args_id):
         self.name = name
-        self.warp = warp
+        self.warp = warp or config.WARP_ALL
         self.args = args
         self.args_id = args_id
 
