@@ -192,7 +192,7 @@ class Parser:
             sounds=sounds
         )
 
-    def parse_variables(self, target):
+    def parse_variables(self, target: targets.Target):
         """Creates code to init variables for a target and clones"""
         vars_init = []
 
@@ -398,7 +398,8 @@ class Parser:
 
         # 12 Variable
         if value[0] == 12:
-            return "any", self.target.vars.get_reference('var', value[1])
+            return self.target.vars.get_type('var', value[1]), \
+                self.target.vars.get_reference('var', value[1])
 
         # 13 List
         if value[0] == 13:

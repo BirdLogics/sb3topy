@@ -95,6 +95,11 @@ def cast_number(value, default=0):
         except ValueError:
             return default
 
+    except TypeError:
+        # value == None
+        # TODO Check number casts when value == None
+        return default
+
 
 def valid_md5ext(md5ext):
     """Verifies a md5ext path is valid"""

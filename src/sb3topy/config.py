@@ -47,3 +47,6 @@ MP3_COMMAND = _CONFIG.get(
 
 LOG_LEVEL = _CONFIG.get('log_level', 20)
 DEBUG_JSON = _CONFIG.get('debug_json', True)
+
+# Max number of digits to convert str to float
+SIG_DIGITS = 16
