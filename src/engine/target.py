@@ -143,7 +143,7 @@ class Target:
 
     @xpos.setter
     def xpos(self, xpos):
-        self._xpos = float(xpos)
+        self._xpos = xpos
 
         # Set dirty, move pen
         self.dirty = True
@@ -154,7 +154,7 @@ class Target:
     @property
     def ypos(self):
         """Current y coordinate on the stage"""
-        return float(self._ypos)
+        return self._ypos
 
     @ypos.setter
     def ypos(self, ypos):
@@ -555,7 +555,7 @@ class Target:
 
 
 def warp(func):
-    """Makes a function run with no refresh enabled"""
+    """Makes a function run with "no screen refresh" enabled"""
 
     @wraps(func)
     async def wrapper(self: Target, *args):

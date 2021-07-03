@@ -98,11 +98,9 @@ class Parser:
         """Creates code between "class ...:" and "def __init__" """
 
         comment = '"""Sprite ' + \
-            sanitizer.quote_string(target['name']).strip('"') + '"""\n\n'
+            sanitizer.quote_string(target['name']).strip('"') + '"""'
 
-        variable_code = self.parse_variables(target)
-
-        return comment + variable_code
+        return comment
 
     def create_init(self, target):
         """Creates Python __init__ code for a target dict"""
@@ -116,12 +114,13 @@ class Parser:
         costumes = self.parse_costumes(target) + "\n\n"
         sounds = self.parse_sounds(target) + "\n\n"
 
-        lists_init = self.parse_lists(target)
+        vars_init = self.parse_variables(target) + "\n\n"
+        lists_init = self.parse_lists(target) + "\n"
 
-        init_code = info + costumes + sounds + "\n" + lists_init
+        init_code = info + costumes + sounds  + vars_init + lists_init
 
         return self.specmap.code('target_init').format(
-            init_code=indent(init_code, "    "*2),
+            init_code=indent(init_code, "    "),
             layer=int(target['layerOrder'])
         ).rstrip()
 

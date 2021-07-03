@@ -619,7 +619,7 @@ class {name}(Target):
 {code}
 
 #: code_var_init
-{name} = {value}
+self.{name} = {value}
 
 #:code_var_clone
 self.{name} = parent.{name}
@@ -661,7 +661,8 @@ self.pen = engine.Pen(self)
 #: code_target_init
 def __init__(self, parent=None):
     super().__init__(parent)
-    if parent is None:
+    if parent is not None:
+        return
 {init_code}
     self.sprite._layer = {layer}
 
