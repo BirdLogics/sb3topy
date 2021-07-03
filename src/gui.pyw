@@ -6,9 +6,9 @@ import json
 import queue
 import subprocess
 import threading
+import time
 import tkinter as tk
 from tkinter import filedialog, ttk
-import time
 
 FORMATS = {
     '[DEBUG]': "debug",
@@ -17,6 +17,11 @@ FORMATS = {
     '[ERROR]': "error",
     '[CRITICAL]': "critical"
 }
+
+# TODO Scaling for 4k displays
+# from ctypes import windll
+# windll.shcore.SetProcessDpiAwareness(True)
+# self.tk.call('tk', 'scaling', 4.0)
 
 
 class Task:
