@@ -152,9 +152,11 @@ class Inputs:
 
         elif event.key == pg.K_F11:
             util.display.toggle_fullscreen()
+            util.runtime.render.dirty_all()
 
         elif event.key == pg.K_ESCAPE:
             if util.display.fullscreen:
                 util.display.toggle_fullscreen()
+                util.runtime.render.dirty_all()
             else:
                 util.runtime.running = False

@@ -117,7 +117,8 @@ class Runtime:
                 self.inputs.e_mousemotion(self.display, event)
 
             elif event.type == pg.VIDEORESIZE:
-                self.display.video_resize(self.sprites, event)
+                self.display.video_resize(event)
+                self.render.dirty_all()
 
     async def step_threads(self):
         """Run threads for WORK_TIME"""

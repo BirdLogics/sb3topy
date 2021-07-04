@@ -21,14 +21,14 @@ class Display:
     screen - The screen surface from pygame.display.set_mode
     """
 
-    size = config.DISPLAY_SIZE
-    scale = 1
-    fullscreen = False
-
-    rect = None
-    screen = None
-
     def __init__(self):
+        self.size = config.DISPLAY_SIZE
+        self.scale = 1
+        self.fullscreen = False
+
+        self.rect: pg.Rect
+        self.screen: pg.Surface
+
         self.setup_display(config.DISPLAY_SIZE)
 
     def setup_display(self, size):
@@ -87,15 +87,10 @@ class Display:
         # Setup the screen again
         self.setup_display(size)
 
-    def video_resize(self, sprites, event):
+    def video_resize(self, event):
         """Recalculates the rect and scale"""
         # Resize the display
         self.setup_display((event.w, event.h))
-
-        # Resize sprites, stage, and Pen
-        for sprite in sprites.sprites():
-            sprite.target.dirty = 3
-        sprites.stage.dirty = 3
 
 
 class Render:
@@ -205,3 +200,10 @@ class Render:
         # pg.display.flip()
         self.rects = []
         Pen.dirty = []
+
+    def dirty_all(self):
+        """Marks all sprites as dirty"""
+        # Resize sprites, stage, and Pen
+        for sprite in self.group.sprites():
+            sprite.target.costume.dirty = True
+        self.stage.target.costume.dirty = True
