@@ -47,7 +47,6 @@ class Runtime:
 
         # Get the loop clock
         self.clock = pg.time.Clock()
-        self.tick = None  # Must be set from asyncio loop
 
         # Initialize base classes
         self.inputs = Inputs()
@@ -77,9 +76,6 @@ class Runtime:
         """Run the main loop"""
         # Setup asyncio debug
         asyncio.get_running_loop().slow_callback_duration = 0.49
-
-        # Init tick from this loop
-        self.tick = asyncio.Event()
 
         # Start green flag
         self.events.send(self.util, self.sprites, "green_flag")
@@ -136,10 +132,6 @@ class Runtime:
             if Costumes.redraw_requested or Pen.dirty:
                 dirty = True
                 Costumes.redraw_requested = False
-
-        # Release any targets waiting for 1 tick
-        self.tick.set()
-        self.tick.clear()
 
     def draw(self):
         """Renders costumes and draws the screen"""
