@@ -12,7 +12,8 @@ import itertools
 import logging
 from time import monotonic_ns
 
-from . import config, sanitizer
+from .. import config
+from . import sanitizer
 
 
 class Identifiers:

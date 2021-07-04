@@ -39,7 +39,8 @@ import json
 import logging
 from textwrap import indent
 
-from . import config, sanitizer, specmap, targets
+from .. import config
+from . import sanitizer, specmap, targets
 from .variables import Variables
 
 

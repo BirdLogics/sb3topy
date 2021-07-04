@@ -8,7 +8,8 @@ TODO Variable type optimizations
 
 import logging
 
-from . import config, sanitizer
+from .. import config
+from . import sanitizer
 from .naming import Identifiers
 
 
