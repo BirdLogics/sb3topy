@@ -577,24 +577,26 @@ async def _no_yield():
 class Warp:
     """Context manager to handle warp for a Target"""
 
-    __slots__ = ('_target',)
+    __slots__ = ('_target', '_warp')
 
     def __init__(self, target):
         self._target = target
-        # self._warp = False
+        self._warp = 0
         # self.timer = time.monotonic()
 
-    # def __bool__(self):
-    #     return self._warp
+    def __bool__(self):
+        return bool(self._warp)
 
     def __enter__(self):
-        # self._warp = True
-        # self.timer = time.monotonic()
-        self._target.yield_ = _no_yield
+        if not self._warp:
+            # self.timer = time.monotonic()
+            self._target.yield_ = _no_yield
+        self._warp += 1
 
     def __exit__(self, _, _1, _2):
-        # self._warp = False
-        self._target.yield_ = _do_yield
+        self._warp -= 1
+        if not self._warp:
+            self._target.yield_ = _do_yield
 
     # def _warp_yield(self):
     #     """Checks the warp timer before yielding"""
