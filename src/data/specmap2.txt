@@ -69,7 +69,8 @@ self.goto(util, {TO})
 #: stack motion_glidesecstoxy (float SECS, float X, float Y)
 await self.glide({SECS}, {X}, {Y})
 
-# TODO Glide to target?
+#: stack motion_glideto (string TO)
+self.glideto(util, {TO})
 
 #: stack motion_changexby (float DX)
 self.xpos += {DX}
