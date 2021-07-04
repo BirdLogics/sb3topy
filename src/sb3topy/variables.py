@@ -260,7 +260,8 @@ class Variables:
 
 def get_type(value):
     """Attempts to determine the type of a value"""
-    if str(sanitizer.cast_number(value)) == str(value) and len(str(value)) <= config.SIG_DIGITS:
+    if str(sanitizer.cast_number(value)) == str(value) and \
+            len(str(value).partition('.')[2]) < config.SIG_DIGITS:
         return 'float'
     if str(value).lower() in ('true', 'false'):
         return 'bool'
@@ -309,11 +310,12 @@ class Variable:
         """Guesses the type"""
         # Asserts are here just to give a better
         # idea of how to process the data
-        if get_type(self.initial_value) == 'float' and \
-                'str' not in self.set_types and 'bool' not in self.set_types:
+        if get_type(self.initial_value) == 'float' and (
+            self.is_changed or
+            'str' not in self.set_types and
+                'bool' not in self.set_types):
             self.guessed_type = 'float'
         else:
-            assert not self.is_changed
             self.guessed_type = 'any'
 
         logging.debug("Guessing variable '%s' as type %s",
