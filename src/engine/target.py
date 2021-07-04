@@ -130,7 +130,7 @@ class Target:
             self._xpos = parent._xpos
             self._ypos = parent._ypos
             self._direction = parent._direction
-            self._shown = parent._shown
+            self.sprite.visible = parent.sprite.visible
             self.pen = parent.pen.copy(self)
 
             self.costume = parent.costume.copy()
@@ -320,11 +320,11 @@ class Target:
     def shown(self):
         """Whether the sprite is currently visible"""
         # Getter not actually used
-        return bool(self.sprite.visible)
+        return self.sprite.visible
 
     @shown.setter
     def shown(self, value):
-        self.sprite.visible = bool(value)
+        self.sprite.visible = value
 
         # Update dirty
         # sprite.dirty is set by the visible property
@@ -596,8 +596,8 @@ class Warp:
         # self._warp = False
         self._target.yield_ = _do_yield
 
-    def _warp_yield(self):
-        """Checks the warp timer before yielding"""
-        if time.monotonic() - self.timer > config.WARP_TIME:
-            yield
-            self.timer = time.monotonic()
+    # def _warp_yield(self):
+    #     """Checks the warp timer before yielding"""
+    #     if time.monotonic() - self.timer > config.WARP_TIME:
+    #         yield
+    #         self.timer = time.monotonic()
