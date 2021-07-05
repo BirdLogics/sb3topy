@@ -205,6 +205,10 @@ class Costumes:
 
         self.costume_list = costumes
 
+        # Last gotten image without effects
+        # Used to get the sprite mask
+        self.last_image: pg.Surface = None
+
         if copy_dicts is None:
             self.effects = {}
             self.costumes = {}
@@ -320,7 +324,7 @@ class Costumes:
         self.dirty = True
         self.redraw_requested = True
 
-    def _apply_effects(self, image):
+    def _apply_effects(self, image: pg.Surface):
         """Apply current effects to an image"""
         # Brighten/Darken
         brightness = self.effects.get('brightness', 0)
@@ -339,6 +343,7 @@ class Costumes:
         ghost = self.effects.get('ghost', 0)
         if ghost:
             ghost = 255 - 255 * ghost / 100
+            image = image.copy()
             image.fill(
                 (255, 255, 255, ghost),
                 special_flags=pg.BLEND_RGBA_MULT)
@@ -372,6 +377,9 @@ class Costumes:
             if direction > 0:
                 image = pg.transform.flip(image, True, False)
 
+        # Save the image without effects
+        self.last_image = image
+
         # Apply effects
         image = self._apply_effects(image)
 
@@ -383,6 +391,10 @@ class Costumes:
                         self.rotation_style, self.costume_list,
                         (self.costumes, self.effects.copy()))
         return cost
+
+    def get_mask(self):
+        """Get a sprite mask using the last gotten image without effects"""
+        return pg.mask.from_surface(self.last_image)
 
 
 def hue_effect(src_image, value):

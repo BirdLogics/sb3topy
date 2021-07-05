@@ -380,7 +380,7 @@ class Target:
 
         # Update the sprite mask, if requested
         if create_mask and not self.sprite.mask:
-            self.sprite.mask = pg.mask.from_surface(self.sprite.image)
+            self.sprite.mask = self.costume.get_mask()
 
     def _update_image(self, display):
         """Updates and transforms the sprites image"""
