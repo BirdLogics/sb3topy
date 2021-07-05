@@ -2,6 +2,8 @@
 pen.py
 
 Contains the Pen class
+
+TODO Change Pen.move to take from and to coords?
 """
 
 __all__ = ['Pen']
@@ -87,10 +89,11 @@ class Pen:
 
     def move(self):
         """Moves and draws with the pen"""
-        # Get new position
-        end_pos = (self.target.xpos + STAGE_SIZE[0]//2,
-                   STAGE_SIZE[1]//2 - self.target.ypos)
         if self.isdown:
+            # Get new position
+            end_pos = (self.target._xpos + STAGE_SIZE[0]//2,
+                       STAGE_SIZE[1]//2 - self.target._ypos)
+
             size = max(1, round(self.size * self._scale/2)) * 2
 
             # Used to draw transparent lines in pg
@@ -119,8 +122,10 @@ class Pen:
                 Pen._alpha_img.fill((0, 0, 0, 0), rect)
 
             # pg.draw.rect(Pen.image, (0, 200, 100), rect, 1)
-
-        self.position = end_pos
+            self.position = end_pos
+        else:
+            self.position = (self.target._xpos + STAGE_SIZE[0]//2,
+                             STAGE_SIZE[1]//2 - self.target._ypos)
 
     def set_size(self, value):
         """Sets and clamps the pen size"""
