@@ -665,7 +665,7 @@ def __init__(self, parent=None):
     if parent is not None:
         return
 {init_code}
-    self.sprite._layer = {layer}
+    self.sprite.layer = {layer}
 
 #: code_header
 import math
