@@ -311,6 +311,10 @@ class Variable:
         """Guesses the type"""
         # Asserts are here just to give a better
         # idea of how to process the data
+        if config.DISABLE_TYPING:
+            self.guessed_type = 'any'
+            return
+
         if get_type(self.initial_value) == 'float' and (
             self.is_changed or
             'str' not in self.set_types and

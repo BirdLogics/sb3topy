@@ -50,3 +50,6 @@ DEBUG_JSON = _CONFIG.get('debug_json', True)
 
 # Max number of digits to convert str to float
 SIG_DIGITS = 17
+
+# Disable variable type guessing
+DISABLE_TYPING = False
