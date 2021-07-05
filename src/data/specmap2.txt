@@ -656,7 +656,7 @@ self.sounds = engine.Sounds(
 self._xpos = {xpos}
 self._ypos = {ypos}
 self._direction = {direction}
-self._shown = {visible}
+self.shown = {visible}
 self.pen = engine.Pen(self)
 
 #: code_target_init
