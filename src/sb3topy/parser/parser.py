@@ -213,7 +213,15 @@ class Parser:
 
         init_code = self.specmap.code('list_init')
 
+        # Used for duplicate detection
+        lists = {}
+
         for lst in target['lists'].values():
+            # Hack for duplicate lists
+            if lst[0] in lists and lists[lst[0]] and not lst[1]:
+                continue
+            lists[lst[0]] = lst[1]
+
             # Validate list items
             items = []
             for value in lst[1]:
