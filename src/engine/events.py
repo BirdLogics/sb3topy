@@ -65,6 +65,7 @@ class Inputs:
         self.mouse_x = 0
         self.mouse_y = 0
         self.mouse_down = False
+        self.f3_down = False
 
         self.pressed_keys = set()
 
@@ -106,6 +107,10 @@ class Inputs:
         self.pressed_keys.discard(key)
         if len(self.pressed_keys) == 1:
             self.pressed_keys = set()
+
+        # Handle hotkeys
+        if event.key == pg.K_F3:
+            self.f3_down = False
 
     def e_mousedown(self, util, events, sprites, event):
         """Handles a mouse click"""
@@ -160,3 +165,19 @@ class Inputs:
                 util.runtime.render.dirty_all()
             else:
                 util.runtime.running = False
+
+        elif event.key == pg.K_F3:
+            self.f3_down = True
+
+        elif self.f3_down:
+            if event.key == pg.K_r:
+                config.REDRAW_RECTS = not config.REDRAW_RECTS
+
+            elif event.key == pg.K_s:
+                config.SPRITE_RECTS = not config.SPRITE_RECTS
+
+            elif event.key == pg.K_p:
+                config.PEN_RECTS = not config.PEN_RECTS
+
+            elif event.key == pg.K_f:
+                config.DRAW_FPS = not config.DRAW_FPS
