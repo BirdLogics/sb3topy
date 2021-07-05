@@ -11,7 +11,7 @@ runtime - Global class instance used to make code
     runtime can be imported and directly acessed.
 """
 
-__all__ = ['start_program']
+__all__ = ['start_program', 'sprite']
 
 import asyncio
 import logging
@@ -26,6 +26,9 @@ from .events import Events, Inputs
 from .pen import Pen
 from .render import Display, Render
 from .util import Util
+
+
+SPRITES = {}
 
 
 class Runtime:
@@ -201,13 +204,22 @@ class Sprites:
         self.stage.update(display)
 
 
-def start_program(sprites):
+def start_program():
     """Run the program"""
     logging.basicConfig(level=logging.DEBUG)
     runtime = None
     try:
-        runtime = Runtime(sprites)
+        runtime = Runtime(SPRITES)
         asyncio.run(runtime.main_loop())
     finally:
         if runtime:
             runtime.quit()
+
+
+def sprite(name):
+    """Makes a class run as a sprite"""
+    def decorator(cls):
+        cls.name = name
+        SPRITES[name] = cls
+        return cls
+    return decorator

@@ -93,7 +93,8 @@ class Parser:
 
         # Return the final code for the class
         return self.specmap.code("class").format(
-            code=code, name=target.clean_name).rstrip()
+            code=code, name=sanitizer.quote_field(target['name']),
+            ident=target.clean_name).rstrip()
 
     def create_header(self, target: targets.Target):
         """Creates code between "class ...:" and "def __init__" """
@@ -118,7 +119,7 @@ class Parser:
         vars_init = self.parse_variables(target) + "\n\n"
         lists_init = self.parse_lists(target) + "\n"
 
-        init_code = info + costumes + sounds  + vars_init + lists_init
+        init_code = info + costumes + sounds + vars_init + lists_init
 
         return self.specmap.code('target_init').format(
             init_code=indent(init_code, "    "),
@@ -338,7 +339,7 @@ class Parser:
         # Get the value of the field
         value = block['fields'][name]
 
-        if name == 'BROADCAST_OPTION':
+        if name in ('BROADCAST_OPTION', 'BACKDROP'):
             return 'field', value[0]
 
         if name == 'VARIABLE':
@@ -459,15 +460,5 @@ class Parser:
 
     def create_footer(self):
         """Creates the code at the end to run the program"""
-        # Create a dict linking sprite names to their identifers
-        sprites = []
-        for name, identifier in self.targets.name_items():
-            sprites.append(sanitizer.quote_field(name) + ": " + identifier)
-        items = indent(',\n'.join(sprites), "    ")
-        sprites_code = self.specmap.code(
-            "sprites").format(items=items)
-
         # Create an if __name__ == '__main__' statement
-        main_code = self.specmap.code("main")
-
-        return sprites_code + "\n\n" + main_code
+        return "\n\n" + self.specmap.code("main")

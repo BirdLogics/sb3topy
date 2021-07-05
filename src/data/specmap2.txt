@@ -616,7 +616,8 @@ len({LIST})
 {LIST}.hide()
 
 #: code_class
-class {name}(Target):
+@sprite({name})
+class {ident}(Target):
 {code}
 
 #: code_var_init
@@ -671,7 +672,7 @@ def __init__(self, parent=None):
 import math
 import time
 import engine
-from engine import Target, on_event, warp
+from engine import Target, on_event, sprite, warp
 from engine.blockutil import *
 
 #: code_sprites
@@ -681,6 +682,6 @@ SPRITES = {{
 
 #: code_main
 if __name__ == '__main__':
-    engine.start_program(SPRITES)
+    engine.start_program()
 
 # This line is necesary
