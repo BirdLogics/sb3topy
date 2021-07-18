@@ -12,3 +12,4 @@ from .runtime import *
 from .target import *
 from .util import *
 from .variables import *
+from . import block_events as events

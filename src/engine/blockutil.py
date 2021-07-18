@@ -196,7 +196,7 @@ def tonum(value):
 def toint(value):
     """Attempts to floor a value to an int"""
     try:
-        return int(float(value))
+        return round(float(value))
     except ValueError:
         return 0
     except OverflowError:

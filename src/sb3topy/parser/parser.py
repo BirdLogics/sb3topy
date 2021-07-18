@@ -1,34 +1,7 @@
 """
 parser.py
 
-
-
-
-Target needs:
- global broadcasts
- global variables
- specmap
-
- variables
- hats
- target
-
-Methods:
- parse
- parse_target
-
- parse_broadcasts
-
- parse_costumes
- parse_sounds
- parse_variables
- parse_lists
- parse_customblocks
- parse_blocks
-
- parse_fields
- parse_inputs
- parse_inputs
+Orchestrates the job of parsing the project.json
 
 TODO Costume/Sound initializer indentation
 TODO Some literals are wrapped with a conversion
@@ -41,6 +14,7 @@ from textwrap import indent
 
 from .. import config
 from . import sanitizer, specmap, targets
+from .specmap import codemap
 from .variables import Variables
 
 
@@ -55,13 +29,12 @@ class Parser:
     target: targets.Target
 
     def __init__(self):
-        self.specmap = specmap.Specmap(config.SPECMAP_PATH)
         self.targets = targets.Targets()
 
     def parse(self, sb3):
         """Parses the sb3 and returns Python code"""
         logging.info("Compiling project...")
-        code = self.specmap.code("header") + "\n\n\n"
+        code = codemap.file_header() + "\n\n\n"
 
         # TODO Better pre parse
         for target in sb3['targets']:
@@ -72,7 +45,7 @@ class Parser:
             self.target = target
             code = code + self.parse_target(target) + "\n\n\n"
 
-        code = code + self.create_footer() + "\n"
+        code = code + "\n\n" + codemap.file_footer() + "\n"
 
         return code
 
@@ -80,162 +53,19 @@ class Parser:
         """Converts a sb3 target dict into the code for a Python class"""
 
         # Get property definitions, class description, etc.
-        header_code = self.create_header(target) + "\n\n"
+        header_code = codemap.create_header(target) + "\n\n"
 
         # Parse variables, lists, costumes, and sounds
-        init_code = self.create_init(target) + "\n\n"
+        init_code = codemap.create_init(target) + "\n\n"
 
         # Parse all blocks into code
         block_code = self.parse_blocks(target.blocks)
 
         # Indent init and block code
-        code = indent(header_code + init_code + block_code, "    ")
+        code = header_code + init_code + block_code
 
         # Return the final code for the class
-        return self.specmap.code("class").format(
-            code=code, name=sanitizer.quote_field(target['name']),
-            ident=target.clean_name).rstrip()
-
-    def create_header(self, target: targets.Target):
-        """Creates code between "class ...:" and "def __init__" """
-
-        comment = '"""Sprite ' + \
-            sanitizer.quote_string(target['name']).strip('"') + '"""'
-
-        return comment
-
-    def create_init(self, target):
-        """Creates Python __init__ code for a target dict"""
-        info = self.specmap.code('info').format(
-            xpos=target.get('x', 0),
-            ypos=target.get('y', 0),
-            direction=target.get('direction', 90),
-            visible=target.get('visible', True)
-        ) + "\n\n"
-
-        costumes = self.parse_costumes(target) + "\n\n"
-        sounds = self.parse_sounds(target) + "\n\n"
-
-        vars_init = self.parse_variables(target) + "\n\n"
-        lists_init = self.parse_lists(target) + "\n"
-
-        init_code = info + costumes + sounds + vars_init + lists_init
-
-        return self.specmap.code('target_init').format(
-            init_code=indent(init_code, "    "),
-            layer=int(target['layerOrder'])
-        ).rstrip()
-
-    def parse_costumes(self, target):
-        """Creates code to init costumes for a target"""
-        costumes = []
-        costume_code = self.specmap.code('costume')
-
-        # Create a dict str for each costume
-        for costume in target['costumes']:
-            name = sanitizer.quote_string(costume['name'])
-
-            # Validate the costume path
-            if not sanitizer.valid_md5ext(costume['md5ext']):
-                logging.error(
-                    "Invalid costume format or path '%s'", costume['md5ext'])
-                costumes.append("{'name': " + name + "}")
-                continue
-
-            # Create the costume dict
-            costumes.append(costume_code.format(
-                name=name,
-                path=sanitizer.quote_string(costume['md5ext']),
-                center=(
-                    int(costume['rotationCenterX']),
-                    int(costume['rotationCenterY'])
-                ),
-                scale=costume['bitmapResolution']
-            ))
-
-        # Create the costumes list string
-        costumes = "[\n" + \
-            indent(',\n'.join(costumes), "    ") + "\n]"
-
-        return self.specmap.code('costumes_init').format(
-            costume=int(target['currentCostume']),
-            size=target.get('size', 100),
-            rotation=sanitizer.quote_string(target.get('rotationStyle')),
-            costumes=costumes
-        )
-
-    def parse_sounds(self, target):
-        """Creates code to init sounds for a target"""
-        sounds = []
-        sound_code = self.specmap['code_sound'].code
-
-        # Create a dict string for each sound
-        for sound in target['sounds']:
-            name = sanitizer.quote_string(sound['name'])
-
-            # Validate the sound path
-            if not sanitizer.valid_md5ext(sound['md5ext']):
-                logging.error(
-                    "Invalid sound format or path '%s'", sound['md5ext'])
-                sounds.append("{'name': " + name + "}")
-                continue
-
-            sounds.append(sound_code.format(
-                name=name,
-                path=sanitizer.quote_string(sound['md5ext'])
-            ))
-
-        # Create the sounds list string
-        sounds = "[\n" + indent(',\n'.join(sounds), "    ") + "\n]"
-
-        return self.specmap.code('sounds_init').format(
-            volume=int(target['volume']),
-            sounds=sounds
-        )
-
-    def parse_variables(self, target: targets.Target):
-        """Creates code to init variables for a target and clones"""
-        vars_init = []
-
-        init_code = self.specmap['code_var_init'].code
-
-        for var in target['variables'].values():
-            name = target.vars.get_local('var', var[0])
-            vars_init.append(init_code.format(
-                name=name,
-                value=sanitizer.quote_number(var[1])
-            ))
-
-        return '\n'.join(vars_init).rstrip()
-
-    def parse_lists(self, target):
-        """Creates code to init lists for a target and clones"""
-        list_init = []
-
-        init_code = self.specmap.code('list_init')
-
-        # Used for duplicate detection
-        lists = {}
-
-        for lst in target['lists'].values():
-            # Hack for duplicate lists
-            if lst[0] in lists and lists[lst[0]] and not lst[1]:
-                continue
-            lists[lst[0]] = lst[1]
-
-            # Validate list items
-            items = []
-            for value in lst[1]:
-                items.append(sanitizer.quote_number(value))
-
-            # Create code with
-            name = self.target.vars.get_local('list', lst[0])
-            list_init.append(init_code.format(
-                name=name,
-                items=indent("[" + ', '.join(items) + "]", "    ")
-            ) + "\n")
-
-        return "".join(list_init).rstrip()
+        return codemap.target_class(code, target['name'], target.clean_name)
 
     def parse_blocks(self, blocks):
         """Creates a function for each topLevel hat in self.target.blocks"""
@@ -268,13 +98,9 @@ class Parser:
 
     def parse_hat(self, blockid, block):
         """Gets the code if any, for a topLevel block"""
-        blockmap: specmap.BlockMap = self.specmap[block['opcode']]
 
         # Verify the block is a known hat
-        if blockmap is not None and blockmap.name:
-            block['inputs']['SUBSTACK'] = [2, block['next']]
-            block['next'] = None
-
+        if specmap.is_hat(block):
             stack = self.parse_stack(blockid)
             return stack[1]
 
@@ -284,7 +110,7 @@ class Parser:
                       blockid, block['opcode'])
         return ""
 
-    def parse_stack(self, blockid, prototype=None, parent_bm=None, is_stack=False):
+    def parse_stack(self, blockid, parent_block=None):
         """
         Parses a stack/input
         """
@@ -296,17 +122,14 @@ class Parser:
             # logging.debug("Parsing block '%s' with opcode '%s'",
             #               blockid, block['opcode'])
 
+            # Get the block's conversion map
+            # Also sets the target's procedure if necesary
+            blockmap = specmap.get_blockmap(block, self.target)
+
             # Get fields, used for blockmap switches
             fields = {}
             for name in block['fields']:
-                fields[name] = self.parse_field(block, name, prototype)
-
-            # Get the block's conversion map
-            blockmap = self.specmap.get(block, fields, self.target.prototypes)
-
-            # Get the prototype if there is one4
-            if blockmap.prototype is not None:
-                prototype = blockmap.prototype
+                fields[name] = self.parse_field(block, name)
 
             # Get inputs
             inputs = {}
@@ -314,13 +137,7 @@ class Parser:
                 inputs[name] = self.parse_input(block, name)
 
             # sanitize inputs and fields
-            args = self.parse_args(inputs, fields, blockmap, prototype)
-
-            # Get a name for functions
-            if blockmap.name:
-                args['NAME'] = self.target.events.name_hat(blockmap.name, args)
-                args['EVENT'] = sanitizer.quote_field(
-                    self.target.events.get_event(blockmap.name, args))
+            args = self.parse_args(inputs, fields, blockmap, block)
 
             # Create the code for the block
             code = code + blockmap.format(args) + "\n"
@@ -328,35 +145,25 @@ class Parser:
             # Get the next block
             block = self.target.blocks.get(block['next'])
 
-        code = code.strip()
-        if parent_bm and parent_bm.do_yield and is_stack and not (prototype and prototype.warp):
-            code = code + "\n" + self.specmap.code("yield") + "\n"
+        # If the parent block is a loop, yield
+        if parent_block and specmap.is_loop(parent_block) and \
+            blockmap.return_type == 'stack' and not \
+                (self.target.prototype and self.target.prototype.warp):
+            code = code + "\n" + codemap.yield_()
 
-        return blockmap.return_type, code
+        # At the end of a procedure definition,
+        # clear the target's prototype
+        if parent_block and specmap.is_procedure(parent_block):
+            self.target.prototype = None
 
-    def parse_field(self, block, name, prototype):
+        return blockmap.return_type, code.strip()
+
+    def parse_field(self, block, name):
         """Parses and sanitizes fields"""
         # Get the value of the field
         value = block['fields'][name]
 
-        if name in ('BROADCAST_OPTION', 'BACKDROP'):
-            return 'field', value[0]
-
-        if name == 'VARIABLE':
-            return 'field', self.target.vars.get_reference('var', value[0])
-
-        if name == 'PROPERTY':
-            return 'field', Variables.get_universal('var', value[0])
-
-        if name == 'LIST':
-            return 'field', self.target.vars.get_reference('list', value[0])
-
-        if block['opcode'] in (
-                'argument_reporter_string_number',
-                'argument_reporter_boolean'):
-            return 'field', prototype.get_arg(value[0])
-
-        return 'field', sanitizer.quote_field(value[0].lower())
+        return 'field', value[0]
 
     def parse_input(self, block, name):
         """
@@ -372,38 +179,28 @@ class Parser:
         # Get the value of the input
         value = block["inputs"][name]
 
-        # Handle possible block input
-        if value[0] == 1:
-            if isinstance(value[1], list):
-                # Wrapped value
-                value = value[1]
-            else:
-                # Wrapped block
-                value = [2, value[1]]
-        elif value[0] == 3:
-            # Block covering value
-            value = [2, value[1]]
-
-        # Handle a block input
-        if value[0] == 2:
+        # Handle a wrapped value
+        if value[0] == 1 and isinstance(value[1], list):
             value = value[1]
 
-            # Handle an empty block
+        # Handle a block input
+        # 1 wrapper with block, 2 block, 3 block over value
+        if value[0] in (1, 2, 3):
+            value = value[1]
+
+            # Empty block
             if value is None:
                 return 'value', None
 
+            # Verify not a variable
             if isinstance(value, str):
                 # Shadow block (dropdown)
                 if self.target.blocks[value]['shadow']:
                     return 'value', \
                         self.target.blocks[value]['fields'].popitem()[1][0]
 
-                # A block
+                # Just a block
                 return 'blockid', value
-
-        # 4-8 Number, 9-10 String, # 11 Broadcast
-        if 4 <= value[0] <= 11:
-            return 'value', value[1]
 
         # 12 Variable
         if value[0] == 12:
@@ -414,11 +211,14 @@ class Parser:
         if value[0] == 13:
             return "string", self.target.vars.get_reference('var', value[1]) + ".join()"
 
-        # Unkown
-        logging.error("Unexpected input type %i", value[0])
+        # Default to a literal
+        # 4-8 Number, 9-10 String, # 11 Broadcast
+        if not 4 <= value[0] <= 11:
+            logging.error("Unexpected input type %i", value[0])
+
         return 'value', value[1]
 
-    def parse_args(self, inputs, fields, blockmap, prototype):
+    def parse_args(self, inputs, fields, blockmap, block):
         """
         Ensures the input types match the blockmap
         The result is saved to parameters
@@ -435,30 +235,47 @@ class Parser:
 
             # Parse a stack
             if in_type == 'blockid':
-                in_type, value = self.parse_stack(
-                    value, prototype, blockmap, (out_type == 'stack'))
+                in_type, value = self.parse_stack(value, block)
 
-            # sanitize a value
+            # Sanitize a value
             if in_type == 'value':
                 value = sanitizer.cast_value(value, out_type)
 
-            # Quote an expected field
-            # If in_type is a field, it should already be sanitized
-            elif out_type == 'field' and in_type != 'field':
-                value = sanitizer.quote_field(value)
+            # Handle field inputs
+            elif in_type == 'field':
+                # Quote the field
+                if out_type == 'field':
+                    value = sanitizer.quote_field(value.lower())
+
+                # Create a hat identifier
+                elif out_type == 'hat_ident':
+                    value = self.target.events.name_hat(value, args)
+
+                # Get a procedure argument identifier
+                elif out_type == 'proc_arg':
+                    value = self.target.prototype.get_arg(value)
+
+                elif out_type == 'var':
+                    value = self.target.vars.get_reference('var', value)
+
+                elif out_type == 'list':
+                    value = self.target.vars.get_reference('list', value)
+
+                elif out_type == 'property':
+                    value = Variables.get_universal('var', value)
+
+                else:
+                    logging.error("Unkown field out_type '%s'", out_type)
+                    value = '0'
 
             # Add a runtime cast wrapper
             elif out_type != in_type:
                 value = sanitizer.cast_wrapper(value, out_type)
 
-            # Update the parsed input
-            if isinstance(value, tuple):
-                raise Exception()
+            # This shouldn't be possible
+            assert not isinstance(value, tuple)
+
+            # Update the parsed argument
             args[name] = value
 
         return args
-
-    def create_footer(self):
-        """Creates the code at the end to run the program"""
-        # Create an if __name__ == '__main__' statement
-        return "\n\n" + self.specmap.code("main")

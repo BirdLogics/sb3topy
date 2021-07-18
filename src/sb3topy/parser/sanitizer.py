@@ -144,8 +144,8 @@ def cast_wrapper(value, to_type):
     if to_type == 'int':
         return "toint(" + value + ")"
 
-    if to_type == 'intR':
-        return f"round(tonum({value}))"
+    # if to_type == 'intR':
+    #     return f"round(tonum({value}))"
 
     if to_type == 'float':
         return 'tonum(' + value + ")"
