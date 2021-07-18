@@ -4,6 +4,7 @@ variables.py
 Handles variable naming.
 
 TODO Variable type optimizations
+TODO Names such as 'x position' are marked as universals
 """
 
 import logging
@@ -316,8 +317,7 @@ class Variable:
             return
 
         if get_type(self.initial_value) == 'float' and (
-            self.is_changed or
-            'str' not in self.set_types and
+                self.is_changed or 'str' not in self.set_types and
                 'bool' not in self.set_types):
             self.guessed_type = 'float'
         else:

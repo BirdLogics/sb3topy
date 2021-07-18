@@ -54,7 +54,11 @@ class Util:
 
 
 class Timer:
-    """Handles a timer using time.monotonic"""
+    """
+    Handles a timer using time.monotonic
+
+    TODO Make timer like a property with __get__
+    """
 
     def __init__(self):
         self._timer = time.monotonic()

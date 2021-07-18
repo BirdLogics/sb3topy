@@ -52,4 +52,4 @@ DEBUG_JSON = _CONFIG.get('debug_json', True)
 SIG_DIGITS = 17
 
 # Disable variable type guessing
-DISABLE_TYPING = False
+DISABLE_TYPING = True

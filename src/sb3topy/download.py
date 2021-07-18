@@ -42,4 +42,4 @@ def asset_list(sb3_json):
 
 
 if __name__ == '__main__':
-    download("312305395", "test.zip")
+    download("339207237", "test.zip")
