@@ -10,9 +10,7 @@ TODO Smart variable type detection
 
 import json
 import logging
-from textwrap import indent
 
-from .. import config
 from . import sanitizer, specmap, targets
 from .specmap import codemap
 from .variables import Variables
@@ -309,63 +307,3 @@ class Parser:
         # Default to quoting
         logging.warning("Unkown field type '%s'", end_type)
         return sanitizer.quote_field(value)
-
-    def parse_args(self, args, blockmap, block):
-        """
-        Ensures the input types match the blockmap
-        The result is saved to parameters
-
-        ONLY input types of 'value' and 'field' are sanitized.
-        Everything else is given a runtime cast wrapper.
-        """
-
-        for name, out_type in blockmap.args.items():
-            # Get the current value and type
-            in_type, value = args.get(name, ('value', None))
-
-            # Parse a stack
-            if in_type == 'blockid':
-                in_type, value = self.parse_stack(value, block)
-
-            # Sanitize a value
-            if in_type == 'value':
-                value = sanitizer.cast_value(value, out_type)
-
-            # Handle field inputs
-            elif in_type == 'field':
-                # Quote the field
-                if out_type == 'field':
-                    value = sanitizer.quote_field(value.lower())
-
-                # Create a hat identifier
-                elif out_type == 'hat_ident':
-                    value = self.target.events.name_hat(value, args)
-
-                # Get a procedure argument identifier
-                elif out_type == 'proc_arg':
-                    value = self.target.prototype.get_arg(value)
-
-                elif out_type == 'var':
-                    value = self.target.vars.get_reference('var', value)
-
-                elif out_type == 'list':
-                    value = self.target.vars.get_reference('list', value)
-
-                elif out_type == 'property':
-                    value = Variables.get_universal('var', value)
-
-                else:
-                    logging.error("Unkown field out_type '%s'", out_type)
-                    value = '0'
-
-            # Add a runtime cast wrapper
-            elif out_type != in_type:
-                value = sanitizer.cast_wrapper(value, out_type)
-
-            # This shouldn't be possible
-            assert not isinstance(value, tuple)
-
-            # Update the parsed argument
-            args[name] = value
-
-        return args
