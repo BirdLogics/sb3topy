@@ -562,7 +562,7 @@ BLOCKS = {
     ),
 
     'sensing_keypressed': block(
-        'bool', 'field KEY_OPTION',
+        'bool', 'string KEY_OPTION',
         "util.inputs[{KEY_OPTION}]"
     ),
 
@@ -603,47 +603,47 @@ BLOCKS = {
 
     # TODO {OBJECT} Stage = _stage_
     'sensing_of': block(
-        'any', 'property PROPERTY, field OBJECT',
+        'any', 'property PROPERTY, string OBJECT',
         "util.sprites[{OBJECT}].{PROPERTY}"
     ),
 
     'sensing_x_position_of': block(
-        'float', 'field PROPERTY, field OBJECT',
+        'float', 'field PROPERTY, string OBJECT',
         "util.sprites[{OBJECT}].xpos"
     ),
 
     'sensing_y_position_of': block(
-        'float', 'field PROPERTY, field OBJECT',
+        'float', 'field PROPERTY, string OBJECT',
         "util.sprites[{OBJECT}].ypos"
     ),
 
     'sensing_direction_of': block(
-        'float', 'field PROPERTY, field OBJECT',
+        'float', 'field PROPERTY, string OBJECT',
         "util.sprites[{OBJECT}].direction"
     ),
 
     'sensing_costume_of': block(
-        'int', 'field PROPERTY, field OBJECT',
+        'int', 'field PROPERTY, string OBJECT',
         "util.sprites[{OBJECT}].costume.number"
     ),
 
     'sensing_costume_name_of': block(
-        'string', 'field PROPERTY, field OBJECT',
+        'string', 'field PROPERTY, string OBJECT',
         "util.sprites[{OBJECT}].costume.name"
     ),
 
     'sensing_size_of': block(
-        'int', 'field PROPERTY, field OBJECT',
+        'int', 'field PROPERTY, string OBJECT',
         "round(util.sprites[{OBJECT}].costume.size)"
     ),
 
     'sensing_volume_of': block(
-        'float', 'field PROPERTY, field OBJECT',
+        'float', 'field PROPERTY, string OBJECT',
         "util.sprites[{OBJECT}].volume"
     ),
 
     'sensing_backdrop_of': block(
-        'int', 'field PROPERTY, field OBJECT',
+        'int', 'field PROPERTY, string OBJECT',
         "round(util.sprites[{OBJECT}].costume.number)"
     ),
 
@@ -867,33 +867,33 @@ BLOCKS = {
     ),
 
     'data_variable': block(
-        'any', 'var VARIABLE',
+        'any', 'variable VARIABLE',
         "{VARIABLE}"
     ),
 
     'data_setvariableto': block(
-        'stack', 'var VARIABLE, any VALUE',
+        'stack', 'variable VARIABLE, any VALUE',
         "{VARIABLE} = {VALUE}"
     ),
 
     'data_changevariableby': block(
-        'stack', 'var VARIABLE, float VALUE',
+        'stack', 'variable VARIABLE, float VALUE',
         "{VARIABLE} = tonum({VARIABLE}) + {VALUE}"
     ),
 
     'data_showvariable': block(
-        'stack', 'var VARIABLE',
+        'stack', 'variable VARIABLE',
         "print({VARIABLE})"
     ),
 
     'data_hidevariable': block(
-        'stack', 'var VARIABLE',
+        'stack', 'variable VARIABLE',
         "pass # hide variable"
     ),
 
     'data_listcontents': block(
         'string', 'list LIST',
-        "str({LIST})"
+        "{LIST}.join()"
     ),
 
     'data_addtolist': block(
@@ -952,6 +952,6 @@ BLOCKS = {
     ),
 
     'default': block(
-        'value', '', '0'
+        'literal', '', '0'
     )
 }

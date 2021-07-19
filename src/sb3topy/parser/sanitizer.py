@@ -114,43 +114,70 @@ def strip_pcodes(text):
     )
 
 
-def cast_value(value, to_type):
+def cast_literal(value, to_type):
     """
     Casts a value to a type
     Always returns a string
     """
+    # Quote a string
     if to_type == "string":
         return quote_string(value)
 
+    # Try to cast a float
     if to_type == "float":
         return str(cast_number(value))
 
+    # Try to cast and round an int
     if to_type == "int":
         return str(round(cast_number(value)))
 
+    # Get the bool value
     if to_type == "bool":
         return str(bool(value))
 
+    # Get either a number or string
+    if to_type == 'any':
+        return str(quote_number(value))
+
+    # Default behavior
+    logging.warning("Unkown literal type '%s'", to_type)
     if value in (True, False, None):
         return str(value)
     return str(quote_number(value))
 
 
-def cast_wrapper(value, to_type):
+def cast_wrapper(value, from_type, to_type):
     """Puts a runtime cast wrapper around code"""
+    # Don't cast any type
+    if to_type == 'any':
+        logging.debug("Did not cast wrap '%s' to any", from_type)
+        return value
+
+    # Don't cast if both types are the same
+    if to_type == from_type:
+        logging.debug("Did not cast wrap '%s' to '%s'", from_type, to_type)
+        return value
+
+    # Cast wrapper for strings
     if to_type == 'string':
         return "str(" + value + ")"
 
+    # Cast wrapper for ints
     if to_type == 'int':
         return "toint(" + value + ")"
 
-    # if to_type == 'intR':
-    #     return f"round(tonum({value}))"
-
+    # Cast wrapper for floats
     if to_type == 'float':
         return 'tonum(' + value + ")"
 
-    # Ignore bool, any
+    if to_type == 'stack' and from_type == 'none':
+        return 'pass'
+    
+    if to_type == 'bool' and from_type == 'none':
+        return 'False'
+
+    logging.warning("Unknown cast wrap for '%s' to '%s'", from_type, to_type)
+
     return value
 
 

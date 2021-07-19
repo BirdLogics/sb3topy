@@ -133,7 +133,7 @@ def proc_call(block, target):
         argid): value for argid, value in block['inputs'].items()}
 
     # Get the argument list for the block
-    args = {clean_name: 'value' for clean_name in prototype.args.values()}
+    args = {clean_name: 'any' for clean_name in prototype.args.values()}
 
     # Create arg code formatted by the BlockMap
     # Eg. {input1}, {input2}, ...

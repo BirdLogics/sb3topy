@@ -22,7 +22,7 @@ class BlockMap(Block):
         for key in self.args:
             # Get the argument from kwargs
             arg = kwargs[key]
-            assert isinstance(arg, str)
+            assert isinstance(arg, str), "Improperly parsed block arg"
 
             # Indent it if necesary
             indent = self.indents.get(key)

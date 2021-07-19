@@ -126,21 +126,23 @@ class Parser:
             # Also sets the target's procedure if necesary
             blockmap = specmap.get_blockmap(block, self.target)
 
-            # Get fields, used for blockmap switches
-            fields = {}
+            # Get fields
+            args = {}
             for name in block['fields']:
-                fields[name] = self.parse_field(block, name)
+                args[name] = 'field', block['fields'][name][0]
 
             # Get inputs
-            inputs = {}
             for name in block['inputs']:
-                inputs[name] = self.parse_input(block, name)
+                args[name] = self.parse_input(block, name)
 
-            # sanitize inputs and fields
-            args = self.parse_args(inputs, fields, blockmap, block)
+            # Parse each argument using the blockmap
+            clean_args = {}
+            for name, end_type in blockmap.args.items():
+                clean_args[name] = self.parse_arg(name, args, end_type, block)
+                assert isinstance(clean_args[name], str)
 
             # Create the code for the block
-            code = code + blockmap.format(args) + "\n"
+            code = code + blockmap.format(clean_args) + "\n"
 
             # Get the next block
             block = self.target.blocks.get(block['next'])
@@ -158,21 +160,14 @@ class Parser:
 
         return blockmap.return_type, code.strip()
 
-    def parse_field(self, block, name):
-        """Parses and sanitizes fields"""
-        # Get the value of the field
-        value = block['fields'][name]
-
-        return 'field', value[0]
-
     def parse_input(self, block, name):
         """
         Parses an input and returns (type, value)
 
         The type may be:
-         value - A value which needs to be sanitized
+         literal - A literal value which needs to be sanitized
          blockid - A blockid which needs to be parsed
-         any - A parsed block which needs a cast wrapper
+         block - A parsed block of unkown type
          string - A parsed block which returns a str
         """
 
@@ -190,13 +185,13 @@ class Parser:
 
             # Empty block
             if value is None:
-                return 'value', None
+                return 'none', None
 
             # Verify not a variable
             if isinstance(value, str):
                 # Shadow block (dropdown)
                 if self.target.blocks[value]['shadow']:
-                    return 'value', \
+                    return 'literal', \
                         self.target.blocks[value]['fields'].popitem()[1][0]
 
                 # Just a block
@@ -204,21 +199,118 @@ class Parser:
 
         # 12 Variable
         if value[0] == 12:
-            return self.target.vars.get_type('var', value[1]), \
-                self.target.vars.get_reference('var', value[1])
+            return 'variable', value[1]
 
         # 13 List
         if value[0] == 13:
-            return "string", self.target.vars.get_reference('var', value[1]) + ".join()"
+            return 'list_reporter', value[1]
 
         # Default to a literal
         # 4-8 Number, 9-10 String, # 11 Broadcast
         if not 4 <= value[0] <= 11:
             logging.error("Unexpected input type %i", value[0])
 
-        return 'value', value[1]
+        return 'literal', value[1]
 
-    def parse_args(self, inputs, fields, blockmap, block):
+    def parse_arg(self, name, args, end_type, block):
+        """
+        Ensures the type of an input matches
+        the type expected by the blockmap.
+
+        start_type is the type of value
+        end_type is the type expected by the blockmap
+
+        If start_type is blockid, variable, or list_reporter,
+        the value will be parsed and a new type generated.
+
+        start_type will then be 'field', 'literal', or the type of a block.
+
+        Fields can contain many values, such as the name of a
+        variable. They are parsed by the parse_field function.
+
+        Literals are forcibly casted to mach the end_type.
+
+        Blocks are casted at runtime. Depending on the
+        type, a wrapper may be placed around the block.
+        """
+
+        # Get the unparsed value and type from args
+        start_type, value = args.get(name, ('none', None))
+
+        # An unparsed block
+        if start_type == 'blockid':
+            start_type, value = self.parse_stack(value, block)
+
+        # A variable reporter
+        elif start_type == 'variable':
+            start_type = self.target.vars.get_type('var', value)
+            value = self.target.vars.get_reference('var', value)
+
+        # A list reporter
+        elif start_type == 'list_reporter':
+            start_type = 'block'
+            value = self.target.vars.get_reference('var', value) + '.join()'
+
+        # Directly cast a literal
+        if start_type == 'literal':
+            return sanitizer.cast_literal(value, end_type)
+
+        # Fields take special parsing
+        if start_type == 'field':
+            return self.parse_field(value, end_type, args)
+
+        # Put a runtime cast wrapper around a block
+        return sanitizer.cast_wrapper(value, start_type, end_type)
+
+    def parse_field(self, value, end_type, args):
+        """
+        Parses a field depending on the value of end_type.
+
+        If end_type is 'field', the value will be lowered and quoted.
+
+        If end_type is 'variable', the value will
+        be converted into a variable identifier.
+
+        If end_type is 'list', the value will
+        be converted into a list identifier.
+
+        If end_type is 'property', the value will
+        be converted into a universal identifier.
+
+        If end_type is 'hat_ident', the value will
+        be converted into a functon identifier.
+
+        Otherwise, the value will be quoted and a warning shown.
+        """
+        # Quote and lower a field
+        if end_type == 'field':
+            return sanitizer.quote_field(value.lower())
+
+        # Get a variable identifier
+        if end_type == 'variable':
+            return self.target.vars.get_reference('var', value)
+
+        # Get a list identifier
+        if end_type == 'list':
+            return self.target.vars.get_reference('list', value)
+
+        # Get a universal variable identifier
+        if end_type == 'property':
+            return Variables.get_universal('var', value)
+
+        # Create a hat identifier
+        if end_type == 'hat_ident':
+            return self.target.events.name_hat(value, args)
+
+        # Get a procedure argument identifier
+        if end_type == 'proc_arg':
+            return self.target.prototype.get_arg(value)
+
+        # Default to quoting
+        logging.warning("Unkown field type '%s'", end_type)
+        return sanitizer.quote_field(value)
+
+    def parse_args(self, args, blockmap, block):
         """
         Ensures the input types match the blockmap
         The result is saved to parameters
@@ -226,8 +318,6 @@ class Parser:
         ONLY input types of 'value' and 'field' are sanitized.
         Everything else is given a runtime cast wrapper.
         """
-
-        args = {**fields, **inputs}
 
         for name, out_type in blockmap.args.items():
             # Get the current value and type
