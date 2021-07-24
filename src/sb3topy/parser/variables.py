@@ -240,8 +240,12 @@ class Variables:
             variable.guess_type()
 
 
+# TODO Proper type detection
 def get_type(value):
     """Attempts to determine the type of a value"""
+
+    if str(value).isdigit() and len(str(value)) < config.SIG_DIGITS:
+        return 'int'
     if str(sanitizer.cast_number(value)) == str(value) and \
             len(str(value).partition('.')[2]) < config.SIG_DIGITS:
         return 'float'
