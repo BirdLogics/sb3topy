@@ -26,7 +26,7 @@ def file_header():
         "import math\n"
         "import time\n\n"
         "import engine\n"
-        "from engine import Target, on_event, sprite, warp\n"
+        "from engine import List, Target, on_event, sprite, warp\n"
         "from engine.block_events import *\n"
         "from engine.blockutil import *"
     )
@@ -120,7 +120,8 @@ def parse_costumes(target):
                 int(costume['rotationCenterX']),
                 int(costume['rotationCenterY'])
             ),
-            scale=int(costume['bitmapResolution'])
+            # TODO Missing bitmapResolution caused by unpacker?
+            scale=int(costume.get('bitmapResolution', 2))
         ))
 
     # Create the costumes list string

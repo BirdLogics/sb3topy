@@ -24,7 +24,7 @@ from pygame.sprite import DirtySprite
 
 from . import config
 from .assets import Costumes, Sounds
-from .blockutil import List
+from .lists import List
 from .pen import Pen
 
 
