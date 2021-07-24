@@ -121,7 +121,7 @@ class Inputs:
         # Check for a clicked sprite
         point = event.pos
         for sprite in sprites.sprites():
-            if not sprite.visible:
+            if not sprite.visible or sprite.target.costume.effects.get('ghost') == 100:
                 continue
             offset = sprite.rect.topleft
             offset = (point[0] - offset[0], point[1] - offset[1])
