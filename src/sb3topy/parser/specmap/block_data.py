@@ -85,7 +85,7 @@ BLOCKS = {
     ),
 
     'motion_pointtowards': block(
-        'stack', 'string TOWARDS',
+        'stack', 'str TOWARDS',
         "self.point_towards(util, {TOWARDS})"
     ),
 
@@ -105,7 +105,7 @@ BLOCKS = {
     ),
 
     'motion_glideto': block(
-        'stack', 'string TO',
+        'stack', 'str TO',
         "self.glideto(util, {TO})"
     ),
 
@@ -134,7 +134,7 @@ BLOCKS = {
     ),
 
     'motion_setrotationstyle': block(
-        'stack', 'string STYLE',
+        'stack', 'str STYLE',
         "self.costume.rotation_style = {STYLE}"
     ),
 
@@ -155,22 +155,22 @@ BLOCKS = {
 
     # Looks blocks
     'looks_sayforsecs': block(
-        'stack', 'string MESSAGE, float SECS',
+        'stack', 'str MESSAGE, float SECS',
         "pass # looks_sayforsecs({MESSAGE}, {SECS})"
     ),
 
     'looks_say': block(
-        'stack', 'string MESSAGE',
+        'stack', 'str MESSAGE',
         "pass # looks_say({MESSAGE})"
     ),
 
     'looks_thinkforsecs': block(
-        'stack', 'string MESSAGE, float SECS',
+        'stack', 'str MESSAGE, float SECS',
         "pass # looks_thinkforsecs({MESSAGE}, {SECS})"
     ),
 
     'looks_think': block(
-        'stack', 'string MESSAGE',
+        'stack', 'str MESSAGE',
         "pass # looks_think({MESSAGE})"
     ),
 
@@ -242,7 +242,7 @@ BLOCKS = {
     ),
 
     # 'looks_gotofrontback': block(
-    #       'stack', 'string FRONT_BACK',
+    #       'stack', 'str FRONT_BACK',
     #       "#? looks_goto_{FRONT_BACK}"
     #       ),
 
@@ -283,7 +283,7 @@ BLOCKS = {
     ),
 
     'looks_costume_name': block(
-        'string', '',
+        'str', '',
         "self.costume.name"
     ),
 
@@ -298,7 +298,7 @@ BLOCKS = {
     ),
 
     'looks_backdrop_name': block(
-        'string', '',
+        'str', '',
         "util.sprites.stage.costume.name"
     ),
 
@@ -380,12 +380,12 @@ BLOCKS = {
     ),
 
     'pen_changePenColorParamBy': block(
-        'stack', 'string COLOR_PARAM, float VALUE',
+        'stack', 'str COLOR_PARAM, float VALUE',
         "self.pen.change_color({COLOR_PARAM}, {VALUE})"
     ),
 
     'pen_setPenColorParamTo': block(
-        'stack', 'string COLOR_PARAM, float VALUE',
+        'stack', 'str COLOR_PARAM, float VALUE',
         "self.pen.set_color({COLOR_PARAM}, {VALUE})"
     ),
 
@@ -452,12 +452,12 @@ BLOCKS = {
     ),
 
     'event_broadcast': block(
-        'stack', 'string BROADCAST_INPUT',
+        'stack', 'str BROADCAST_INPUT',
         "util.send_broadcast({BROADCAST_INPUT})"
     ),
 
     'event_broadcastandwait': block(
-        'stack', 'string BROADCAST_INPUT',
+        'stack', 'str BROADCAST_INPUT',
         "await util.send_broadcast({BROADCAST_INPUT})"
     ),
 
@@ -519,7 +519,7 @@ BLOCKS = {
     ),
 
     'control_create_clone_of': block(
-        'stack', 'string CLONE_OPTION',
+        'stack', 'str CLONE_OPTION',
         "self.create_clone_of(util, {CLONE_OPTION})"
     ),
 
@@ -552,7 +552,7 @@ BLOCKS = {
 
     # TODO sensing_askandwait
     'sensing_askandwait': block(
-        'stack', 'string QUESTION',
+        'stack', 'str QUESTION',
         "answer = input({QUESTION})"
     ),
 
@@ -562,7 +562,7 @@ BLOCKS = {
     ),
 
     'sensing_keypressed': block(
-        'bool', 'string KEY_OPTION',
+        'bool', 'str KEY_OPTION',
         "util.inputs[{KEY_OPTION}]"
     ),
 
@@ -603,52 +603,52 @@ BLOCKS = {
 
     # TODO {OBJECT} Stage = _stage_
     'sensing_of': block(
-        'any', 'property PROPERTY, string OBJECT',
+        'any', 'property PROPERTY, str OBJECT',
         "util.sprites[{OBJECT}].{PROPERTY}"
     ),
 
     'sensing_x_position_of': block(
-        'float', 'field PROPERTY, string OBJECT',
+        'float', 'field PROPERTY, str OBJECT',
         "util.sprites[{OBJECT}].xpos"
     ),
 
     'sensing_y_position_of': block(
-        'float', 'field PROPERTY, string OBJECT',
+        'float', 'field PROPERTY, str OBJECT',
         "util.sprites[{OBJECT}].ypos"
     ),
 
     'sensing_direction_of': block(
-        'float', 'field PROPERTY, string OBJECT',
+        'float', 'field PROPERTY, str OBJECT',
         "util.sprites[{OBJECT}].direction"
     ),
 
     'sensing_costume_of': block(
-        'int', 'field PROPERTY, string OBJECT',
+        'int', 'field PROPERTY, str OBJECT',
         "util.sprites[{OBJECT}].costume.number"
     ),
 
     'sensing_costume_name_of': block(
-        'string', 'field PROPERTY, string OBJECT',
+        'str', 'field PROPERTY, str OBJECT',
         "util.sprites[{OBJECT}].costume.name"
     ),
 
     'sensing_size_of': block(
-        'int', 'field PROPERTY, string OBJECT',
+        'int', 'field PROPERTY, str OBJECT',
         "round(util.sprites[{OBJECT}].costume.size)"
     ),
 
     'sensing_volume_of': block(
-        'float', 'field PROPERTY, string OBJECT',
+        'float', 'field PROPERTY, str OBJECT',
         "util.sprites[{OBJECT}].volume"
     ),
 
     'sensing_backdrop_of': block(
-        'int', 'field PROPERTY, string OBJECT',
+        'int', 'field PROPERTY, str OBJECT',
         "round(util.sprites[{OBJECT}].costume.number)"
     ),
 
     'sensing_backdrop_name_of': block(
-        'string', 'field PROPERTY, field OBJECT',
+        'str', 'field PROPERTY, field OBJECT',
         "util.sprites[{OBJECT}].costume.name"
     ),
 
@@ -699,7 +699,7 @@ BLOCKS = {
     ),
 
     'sensing_username': block(
-        'string', '',
+        'str', '',
         "config.USERNAME"
     ),
 
@@ -760,22 +760,22 @@ BLOCKS = {
     ),
 
     'operator_join': block(
-        'string', 'string STRING1, string STRING2',
+        'str', 'str STRING1, str STRING2',
         "({STRING1} + {STRING2})"
     ),
 
     'operator_letter_of': block(
-        'string', 'int LETTER, string STRING',
+        'str', 'int LETTER, str STRING',
         "letter_of({STRING}, {LETTER})"
     ),
 
     'operator_length': block(
-        'int', 'string STRING',
+        'int', 'str STRING',
         "len({STRING})"
     ),
 
     'operator_contains': block(
-        'bool', 'string STRING1, string STRING2',
+        'bool', 'str STRING1, str STRING2',
         "({STRING2} in {STRING1})"
     ),
 
@@ -790,7 +790,7 @@ BLOCKS = {
     ),
 
     'operator_mathop': block(
-        'float', 'string OPERATOR, float NUM',
+        'float', 'str OPERATOR, float NUM',
         "#? operator_mathop_{OPERATOR}"
     ),
 
@@ -892,7 +892,7 @@ BLOCKS = {
     ),
 
     'data_listcontents': block(
-        'string', 'list LIST',
+        'str', 'list LIST',
         "{LIST}.join()"
     ),
 

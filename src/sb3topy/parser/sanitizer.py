@@ -120,7 +120,7 @@ def cast_literal(value, to_type):
     Always returns a string
     """
     # Quote a string
-    if to_type == "string":
+    if to_type == "str":
         return quote_string(value)
 
     # Try to cast a float
@@ -148,18 +148,22 @@ def cast_literal(value, to_type):
 
 def cast_wrapper(value, from_type, to_type):
     """Puts a runtime cast wrapper around code"""
+
+    # assert from_type in ('any', 'stack', 'int', 'float', 'str', 'bool', 'none')
+    # assert to_type in ('any', 'stack', 'int', 'float', 'str', 'bool', 'none')
+
     # Don't cast any type
     if to_type == 'any':
-        logging.debug("Did not cast wrap '%s' to any", from_type)
+        # logging.debug("Did not cast wrap '%s' to any", from_type)
         return value
 
     # Don't cast if both types are the same
     if to_type == from_type:
-        logging.debug("Did not cast wrap '%s' to '%s'", from_type, to_type)
+        # logging.debug("Did not cast wrap '%s' to '%s'", from_type, to_type)
         return value
 
     # Cast wrapper for strings
-    if to_type == 'string':
+    if to_type == 'str':
         return "str(" + value + ")"
 
     # Cast wrapper for ints
@@ -170,9 +174,11 @@ def cast_wrapper(value, from_type, to_type):
     if to_type == 'float':
         return 'tonum(' + value + ")"
 
+    # Handle blank stacks
     if to_type == 'stack' and from_type == 'none':
         return 'pass'
-    
+
+    # Handle blank bool inputs
     if to_type == 'bool' and from_type == 'none':
         return 'False'
 

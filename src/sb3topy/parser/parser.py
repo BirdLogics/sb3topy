@@ -32,12 +32,46 @@ class Parser:
     def parse(self, sb3):
         """Parses the sb3 and returns Python code"""
         logging.info("Compiling project...")
-        code = codemap.file_header() + "\n\n\n"
 
-        # TODO Better pre parse
-        for target in sb3['targets']:
-            self.targets.add_target(target)
-        self.targets.parse_variables()
+        # Run the first parsing pass
+        self.first_pass(sb3)
+
+        # Run the second parsing pass
+        self.second_pass()
+
+        # Run the final parsing pass
+        return self.third_pass()
+
+    def first_pass(self, sb3):
+        """
+        Runs the first pass of the parser.
+        The first pass creates classes for targets and prototypes,
+        and marks universal variable used in sensing_of.
+        """
+
+        # Create a class for each target
+        self.targets.add_targets(sb3['targets'])
+
+        # Have each target run a first pass
+        for target in self.targets:
+            target.first_pass()
+
+    def second_pass(self):
+        """
+        Runs the second pass of the parser.
+        The second pass creates classes for each Variable and
+        runs type guessing for variables and procedure arguments
+        """
+
+        for target in self.targets:
+            target.second_pass()
+
+    def third_pass(self):
+        """
+        Runs the third pass of the parser.
+        This pass actually creates the Python code for the project.
+        """
+        code = codemap.file_header() + "\n\n\n"
 
         for target in self.targets:
             self.target = target
@@ -57,7 +91,7 @@ class Parser:
         init_code = codemap.create_init(target) + "\n\n"
 
         # Parse all blocks into code
-        block_code = self.parse_blocks(target.blocks)
+        block_code = self.parse_blocks()
 
         # Indent init and block code
         code = header_code + init_code + block_code
@@ -65,34 +99,14 @@ class Parser:
         # Return the final code for the class
         return codemap.target_class(code, target['name'], target.clean_name)
 
-    def parse_blocks(self, blocks):
+    def parse_blocks(self):
         """Creates a function for each topLevel hat in self.target.blocks"""
-        # Preparse custom block mutations
-        for blockid, block in blocks.items():
-            if isinstance(block, dict) and \
-                    block['opcode'] == "procedures_prototype":
-                self.parse_prototype(block, blockid)
-
         # Parse all topLevel blocks into code
-        code = ""
-        for blockid, block in blocks.items():
-            if isinstance(block, dict) and block.get('topLevel'):
-                assert blockid in self.target.blocks
-                code = code + self.parse_hat(blockid, block) + "\n\n"
+        code = []
+        for blockid, block in self.target.hats:
+            code.append(self.parse_hat(blockid, block))
 
-        return code.rstrip()
-
-    def parse_prototype(self, block, blockid):
-        """Preparses custom blocks"""
-        mutation = block['mutation']
-
-        proccode = mutation['proccode']
-        warp = mutation['warp'] in (True, 'true')
-        arg_ids = json.loads(mutation['argumentids'])
-        arg_names = json.loads(mutation['argumentnames'])
-
-        self.target.prototypes.add_prototype(
-            blockid, proccode, warp, zip(arg_ids, arg_names))
+        return '\n\n'.join(code)
 
     def parse_hat(self, blockid, block):
         """Gets the code if any, for a topLevel block"""
@@ -294,7 +308,7 @@ class Parser:
 
         # Get a universal variable identifier
         if end_type == 'property':
-            return Variables.get_universal('var', value)
+            return Variables.get_universal(value)
 
         # Create a hat identifier
         if end_type == 'hat_ident':

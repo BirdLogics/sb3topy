@@ -30,7 +30,7 @@ class Variables:
     global_vars: Identifiers = None
     universal_vars: Identifiers = None
 
-    def __init__(self, target, is_stage=False):
+    def __init__(self, is_stage):
         # Initialize class attributes
         if self.global_vars is None:
             Variables.global_vars = Identifiers()
@@ -41,19 +41,24 @@ class Variables:
         else:
             self.local_vars = Identifiers()
 
-        logging.debug("Variable preparse for target '%s'", target['name'])
+    def second_pass(self, target):
+        """
+        Parses the variables in a target
 
-        # Save variable names used in sensing_of
-        for block in target['blocks'].values():
-            # Skip unused variable reporters
-            if not isinstance(block, dict):
-                continue
+        Should not be called until a Variables
+        instance has been created for every target
+        """
 
-            # Variables used in sensing_of should have
-            # a consistent clean name across sprites
-            if block['opcode'] == 'sensing_of':
-                name = block['fields']['PROPERTY'][0]
-                self.mark_universal('var', name)
+        # Update universal names
+        self.local_vars.set.update(self.universal_vars.set)
+
+        # Read variables
+        for name, value in target['variables'].values():
+            self.create_local("var", name, value)
+
+        # Read lists
+        for name, _ in target['lists'].values():
+            self.create_local('list', name)
 
     def get_reference(self, prefix, name):
         """
@@ -139,7 +144,7 @@ class Variables:
         logging.warning("Unregistered var '%s'", name)
 
         # Create a new local variable
-        return self.create_local(prefix, name).clean_name
+        return self.create_local(prefix, name)
 
     def create_local(self, prefix, name, value=None):
         """Creates a safe identifier name"""
@@ -179,11 +184,11 @@ class Variables:
         return self.local_vars.dict[name]
 
     @classmethod
-    def mark_universal(cls, prefix, name):
+    def mark_universal(cls, name):
         """Saves a name as a universal identifier"""
         # Ensure the name starts with the prefix
-        if not name.startswith(prefix):
-            name = prefix + '_' + name
+        if not name.startswith('var'):
+            name = 'var' + '_' + name
 
         # Verify the name isn't already marked
         if name in cls.universal_vars.dict:
@@ -198,66 +203,41 @@ class Variables:
         # Save the identifier for future use
         cls.universal_vars.dict[name] = ident
 
-        logging.debug("Creating universal var '%s' as '%s'", name, ident)
+        logging.debug("Created universal var '%s' as '%s'", name, ident)
 
         return ident
 
     @classmethod
-    def get_universal(cls, prefix, name):
+    def get_universal(cls, name):
         """Gets a universal identifier from a name"""
         # Ensure the name starts with the prefix
-        if not name.startswith(prefix):
-            name = prefix + '_' + name
+        if not name.startswith('var'):
+            name = 'var_' + name
 
         # Get the universal identifier
         ident = cls.universal_vars.dict.get(name)
 
         if ident is None:
             logging.error("Unmarked universal var '%s'", name)
-            ident = cls.mark_universal(prefix, name)
+            ident = cls.mark_universal(name)
 
         return ident
 
-    def parse(self, target):
-        """
-        Parses the variables in a target
+    def mark_set(self, block):
+        """Parses a data_setvariableto block for type guessing"""
+        if config.VAR_TYPES:
+            self.get_var('var', block['fields']['VARIABLE'][0]).mark_set(
+                block['inputs']['VALUE'])
 
-        Should not be called until a Variables
-        instance has been created for every target
-        """
+    def mark_changed(self, block):
+        """Parses a data_changevariableby block for type guessing """
+        if config.VAR_TYPES:
+            self.get_var('var', block['fields']['VARIABLE'][0]).mark_changed()
 
-        # Update universal names
-        self.local_vars.set.update(self.universal_vars.set)
-
-        # Read variables
-        for name, value in target['variables'].values():
-            self.create_local("var", name, value)
-
-        # Read lists
-        for name, _ in target['lists'].values():
-            self.create_local('list', name)
-
-        # Assign types to each variable
-        self.guess_types(target.blocks)
-
-    def guess_types(self, blocks):
-        """Attempts to assign variable types"""
-        for block in blocks.values():
-            # Skip reporters not in a block
-            if not isinstance(block, dict):
-                continue
-
-            if block['opcode'] == 'data_setvariableto':
-                # Note, if a variable isn't created, may cause issues
-                self.get_var('var', block['fields']['VARIABLE'][0]).mark_set(
-                    block['inputs']['VALUE'])
-
-            elif block['opcode'] == 'data_changevariableby':
-                self.get_var('var', block['fields']
-                             ['VARIABLE'][0]).mark_changed()
-
-        for var in self.local_vars.dict.values():
-            var.guess_type()
+    def guess_types(self):
+        """Guesses the type of all variables"""
+        for variable in self.local_vars.dict.values():
+            variable.guess_type()
 
 
 def get_type(value):
@@ -281,7 +261,7 @@ class Variable:
         self.is_changed = False
         self.set_types = set()
         self.set_values = set()
-        self.guessed_type = None
+        self.guessed_type = 'any'
 
     def mark_set(self, value):
         """Saves the type of the variable"""
@@ -310,12 +290,6 @@ class Variable:
 
     def guess_type(self):
         """Guesses the type"""
-        # Asserts are here just to give a better
-        # idea of how to process the data
-        if config.DISABLE_TYPING:
-            self.guessed_type = 'any'
-            return
-
         if get_type(self.initial_value) == 'float' and (
                 self.is_changed or 'str' not in self.set_types and
                 'bool' not in self.set_types):

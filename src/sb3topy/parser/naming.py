@@ -9,6 +9,7 @@ prototypes (custom blocks)
 """
 
 import itertools
+import json
 import logging
 from time import monotonic_ns
 
@@ -268,16 +269,22 @@ class Prototypes:
         self.prototypes = {}
         self.prototypes_id = {}
 
-    def add_prototype(self, blockid, proccode, warp, args):
+    def add_prototype(self, mutation, blockid):
         """Names, saves, and returns a prototype"""
+        # Get information from the block
+        proccode = mutation['proccode']
+        warp = mutation['warp'] in (True, 'true')
+        arg_ids = json.loads(mutation['argumentids'])
+        arg_names = json.loads(mutation['argumentnames'])
+
         # Get a clean prototype name
         cb_name = self.events.clean_event(
             "my_{name}", {'name': sanitizer.strip_pcodes(proccode)})
 
         # Get clean argument names
-        arg_names = Identifiers()
-        arg_ids = {}
-        for id_, arg_name in args:
+        clean_names = Identifiers()
+        clean_names_id = {}
+        for id_, arg_name in zip(arg_ids, arg_names):
             # Prefix the argument name
             if not arg_name.startswith('arg'):
                 new_name = "arg_" + arg_name
@@ -288,16 +295,17 @@ class Prototypes:
             new_name = sanitizer.clean_identifier(new_name)
 
             # Ensure the name is unique
-            new_name = arg_names.number(new_name)
+            new_name = clean_names.number(new_name)
 
             # Save the name by original name
-            arg_names.dict[arg_name] = new_name
+            clean_names.dict[arg_name] = new_name
 
             # Save the name by arg id
-            arg_ids[id_] = new_name
+            clean_names_id[id_] = new_name
 
         # Create the protype tuple
-        prototype = Prototype(cb_name, bool(warp), arg_names.dict, arg_ids)
+        prototype = Prototype(cb_name, bool(
+            warp), clean_names.dict, clean_names_id)
 
         # Save the tuple by proccode and blockid
         self.prototypes[proccode] = prototype

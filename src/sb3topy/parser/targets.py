@@ -5,7 +5,10 @@ Handles targets
 
 """
 
-from . import naming
+import logging
+
+from .. import config
+from . import naming, specmap
 from .variables import Variables
 
 
@@ -21,18 +24,14 @@ class Targets:
         self.names = naming.Sprites()
         self.targets: dict[str, Target] = {}
 
-    def add_target(self, target):
-        """Adds a target from a target dict"""
-        name = self.names.create_identifier(target['name'])
-        target = Target(target, name)
-
-        self.targets[target['name']] = target
-        return target
-
-    def parse_variables(self):
-        """Preparses variables for each target"""
-        for target in self.targets.values():
-            target.vars.parse(target)
+    def add_targets(self, targets):
+        """Creates and adds each target to the internal dict"""
+        # Add every target to the internal dict
+        for target in targets:
+            self.targets[target['name']] = Target(
+                target,
+                self.names.create_identifier(target['name'])
+            )
 
     def name_items(self):
         """Returns name items (original, cleaned)"""
@@ -55,6 +54,7 @@ class Target:
 
     target - The sb3 target dict
     blocks - The sb3 blocks list of this target
+    hats - A list of hat blocks contained by this target
 
     clean_name - The safe and unique identifier name
 
@@ -68,22 +68,78 @@ class Target:
     def __init__(self, target, name):
         self.target = target
         self.blocks = target['blocks']
+        self.hats = []
 
         self.clean_name = name
 
-        self.vars = Variables(target, target['isStage'])
+        self.vars = Variables(target['isStage'])
         self.events = naming.Events()
         self.prototypes = naming.Prototypes(self.events)
 
         self.prototype = None
 
-    def set_prototype(self, custom_block):
+    def first_pass(self):
         """
-        Selects a prototype from the internal Prototypes instance
+        Run the first pass on the target:
+            - Removes unused variable reporters
+            - Creates a list of hat blocks
+            - Initializes all Prototypes
+            - Marks universal variables used in sensing_of
+        """
 
-        custom_block is the blockid of the prototype
+        logging.debug("Running first pass on target '%s'", self.target['name'])
+
+        # Loop through each block
+        for blockid, block in self.blocks.items():
+            # Skip variables not in a block
+            if not isinstance(block, dict):
+                continue
+
+            # Each hat needs to be parsed
+            if specmap.is_hat(block):
+                self.hats.append((blockid, block))
+
+            # Create a prototype with the block
+            elif block['opcode'] == 'procedures_prototype':
+                self.prototypes.add_prototype(block['mutation'], blockid)
+
+            # Note the variable as a universal
+            elif block['opcode'] == 'sensing_of':
+                self.vars.mark_universal(block['fields']['PROPERTY'][0])
+
+    def second_pass(self):
         """
-        self.prototype = self.prototypes.get_definition(custom_block)
+        Runs the second pass on the target:
+            - Creates and names Variables
+            - Guesses the type of each variable
+        """
+
+        logging.debug("Running second pass on target '%s'",
+                      self.target['name'])
+
+        # Gets names for all variables
+        self.vars.second_pass(self)
+
+        for block in self.blocks.values():
+            # Skip variables not in a block
+            if not isinstance(block, dict):
+                continue
+
+            # Type guess with the argument values
+            # if block['opcode'] == 'procedures_call':
+            #     self.prototypes.mark_called(block)
+
+            # Type guess hint with the value being set
+            if block['opcode'] == 'data_setvariableto':
+                self.vars.mark_set(block)
+
+            # Type guess hint that the variable is a number
+            elif block['opcode'] == 'data_changevariableby':
+                self.vars.mark_changed(block)
+
+        # Guess the type of each variable
+        if config.VAR_TYPES:
+            self.vars.guess_types()
 
     def get(self, key, default=None):
         """Gets an item from the internal dict"""

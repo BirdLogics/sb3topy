@@ -105,7 +105,7 @@ def proc_def(block, target):
     prototype = target.prototypes.get_definition(
         block['inputs'].pop('custom_block')[1])
 
-    # # Create the code string for the block
+    # Create the code string for the block
     args = prototype.args_list()
     warp = "@warp\n" if prototype.warp else ""
     code = f"{warp}async def {prototype.name}(self, util, {args}):\n{{SUBSTACK}}"
