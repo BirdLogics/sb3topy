@@ -215,6 +215,10 @@ class StaticList(BaseList):
     def __contains__(self, item):
         return search_str(item) in self.dict
 
+    def copy(self):
+        """Returns self; this list is static"""
+        return self
+
 
 def search_str(value):
     """
