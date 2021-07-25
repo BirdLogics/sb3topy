@@ -234,6 +234,14 @@ class Variables:
         if config.VAR_TYPES:
             self.get_var('var', block['fields']['VARIABLE'][0]).mark_changed()
 
+    def mark_modified(self, block):
+        """Marks a list as modified by block"""
+        self.get_var('list', block['fields']['LIST'][0]).is_modified = True
+
+    def mark_indexed(self, block):
+        """Marks a list as indexed by block"""
+        self.get_var('list', block['fields']['LIST'][0]).is_indexed = True
+
     def guess_types(self):
         """Guesses the type of all variables"""
         for variable in self.local_vars.dict.values():
@@ -257,7 +265,22 @@ def get_type(value):
 
 
 class Variable:
-    """Represents a variable"""
+    """
+    Represents a variable or list
+
+    Attributes:
+        clean_name - The clean identifier for the variable
+        initial_value - The initial value for the variable
+
+        is_changed - Whether the change var by block is used on the variable
+        is_modified - Whether the list is modified in any way
+        is_indexed - Whether the item # of list or contains block is used on the list
+
+        set_types - A set containing types the variable is set to
+        set_values - A set containing values the variable is set to
+
+        guessed_type - The guessed type of the variable
+    """
 
     def __init__(self, clean_name, initial_value):
         self.clean_name = clean_name
@@ -266,6 +289,8 @@ class Variable:
         self.set_types = set()
         self.set_values = set()
         self.guessed_type = 'any'
+        self.is_modified = False
+        self.is_indexed = False
 
     def mark_set(self, value):
         """Saves the type of the variable"""
@@ -291,6 +316,9 @@ class Variable:
     def mark_changed(self):
         """Saves that the variable is modified by a change by block"""
         self.is_changed = True
+
+    def mark_modified(self, block):
+        """Mark a list variable as modified"""
 
     def guess_type(self):
         """Guesses the type"""

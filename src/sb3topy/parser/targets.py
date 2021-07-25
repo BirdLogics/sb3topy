@@ -125,17 +125,29 @@ class Target:
             if not isinstance(block, dict):
                 continue
 
+            opcode = block['opcode']
+
             # Type guess with the argument values
             # if block['opcode'] == 'procedures_call':
             #     self.prototypes.mark_called(block)
 
             # Type guess hint with the value being set
-            if block['opcode'] == 'data_setvariableto':
+            if opcode == 'data_setvariableto':
                 self.vars.mark_set(block)
 
             # Type guess hint that the variable is a number
-            elif block['opcode'] == 'data_changevariableby':
+            elif opcode == 'data_changevariableby':
                 self.vars.mark_changed(block)
+
+            # Note blocks which modify the list
+            elif opcode in ('data_addtolist', 'data_deleteoflist',
+                            'data_deletealloflist', 'data_insertatlist',
+                            'data_replaceitemoflist'):
+                self.vars.mark_modified(block)
+
+            # Note usages which may benefit from a dict
+            elif opcode in ('data_itemnumoflist', 'data_listcontainsitem'):
+                self.vars.mark_indexed(block)
 
         # Guess the type of each variable
         if config.VAR_TYPES:

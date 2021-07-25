@@ -26,7 +26,8 @@ def file_header():
         "import math\n"
         "import time\n\n"
         "import engine\n"
-        "from engine import List, Target, on_event, sprite, warp\n"
+        "from engine import Target, sprite, warp\n"
+        "from engine.lists import *\n"
         "from engine.block_events import *\n"
         "from engine.blockutil import *"
     )
@@ -191,7 +192,7 @@ def parse_variables(target: Target):
     return '\n'.join(vars_init).rstrip()
 
 
-def parse_lists(target):
+def parse_lists(target: Target):
     """Creates code to init lists for a target and clones"""
     list_init = []
 
@@ -208,15 +209,22 @@ def parse_lists(target):
         items = []
         for value in lst[1]:
             items.append(sanitizer.quote_number(value))
+        
+        # Get the list Variable object
+        var = target.vars.get_var('list', lst[0])
+        list_class = 'BaseList' if var.is_modified else 'StaticList'
+        logging.info("Treating list '%s' as %s", var.clean_name, list_class)
+        
 
         # Create code to initialize the list
         list_init.append((
-            "self.{name} = engine.List(\n"
+            "self.{name} = {class_}(\n"
             "{items}\n"
             ")"
         ).format(
-            name=target.vars.get_local('list', lst[0]),
-            items=indent("[" + ', '.join(items) + "]", "    ")
+            name=var.clean_name,
+            items=indent("[" + ', '.join(items) + "]", "    "),
+            class_=list_class
         ))
 
     return "\n".join(list_init).rstrip()

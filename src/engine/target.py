@@ -24,7 +24,7 @@ from pygame.sprite import DirtySprite
 
 from . import config
 from .assets import Costumes, Sounds
-from .lists import List
+from .lists import BaseList
 from .pen import Pen
 
 
@@ -123,7 +123,7 @@ class Target:
             for name, var in parent.__dict__.items():
                 if name.startswith('var'):
                     self.__dict__[name] = var
-                elif isinstance(var, List):
+                elif isinstance(var, BaseList):
                     self.__dict__[name] = var.copy()
 
             # Copy attributes

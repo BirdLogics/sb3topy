@@ -902,7 +902,7 @@ BLOCKS = {
     ),
 
     'data_deleteoflist': block(
-        'stack', 'any INDEX, list LIST',
+        'stack', 'int INDEX, list LIST',
         "{LIST}.delete({INDEX})"
     ),
 
@@ -912,17 +912,17 @@ BLOCKS = {
     ),
 
     'data_insertatlist': block(
-        'stack', 'any ITEM, any INDEX, list LIST',
+        'stack', 'any ITEM, int INDEX, list LIST',
         "{LIST}.insert({INDEX}, {ITEM})"
     ),
 
     'data_replaceitemoflist': block(
-        'stack', 'any INDEX, list LIST, any ITEM',
+        'stack', 'int INDEX, list LIST, any ITEM',
         "{LIST}[{INDEX}] = {ITEM}"
     ),
 
     'data_itemoflist': block(
-        'any', 'any INDEX, list LIST',
+        'any', 'int INDEX, list LIST',
         "{LIST}[{INDEX}]"
     ),
 
