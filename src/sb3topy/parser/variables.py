@@ -317,9 +317,6 @@ class Variable:
         """Saves that the variable is modified by a change by block"""
         self.is_changed = True
 
-    def mark_modified(self, block):
-        """Mark a list variable as modified"""
-
     def guess_type(self):
         """Guesses the type"""
         if get_type(self.initial_value) == 'float' and (
