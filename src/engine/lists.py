@@ -202,7 +202,7 @@ class StaticList(BaseList):
     """
 
     def __init__(self, values):  # pylint: disable=super-init-not-called
-        self.values = tuple(values)
+        self.list = tuple(values)
 
         self.dict = {}
         for i, item in enumerate(values):
@@ -211,6 +211,9 @@ class StaticList(BaseList):
     def index(self, item):
         """Gets the position of item in list"""
         return self.dict[search_str(item)]
+
+    def __contains__(self, item):
+        return search_str(item) in self.dict
 
 
 def search_str(value):
