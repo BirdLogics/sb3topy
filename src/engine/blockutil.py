@@ -31,7 +31,7 @@ def tonum(value):
 
 
 def toint(value):
-    """Attempts to floor a value to an int"""
+    """Attempts to round a value to an int"""
     try:
         return round(float(value))
     except ValueError:
