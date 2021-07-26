@@ -168,10 +168,14 @@ def cast_wrapper(value, from_type, to_type):
 
     # Cast wrapper for ints
     if to_type == 'int':
+        # if from_type == 'float':
+        #     return "round(" + value + ")"
         return "toint(" + value + ")"
 
     # Cast wrapper for floats
     if to_type == 'float':
+        if from_type == 'int':
+            return value
         return 'tonum(' + value + ")"
 
     # Handle blank stacks
