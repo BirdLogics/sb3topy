@@ -2,6 +2,8 @@
 specmap.py
 
 Contains functions used to read specmap data
+
+TODO Proper type detection
 """
 
 
@@ -9,6 +11,8 @@ import logging
 import textwrap
 from collections import namedtuple
 
+from ... import config
+from .. import sanitizer
 from .block_data import BLOCKS, HATS, LOOPS, Block
 from .switch_data import SWITCHES
 
@@ -72,4 +76,19 @@ def get_blockmap(block, target):
             logging.error("Unkown block with opcode '%s'", block['opcode'])
             blockmap = BLOCKS['default']
 
-    return BlockMap(*blockmap)
+    return BlockMap(*blockmap) 
+
+
+def get_type(value):
+    """Attempts to determine the type of a value"""
+
+    if str(value).isdigit() and len(str(value)) < config.SIG_DIGITS:
+        return 'int'
+    if str(sanitizer.cast_number(value)) == str(value) and \
+            len(str(value).partition('.')[2]) < config.SIG_DIGITS:
+        return 'float'
+    if str(value).lower() in ('true', 'false'):
+        return 'bool'
+    if str(value) == "":
+        return None
+    return 'str'

@@ -15,6 +15,7 @@ from time import monotonic_ns
 
 from .. import config
 from . import sanitizer
+from .specmap import get_type
 
 
 class Identifiers:
@@ -234,6 +235,9 @@ class Prototype:
         self.args = args
         self.args_id = args_id
 
+        self.call_types = {name: set() for name in args_id.values()}
+        self.guessed_types = {name: 'any' for name in args_id.values()}
+
     def get_arg(self, name):
         """Gets an argument identifier based on the name"""
         ident = self.args.get(name)
@@ -256,12 +260,48 @@ class Prototype:
         """Returns cleaned arguments seperated by ', '"""
         return sep.join(self.args.values())
 
+    def mark_called(self, block):
+        """
+        Saves the type of the calling block's arguments
+        """
+
+        for id_, value in block['inputs'].items():
+            if value[0] == 1:
+                if isinstance(value[1], list):
+                    # Wrapped value
+                    value = value[1]
+                else:
+                    # Wrapped block
+                    value = [2, value[1]]
+            elif value[0] == 3:
+                # Block covering value
+                value = [2, value[1]]
+
+            # 4-8 Number, 9-10 String, # 11 Broadcast
+            if 4 <= value[0] <= 10:
+                self.call_types[self.args_id[id_]].add(get_type(value[1]))
+
+    def guess_types(self):
+        """
+        Makes a guess as to the type of each argument
+        """
+        for name, types in self.call_types.items():
+            if 'str' not in types:
+                if 'float' not in types and config.ENABLE_INT_ARGS:
+                    self.guessed_types[name] = 'int'
+                else:
+                    self.guessed_types[name] = 'float'
+        if self.guessed_types:
+            print("Guessing", *self.guessed_types.values())
+
+    def get_type(self, arg_name):
+        """Gets the guessed type of an argument"""
+        return self.guessed_types[self.args[arg_name]]
+
 
 class Prototypes:
     """
-    Handles the naming of custom blocks and their arguments
-
-    TODO Remove arg referencing by id?
+    Handles the naming and typing of custom blocks and their arguments
     """
 
     def __init__(self, events: Events):
@@ -320,3 +360,13 @@ class Prototypes:
     def from_proccode(self, proccode) -> Prototype:
         """Gets a prototype by proccode"""
         return self.prototypes[proccode]
+
+    def mark_called(self, block):
+        """Runs type guessing for a procedure call"""
+        prototype = self.from_proccode(block['mutation']['proccode'])
+        prototype.mark_called(block)
+
+    def guess_types(self):
+        """Guesses the type of each procedure argument"""
+        for prototype in self.prototypes.values():
+            prototype.guess_types()

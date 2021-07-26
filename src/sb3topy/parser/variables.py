@@ -12,6 +12,7 @@ import logging
 from .. import config
 from . import sanitizer
 from .naming import Identifiers
+from .specmap import get_type
 
 
 class Variables:
@@ -246,22 +247,6 @@ class Variables:
         """Guesses the type of all variables"""
         for variable in self.local_vars.dict.values():
             variable.guess_type()
-
-
-# TODO Proper type detection
-def get_type(value):
-    """Attempts to determine the type of a value"""
-
-    if str(value).isdigit() and len(str(value)) < config.SIG_DIGITS:
-        return 'int'
-    if str(sanitizer.cast_number(value)) == str(value) and \
-            len(str(value).partition('.')[2]) < config.SIG_DIGITS:
-        return 'float'
-    if str(value).lower() in ('true', 'false'):
-        return 'bool'
-    if str(value) == "":
-        return None
-    return 'str'
 
 
 class Variable:

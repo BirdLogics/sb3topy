@@ -54,6 +54,7 @@ SIG_DIGITS = 17
 # Disable variable type guessing
 VAR_TYPES = True
 ARG_TYPES = True
+ENABLE_INT_ARGS = False
 
 # Force legacy list indexing (first, last, random all)
 LEGACY_LISTS = False

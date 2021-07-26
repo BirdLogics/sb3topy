@@ -6,8 +6,7 @@ Contains functions to handle more complex blocks
 TODO Update engine to support event decorators
 """
 
-from typing import Callable
-
+from ... import config
 from .block_data import BLOCKS, Block
 
 
@@ -97,6 +96,8 @@ def fswitch(opcode):
         return func
     return decorator
 
+# Switches for custom blocks
+
 
 @fswitch('procedures_definition')
 def proc_def(block, target):
@@ -133,7 +134,8 @@ def proc_call(block, target):
         argid): value for argid, value in block['inputs'].items()}
 
     # Get the argument list for the block
-    args = {clean_name: 'any' for clean_name in prototype.args.values()}
+    args = {clean_name: prototype.get_type(
+        arg_name) for arg_name, clean_name in prototype.args.items()}
 
     # Create arg code formatted by the BlockMap
     # Eg. {input1}, {input2}, ...
@@ -149,8 +151,11 @@ def proc_call(block, target):
 
 
 @fswitch('argument_reporter_string_number')
-def proc_arg(_, _1):
+def proc_arg(block, target):
     """Switch for a procedure argument reporter"""
+    return Block(
+        target.prototype.get_type(block['fields']['VALUE'][0]),
+        {'VALUE': 'proc_arg'}, '{VALUE}', {})
 
 
 # Switches for legacy list indices (first, last, random)

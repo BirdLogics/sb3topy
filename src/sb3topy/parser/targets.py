@@ -128,8 +128,8 @@ class Target:
             opcode = block['opcode']
 
             # Type guess with the argument values
-            # if block['opcode'] == 'procedures_call':
-            #     self.prototypes.mark_called(block)
+            if block['opcode'] == 'procedures_call':
+                self.prototypes.mark_called(block)
 
             # Type guess hint with the value being set
             if opcode == 'data_setvariableto':
@@ -152,6 +152,10 @@ class Target:
         # Guess the type of each variable
         if config.VAR_TYPES:
             self.vars.guess_types()
+
+        # Guess the type of each prototype arg
+        if config.ARG_TYPES:
+            self.prototypes.guess_types()
 
     def get(self, key, default=None):
         """Gets an item from the internal dict"""
