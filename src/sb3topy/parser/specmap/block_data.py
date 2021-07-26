@@ -906,6 +906,11 @@ BLOCKS = {
         "{LIST}.delete({INDEX})"
     ),
 
+    'data_deleteoflist_legacy': block(
+        'stack', 'any INDEX, list LIST',
+        "{LIST}.delete2({INDEX})"
+    ),
+
     'data_deletealloflist': block(
         'stack', 'list LIST',
         "{LIST}.delete_all()"
@@ -916,14 +921,29 @@ BLOCKS = {
         "{LIST}.insert({INDEX}, {ITEM})"
     ),
 
+    'data_insertatlist_legacy': block(
+        'stack', 'any ITEM, any INDEX, list LIST',
+        "{LIST}.insert2({INDEX}, {ITEM})"
+    ),
+
     'data_replaceitemoflist': block(
         'stack', 'int INDEX, list LIST, any ITEM',
         "{LIST}[{INDEX}] = {ITEM}"
     ),
 
+    'data_replaceitemoflist_legacy': block(
+        'stack', 'any INDEX, list LIST, any ITEM',
+        "{LIST}.set({INDEX}, {ITEM})"
+    ),
+
     'data_itemoflist': block(
         'any', 'int INDEX, list LIST',
         "{LIST}[{INDEX}]"
+    ),
+
+    'data_itemoflist_legacy': block(
+        'any', 'any INDEX, list LIST',
+        "{LIST}.get({INDEX})"
     ),
 
     'data_itemnumoflist': block(

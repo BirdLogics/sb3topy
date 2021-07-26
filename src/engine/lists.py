@@ -11,7 +11,7 @@ The specmap would need to be adjusted to handle it.
 import random
 
 from . import config
-from .blockutil import tonum
+from .blockutil import toint, tonum
 
 __all__ = ['BaseList', 'StaticList']
 
@@ -137,10 +137,31 @@ class BaseList:
             return self.list[key]
         return ""
 
+    def get(self, key):
+        """Gets an item, supporting legacy indices (first, last, random)"""
+        if key == 'first':
+            return self.list[0]
+        if key == 'last':
+            return self.list[-1]
+        if key == 'random':
+            return random.choice(self.list)
+        return self.__getitem__(toint(key))
+
     def __setitem__(self, key, value):
         key -= 1
         if 0 <= key < len(self.list):
             self.list[key] = value
+
+    def set(self, key, item):
+        """Sets an item, supporting legacy indices (first, last, random)"""
+        if key == 'first':
+            self.__setitem__(1, item)
+        elif key == 'last':
+            self.__setitem__(len(self.list), item)
+        elif key == 'random':
+            self.__setitem__(random.randint(1, len(self.list)), item)
+        else:
+            self.__setitem__(toint(key), item)
 
     def append(self, value):
         """Add an item to list"""
@@ -152,11 +173,35 @@ class BaseList:
         if 0 <= key <= len(self.list):
             self.list.insert(key, value)
 
+    def insert2(self, key, item):
+        """Inserts an item, supporting legacy indices (first, last random)"""
+        if key == 'first':
+            self.insert(1, item)
+        elif key == 'last':
+            self.append(item)
+        elif key == 'random':
+            self.insert(random.randint(1, len(self.list)), item)
+        else:
+            self.insert(toint(key), item)
+
     def delete(self, key):
         """Remove an item from list"""
         key -= 1
         if 0 <= key < len(self.list):
             del self.list[key]
+
+    def delete2(self, key):
+        """Deletes an item, supporting legacy indices (first, last, random, all)"""
+        if key == 'all':
+            self.delete_all()
+        elif key == 'first':
+            self.delete(1)
+        elif key == 'last':
+            self.delete(len(self.list))
+        elif key == 'random':
+            self.delete(random.randint(1, len(self.list)))
+        else:
+            self.delete(toint(key))
 
     def delete_all(self):
         """Deletes all items in list"""
@@ -200,6 +245,8 @@ class StaticList(BaseList):
     """
     A list that doesn't change
     """
+
+    __slots__ = ('dict',)
 
     def __init__(self, values):  # pylint: disable=super-init-not-called
         self.list = tuple(values)

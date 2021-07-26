@@ -151,4 +151,76 @@ def proc_call(block, target):
 @fswitch('argument_reporter_string_number')
 def proc_arg(_, _1):
     """Switch for a procedure argument reporter"""
-    return Block('any', {'VALUE': 'proc_arg'}, '{VALUE}', {})
+
+
+# Switches for legacy list indices (first, last, random)
+@fswitch('data_deleteoflist')
+def list_delete(block, _):
+    """Switch for list delete item"""
+    # Check the block text index
+    value = block['inputs']['INDEX'][1]
+
+    # If the index is a block and not a literal,
+    # use legacy list mode depending on config
+    if not (isinstance(value, list) and value[0] == 7):
+        return BLOCKS['data_deleteoflist_legacy'] if config.LEGACY_LISTS else None
+
+    # Check if the if the index is special
+    if value[1] == 'all':
+        return BLOCKS['data_deletealloflist']
+    if value[1] in ('first', 'last', 'random'):
+        return BLOCKS['data_deleteoflist_legacy']
+    return None
+
+
+@fswitch('data_insertatlist')
+def list_insert(block, _):
+    """Switch for list insert item"""
+    # Check the block text index
+    value = block['inputs']['INDEX'][1]
+
+    # If the index is a block and not a literal,
+    # use legacy list mode depending on config
+    if not (isinstance(value, list) and value[0] == 7):
+        return BLOCKS['data_insertatlist_legacy'] if config.LEGACY_LISTS else None
+
+    # Check if the if the index is special
+    if value[1] == 'last':
+        return BLOCKS['data_addtolist']
+    if value[1] in ('first', 'random'):
+        return BLOCKS['data_insertatlist_legacy']
+    return None
+
+
+@fswitch('data_replaceitemoflist')
+def list_replace(block, _):
+    """Switch for list replace item"""
+    # Check the block text index
+    value = block['inputs']['INDEX'][1]
+
+    # If the index is a block and not a literal,
+    # use legacy list mode depending on config
+    if not (isinstance(value, list) and value[0] == 7):
+        return BLOCKS['data_replaceitemoflist_legacy'] if config.LEGACY_LISTS else None
+
+    # Check if the if the index is special
+    if value[1] in ('first', 'last', 'random'):
+        return BLOCKS['data_replaceitemoflist_legacy']
+    return None
+
+
+@fswitch('data_itemoflist')
+def list_item(block, _):
+    """Switch for item of list"""
+    # Check the block text index
+    value = block['inputs']['INDEX'][1]
+
+    # If the index is a block and not a literal,
+    # use legacy list mode depending on config
+    if not (isinstance(value, list) and value[0] == 7):
+        return BLOCKS['data_itemoflist_legacy'] if config.LEGACY_LISTS else None
+
+    # Check if the if the index is special
+    if value in ('first', 'last', 'random'):
+        return BLOCKS['data_itemoflist_legacy']
+    return None
