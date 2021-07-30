@@ -76,11 +76,11 @@ def get_blockmap(block, target):
             logging.error("Unkown block with opcode '%s'", block['opcode'])
             blockmap = BLOCKS['default']
 
-    return BlockMap(*blockmap) 
+    return BlockMap(*blockmap)
 
 
 def get_type(value):
-    """Attempts to determine the type of a value"""
+    """Attempts to determine the type of a literal value"""
 
     if str(value).isdigit() and len(str(value)) < config.SIG_DIGITS:
         return 'int'
@@ -89,6 +89,32 @@ def get_type(value):
         return 'float'
     if str(value).lower() in ('true', 'false'):
         return 'bool'
-    if str(value) == "":
-        return None
+    # if str(value) == "":
+    #     return None
     return 'str'
+
+
+def get_input_type(target, value):
+    """Parses a block input to determine the type"""
+    # TODO Specmap type_switches.py
+    # Handle possible block input
+    if value[0] == 1:
+        if isinstance(value[1], list):
+            # Wrapped value
+            value = value[1]
+        else:
+            # Wrapped block
+            value = [2, value[1]]
+    elif value[0] == 3:
+        # Block covering value
+        value = [2, value[1]]
+
+    # 4-8 Number, 9-10 String, # 11 Broadcast
+    if 4 <= value[0] <= 10:
+        return get_type(value[1])
+
+    # 12 Variable
+    if value[0] == 12:
+        return ('var', target['name'], value[1])
+
+    return None

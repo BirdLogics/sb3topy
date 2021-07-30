@@ -133,11 +133,11 @@ class Target:
 
             # Type guess hint with the value being set
             if opcode == 'data_setvariableto':
-                self.vars.mark_set(block)
+                self.vars.mark_set(self, block)
 
             # Type guess hint that the variable is a number
             elif opcode == 'data_changevariableby':
-                self.vars.mark_changed(block)
+                self.vars.mark_changed(self, block)
 
             # Note blocks which modify the list
             elif opcode in ('data_addtolist', 'data_deleteoflist',

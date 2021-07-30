@@ -1,13 +1,25 @@
 """
 typing.py
 
-Determines the type of variables and procedure arguments.
+Used to determine the type of variables and procedure arguments.
+
+Makes a directed graph, where each node is a variable or argument.
+
+Example Node id_tuples:
+    ('var', 'sprite1', 'my variable')
+    ('proc_arg', 'sprite1', 'custom block %s', 'x pos')
 
 
 Valid types are:
     bool, int, float, str, any
 
 """
+
+import logging
+
+from graphviz import Digraph
+
+from . import specmap
 
 # Contains every possible combination of
 # types and what the resulting type should be
@@ -44,48 +56,47 @@ RESOLVE_DICT = {
     frozenset(('bool', 'int', 'float', 'str', 'any')): 'any',
 }
 
+NODE_COLORS = {
+    'var': 'orange',
+    'list': 'darkorange',
+    'proc_arg': 'purple'
+}
+
 
 class Node:
     """
     Represents an item of a certain type
 
-    id_tuple - A tuple providing unique identification
-        for the item, eg. ('sprite1', 'var', 'my variable') or
-        ('sprite1', 'proc_arg', 'custom block %s', 'x pos')
+    id_tuple - A tuple providing unique identification for the node
 
-    guessed_type - The best guess as to the type of this item
-    is_resolved - Whether the guessed type is final
+    known_type - The known type of this node
 
     set_types - The types the item has been "set" to. Does not
         include the type of parent Nodes until they are resolved.
 
-    child_nodes - A set of nodes which are dependent on
-        the type of this node. If the type of this node is determined,
-        the child nodes will be notified so they can update their type.
-
     parent_nodes - A set of nodes which this node is dependent on.
 
-    nodes (class attribute) - A dict where the key is the number of
-        parents and the value is a set of nodes with that many parents.
+    nodes (class attribute) - A dict where the key is the
+        id_tuple and the value is the corresponding node
 
-    nodes_all (class_attribute) - A list of every node
+    unresolved (class_attribute) - A set containing every unresolved node
     """
 
     nodes = {}
-    nodes_all = []
+    unresolved = set()
 
     def __init__(self, id_tuple):
         self.id_tuple = id_tuple
 
-        self.guessed_type = None
+        self.known_type = None
 
         self.set_types = set()
         # self.get_types = set()
 
         self.parent_nodes = set()
-        self.child_nodes = set()
 
-        self.nodes_all.append(self)
+        self.nodes[id_tuple] = self
+        self.unresolved.add(self)
 
     def __hash__(self):
         return hash(self.id_tuple)
@@ -96,67 +107,128 @@ class Node:
         if isinstance(set_type, tuple):
             node = self.nodes[set_type]
             self.parent_nodes.add(node)
-            node.child_nodes.add(self)
 
         # Otherwise, save the simple type
         else:
             self.set_types.add(set_type)
 
-    def resolve(self):
+    def resolve(self, chain, loops):
         """
-        Forcibly resolves the type of this node
+        Attempts to resolve the type of this node. When called with empty
+        sets, the node is guaranteed to resolve to known_type. When called
+        recursivly with non-empty sets, the node may or may not resolve
+        depending on if there are any loops.
+
+        chain - A set containing all nodes which have been passed through
+            during resolution. Used to detect loops.
+
+        loops - A set used to return all nodes which have been detected as a
+            loop. Always an empty set when resolve is called.
+
+        A node cannot resolve unless it is either the only node in loops, or
+        loops is empty.
+
+
+        return - Returns a set containing all the types this node is known to
+            possibly produce. If there was a loop, the loop node contains the
+            rest of the types the node can produce.
         """
-        # Remove self from parents' child sets
+
+        # Add self to chain to detect loops
+        chain.add(self)
+
+        # Get a set of all types this node can be
         for parent in self.parent_nodes:
-            parent.child_nodes.pop(self)
+            # Don't resolve a loop
+            if parent in chain:
+                loops.add(parent)
 
-        # Guess the type using RESOLVE_DICT and set_types
-        self.guessed_type = RESOLVE_DICT[frozenset(self.set_types)]
+            # Resolve the parent
+            else:
+                # Loops don't matter for each parent's branch
+                branch_loops = set()
 
-        # Notify each child a parent node has resolved
-        # Also get the child with the least number of parents
+                # Resolve the parent
+                self.set_types.update(parent.resolve(chain, branch_loops))
 
-        return min(child.parent_resolved(self) for child in self.child_nodes)
+                # Remove the parent if it has resolved
+                if parent.known_type is not None:
+                    self.parent_nodes.remove(parent)
 
-    def parent_resolved(self, parent):
-        """Called when a parent node resolves its type"""
-        # Remove self from nodes
-        parents = len(self.parent_nodes)
-        self.nodes[parents].remove(self)
+                # Loops in the parent do matter for this branch
+                loops.update(branch_loops)
 
-        # Save the type of the parent
-        self.parent_nodes.remove(parent)
-        self.set_types.add(parent.guessed_type)
+        # Cannot resolve unless either loops is
+        # empty or self is the only node in loops
+        if not loops or len(loops) == 1 and self in loops:
+            self.force_resolve()
 
-        # Add self back to nodes in order
-        self.nodes.setdefault(parents - 1, set()).add(self)
+        # Remove self from chain
+        chain.remove(self)
 
-        # Return the new number of parents
-        return parents - 1
+        # Return set_types even if unresolved
+        return self.set_types
+
+    def force_resolve(self):
+        """
+        Forces the node to resolve based on its current set_types.
+
+        Should only be called after all of the node's parents have resolved.
+        """
+        self.known_type = RESOLVE_DICT[frozenset(self.set_types)]
+        self.unresolved.remove(self)
 
     @classmethod
     def resolve_all(cls):
-        """Resolves all nodes in the right order"""
-        # TODO Is there a better order to resolve?
-        # Would it be better to resolve in the order of
-        # 1) least parents, and 2) most children?
+        """Resolves all nodes"""
+        while cls.unresolved:
+            # TODO Temp render stuff
+            cls.render()
+            input("Press enter...")
 
-        # Initialize the cls.nodes dict from cls.nodes_all
-        # The key is the number of parents, and the value is
-        # a set with all nodes that have that many parents
-        for node in cls.nodes_all:
-            cls.nodes.setdefault(len(node.parent_nodes), set()).add(node)
+            # Resolve an unresolved node
+            next(iter(cls.unresolved)).resolve(set(), set())
 
-        parents = 0
-        while cls.nodes:
-            # Verify there is a set with a node in it
-            if cls.nodes.get(parents):
-                # Get a node with parents number of parent_nodes
-                node = cls.nodes[parents].pop()
+    @classmethod
+    def render(cls):
+        """Draws a rendering of the directed graph"""
 
-                # Resolve the node and update the parents count
-                parents = min(parents, node.resolve())
+        dot = Digraph()
+        for node in cls.nodes.values():
+            dot.node(str(node.id_tuple), node.id_tuple[-1],
+                     color=NODE_COLORS[node.id_tuple[0]])
+            for parent in node.parent_nodes:
+                dot.edge(str(parent.id_tuple), str(node.id_tuple))
+                print(str(parent.id_tuple), str(node.id_tuple))
 
-            # Either there is a not a set or there is an empty one
-            else:
-                parents += 1
+        dot.render(view=True)
+
+
+def add_node(*id_tuple):
+    """Creates a node from id data"""
+    if id_tuple not in Node.nodes:
+        logging.debug("Created type node %s", id_tuple)
+        Node(id_tuple)
+    else:
+        logging.warning("Duplicate type node %s", id_tuple)
+
+
+def mark_set(id_tuple, target, inp):
+    """Marks a node as being set to an block input"""
+    input_type = specmap.get_input_type(target, inp)
+
+    if id_tuple not in Node.nodes:
+        id_tuple = ('var', 'Stage', id_tuple[2])
+
+    if input_type is not None:
+        if isinstance(input_type, tuple):
+            Node.nodes[id_tuple].parent_nodes.add(input_type)
+        else:
+            Node.nodes[id_tuple].set_types.add(input_type)
+
+
+def mark_set_literal(id_tuple, value):
+    """Marks a node as being set to a literal value"""
+    if id_tuple not in Node.nodes:
+        id_tuple = ('var', 'Stage', id_tuple[2])
+    Node.nodes[id_tuple].set_types.add(specmap.get_type(value))

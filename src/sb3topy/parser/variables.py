@@ -10,7 +10,7 @@ TODO Names such as 'x position' are marked as universals
 import logging
 
 from .. import config
-from . import sanitizer
+from . import sanitizer, typing
 from .naming import Identifiers
 from .specmap import get_type
 
@@ -56,6 +56,8 @@ class Variables:
         # Read variables
         for name, value in target['variables'].values():
             self.create_local("var", name, value)
+            typing.add_node('var', target['name'], name)
+            typing.mark_set_literal(('var', target['name'], name), value)
 
         # Read lists
         for name, _ in target['lists'].values():
@@ -224,16 +226,23 @@ class Variables:
 
         return ident
 
-    def mark_set(self, block):
+    def mark_set(self, target, block):
         """Parses a data_setvariableto block for type guessing"""
         if config.VAR_TYPES:
             self.get_var('var', block['fields']['VARIABLE'][0]).mark_set(
                 block['inputs']['VALUE'])
 
-    def mark_changed(self, block):
+            typing.mark_set(
+                ('var', target['name'], block['fields']['VARIABLE'][0]),
+                target, block['inputs']['VALUE'])
+
+    def mark_changed(self, target, block):
         """Parses a data_changevariableby block for type guessing """
         if config.VAR_TYPES:
             self.get_var('var', block['fields']['VARIABLE'][0]).mark_changed()
+
+            typing.mark_set_literal(
+                ('var', target['name'], block['fields']['VARIABLE'][0]), 0)
 
     def mark_modified(self, block):
         """Marks a list as modified by block"""
@@ -243,7 +252,7 @@ class Variables:
         """Marks a list as indexed by block"""
         self.get_var('list', block['fields']['LIST'][0]).is_indexed = True
 
-    def guess_types(self):
+    def guess_types(self, ):
         """Guesses the type of all variables"""
         for variable in self.local_vars.dict.values():
             variable.guess_type()

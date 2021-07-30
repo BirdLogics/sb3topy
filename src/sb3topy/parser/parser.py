@@ -11,7 +11,7 @@ TODO Smart variable type detection
 import json
 import logging
 
-from . import sanitizer, specmap, targets
+from . import sanitizer, specmap, targets, typing
 from .specmap import codemap
 from .variables import Variables
 
@@ -65,6 +65,8 @@ class Parser:
 
         for target in self.targets:
             target.second_pass()
+
+        typing.Node.resolve_all()
 
     def third_pass(self):
         """
