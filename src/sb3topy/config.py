@@ -58,3 +58,23 @@ ENABLE_INT_ARGS = False
 
 # Force legacy list indexing (first, last, random all)
 LEGACY_LISTS = False
+
+# If a variable is set to an unkown type, attempt to cast the
+# unkown type rather than assuming the variable's type is unkown
+DISABLE_ANY_CAST = True
+
+# If a variable is ever set to a numeric value, assume
+# it's type is numeric even if it is also set to a string
+AGGRESSIVE_NUM_CAST = False
+
+# If a variable is set to both a string and a number, assume the variable's
+# type is unkown and don't cast when setting rather than casting to string
+# Safer than AGGRESSIVE_NUM_CAST
+DISABLE_STR_CAST = True
+
+# If a variable is changed using the change by block, assume it is numeric
+CHANGED_NUM_CAST = True
+
+# Replace all int casts with float
+# TODO This option shouldn't be necesary
+DISABLE_INT_CAST = True

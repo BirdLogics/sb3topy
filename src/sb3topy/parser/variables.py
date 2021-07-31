@@ -10,9 +10,9 @@ TODO Names such as 'x position' are marked as universals
 import logging
 
 from .. import config
-from . import sanitizer, typing
+from . import sanitizer, specmap, typing
 from .naming import Identifiers
-from .specmap import get_type
+from . import typing
 
 
 class Variables:
@@ -31,7 +31,7 @@ class Variables:
     global_vars: Identifiers = None
     universal_vars: Identifiers = None
 
-    def __init__(self, is_stage):
+    def __init__(self, target_name, is_stage):
         # Initialize class attributes
         if self.global_vars is None:
             Variables.global_vars = Identifiers()
@@ -42,7 +42,10 @@ class Variables:
         else:
             self.local_vars = Identifiers()
 
-    def second_pass(self, target):
+        # Save for creating tuple_ids
+        self.target_name = target_name
+
+    def second_pass(self, target, digraph):
         """
         Parses the variables in a target
 
@@ -55,13 +58,11 @@ class Variables:
 
         # Read variables
         for name, value in target['variables'].values():
-            self.create_local("var", name, value)
-            typing.add_node('var', target['name'], name)
-            typing.mark_set_literal(('var', target['name'], name), value)
+            self.create_local("var", name, digraph, value)
 
         # Read lists
         for name, _ in target['lists'].values():
-            self.create_local('list', name)
+            self.create_local('list', name, digraph)
 
     def get_reference(self, prefix, name):
         """
@@ -84,7 +85,7 @@ class Variables:
         logging.warning("Unregistered var '%s'", name)
 
         # Create a new local variable
-        return "self." + self.create_local('', name).clean_name
+        return "self." + self.create_local('', name, typing.DiGraph()).clean_name
 
     def get_type(self, prefix, name):
         """
@@ -96,17 +97,17 @@ class Variables:
 
         # Check if a local variable exists with the name
         if name in self.local_vars.dict:
-            return self.local_vars.dict[name].guessed_type
+            return self.local_vars.dict[name].get_type()
 
         # Check if a global variable exists with the name
         if name in self.global_vars.dict:
-            return self.global_vars.dict[name].guessed_type
+            return self.global_vars.dict[name].get_type()
 
         # This should not occur, but can be handled
         logging.warning("Unregistered var '%s'", name)
 
         # Create a new local variable
-        return self.create_local('', name).guessed_type
+        return self.create_local('', name, typing.DiGraph()).get_type()
 
     def get_local(self, prefix, name) -> str:
         """
@@ -125,7 +126,7 @@ class Variables:
         logging.warning("Unregistered local var '%s'", name)
 
         # Create a new local variable
-        return self.create_local(prefix, name).clean_name
+        return self.create_local(prefix, name, typing.DiGraph()).clean_name
 
     def get_var(self, prefix, name):
         """
@@ -147,9 +148,9 @@ class Variables:
         logging.warning("Unregistered var '%s'", name)
 
         # Create a new local variable
-        return self.create_local(prefix, name)
+        return self.create_local(prefix, name, typing.DiGraph())
 
-    def create_local(self, prefix, name, value=None):
+    def create_local(self, prefix, name, digraph, initial_value=None):
         """Creates a safe identifier name"""
         # Ensure the name starts with the prefix
         if not name.startswith(prefix):
@@ -158,15 +159,23 @@ class Variables:
         # Verify the variable doesn't already exist
         if name in self.local_vars.dict:
             logging.warning("Duplicate local var '%s'", name)
+
+            self.local_vars.dict[name].node.add_type(
+                specmap.get_literal_type(initial_value))
+
             return self.local_vars.dict[name]
-        
+
+        # Create a node for the variable
+        node = digraph.add_node((prefix, self.target_name, name))
+        node.add_type(specmap.get_literal_type(initial_value))
+
         # Check if a universal identifier already exists
         if name in self.universal_vars.dict:
             # Get the universal identifier
             ident = self.universal_vars.dict[name]
 
             # Save the identifier
-            self.local_vars.dict[name] = Variable(ident, value)
+            self.local_vars.dict[name] = Variable(ident, node)
 
             logging.debug(
                 "Creating local var '%s' as universal '%s'", name, ident)
@@ -180,7 +189,7 @@ class Variables:
         ident = self.local_vars.suffix(ident)
 
         # Save the identifier for future use
-        self.local_vars.dict[name] = Variable(ident, value)
+        self.local_vars.dict[name] = Variable(ident, node)
 
         logging.debug("Creating local var '%s' as '%s'", name, ident)
 
@@ -229,33 +238,23 @@ class Variables:
     def mark_set(self, target, block):
         """Parses a data_setvariableto block for type guessing"""
         if config.VAR_TYPES:
-            self.get_var('var', block['fields']['VARIABLE'][0]).mark_set(
-                block['inputs']['VALUE'])
-
-            typing.mark_set(
-                ('var', target['name'], block['fields']['VARIABLE'][0]),
+            input_type = specmap.get_input_type(
                 target, block['inputs']['VALUE'])
+            self.get_var('var', block['fields']
+                         ['VARIABLE'][0]).mark_set(input_type)
 
-    def mark_changed(self, target, block):
+    def mark_changed(self, block):
         """Parses a data_changevariableby block for type guessing """
         if config.VAR_TYPES:
             self.get_var('var', block['fields']['VARIABLE'][0]).mark_changed()
 
-            typing.mark_set_literal(
-                ('var', target['name'], block['fields']['VARIABLE'][0]), 0)
-
     def mark_modified(self, block):
         """Marks a list as modified by block"""
-        self.get_var('list', block['fields']['LIST'][0]).is_modified = True
+        self.get_var('list', block['fields']['LIST'][0]).mark_modified()
 
     def mark_indexed(self, block):
         """Marks a list as indexed by block"""
-        self.get_var('list', block['fields']['LIST'][0]).is_indexed = True
-
-    def guess_types(self, ):
-        """Guesses the type of all variables"""
-        for variable in self.local_vars.dict.values():
-            variable.guess_type()
+        self.get_var('list', block['fields']['LIST'][0]).mark_indexed()
 
 
 class Variable:
@@ -264,61 +263,52 @@ class Variable:
 
     Attributes:
         clean_name - The clean identifier for the variable
-        initial_value - The initial value for the variable
+
+        node - The digraph node used to get the type of the variable
 
         is_changed - Whether the change var by block is used on the variable
         is_modified - Whether the list is modified in any way
         is_indexed - Whether the item # of list or contains block is used on the list
-
-        set_types - A set containing types the variable is set to
-        set_values - A set containing values the variable is set to
-
-        guessed_type - The guessed type of the variable
     """
 
-    def __init__(self, clean_name, initial_value):
+    def __init__(self, clean_name, node):
         self.clean_name = clean_name
-        self.initial_value = initial_value
+
+        self.node: typing.Node = node
+
         self.is_changed = False
-        self.set_types = set()
-        self.set_values = set()
-        self.guessed_type = 'any'
         self.is_modified = False
         self.is_indexed = False
 
-    def mark_set(self, value):
-        """Saves the type of the variable"""
-        # TODO Block detection
-
-        # Handle possible block input
-        if value[0] == 1:
-            if isinstance(value[1], list):
-                # Wrapped value
-                value = value[1]
-            else:
-                # Wrapped block
-                value = [2, value[1]]
-        elif value[0] == 3:
-            # Block covering value
-            value = [2, value[1]]
-
-        # 4-8 Number, 9-10 String, # 11 Broadcast
-        if 4 <= value[0] <= 10:
-            self.set_types.add(get_type(value[1]))
-            self.set_values.add(value[1])
+    def mark_set(self, to_type):
+        """Mark the variable as being set to a value of to_type"""
+        self.node.add_type(to_type)
 
     def mark_changed(self):
-        """Saves that the variable is modified by a change by block"""
+        """Mark the varable as modified by the change by block"""
         self.is_changed = True
+        self.node.add_type('int')
 
-    def guess_type(self):
-        """Guesses the type"""
-        if get_type(self.initial_value) == 'float' and (
-                self.is_changed or 'str' not in self.set_types and
-                'bool' not in self.set_types):
-            self.guessed_type = 'float'
-        else:
-            self.guessed_type = 'any'
+    def mark_modified(self):
+        """Marks a list as modified by a block (not static/a constant)"""
+        self.is_modified = True
 
-        logging.debug("Guessing variable '%s' as type %s",
-                      self.clean_name, self.guessed_type)
+    def mark_indexed(self):
+        """Marks a list a indexed by a item # of or contains block"""
+        self.is_indexed = True
+
+    def get_type(self):
+        """Gets the type of a variable"""
+        # Force the type to be numeric if changed
+        if self.is_changed and config.CHANGED_NUM_CAST:
+            # Decide between int and float
+            if self.node.known_type == 'int':
+                return 'int'
+            return 'float'
+
+        # Otherwise, use the detected type
+        return self.node.known_type
+
+    def get_list_type(self):
+        """Gets the class which should be used for a list"""
+        # TODO get_list_type

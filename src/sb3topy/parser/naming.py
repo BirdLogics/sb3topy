@@ -4,8 +4,9 @@ naming.py
 Handles the naming of:
 sprites
 hats & broadcasts
-variables / lists
 prototypes (custom blocks)
+
+TODO Move prototypes to new file
 """
 
 import itertools
@@ -14,8 +15,7 @@ import logging
 from time import monotonic_ns
 
 from .. import config
-from . import sanitizer
-from .specmap import get_type
+from . import sanitizer, specmap
 
 
 class Identifiers:
@@ -229,97 +229,12 @@ class Prototype:
     TODO Unittest to verify args_list() uses cleaned names
     """
 
-    def __init__(self, name, warp, args, args_id):
-        self.name = name
-        self.warp = warp or config.WARP_ALL
-        self.args = args
-        self.args_id = args_id
-
-        self.call_types = {name: set() for name in args_id.values()}
-        self.guessed_types = {name: 'any' for name in args_id.values()}
-
-    def get_arg(self, name):
-        """Gets an argument identifier based on the name"""
-        ident = self.args.get(name)
-        if ident is None:
-            logging.warning(
-                "Unknown argument name '%s' for prototype '%s'", name, self.name)
-            ident = "0"
-        return ident
-
-    def arg_from_id(self, argid):
-        """Gets an argument identifier from the name"""
-        ident = self.args_id.get(argid)
-        if ident is None:
-            logging.warning(
-                "Unknown argument id '%s' for prototype '%s'", argid, self.name)
-            ident = "arg" + str(monotonic_ns())
-        return ident
-
-    def args_list(self, sep=', '):
-        """Returns cleaned arguments seperated by ', '"""
-        return sep.join(self.args.values())
-
-    def mark_called(self, block):
-        """
-        Saves the type of the calling block's arguments
-        """
-
-        for id_, value in block['inputs'].items():
-            if value[0] == 1:
-                if isinstance(value[1], list):
-                    # Wrapped value
-                    value = value[1]
-                else:
-                    # Wrapped block
-                    value = [2, value[1]]
-            elif value[0] == 3:
-                # Block covering value
-                value = [2, value[1]]
-
-            # 4-8 Number, 9-10 String, # 11 Broadcast
-            if 4 <= value[0] <= 10:
-                self.call_types[self.args_id[id_]].add(get_type(value[1]))
-
-    def guess_types(self):
-        """
-        Makes a guess as to the type of each argument
-        """
-        for name, types in self.call_types.items():
-            if 'str' not in types:
-                if 'float' not in types and config.ENABLE_INT_ARGS:
-                    self.guessed_types[name] = 'int'
-                else:
-                    self.guessed_types[name] = 'float'
-        if self.guessed_types:
-            print("Guessing", *self.guessed_types.values())
-
-    def get_type(self, arg_name):
-        """Gets the guessed type of an argument"""
-        return self.guessed_types[self.args[arg_name]]
-
-
-class Prototypes:
-    """
-    Handles the naming and typing of custom blocks and their arguments
-    """
-
-    def __init__(self, events: Events):
-        self.events = events
-        self.prototypes = {}
-        self.prototypes_id = {}
-
-    def add_prototype(self, mutation, blockid):
-        """Names, saves, and returns a prototype"""
+    def __init__(self, target, mutation, clean_name):
         # Get information from the block
         proccode = mutation['proccode']
         warp = mutation['warp'] in (True, 'true')
         arg_ids = json.loads(mutation['argumentids'])
         arg_names = json.loads(mutation['argumentnames'])
-
-        # Get a clean prototype name
-        cb_name = self.events.clean_event(
-            "my_{name}", {'name': sanitizer.strip_pcodes(proccode)})
 
         # Get clean argument names
         clean_names = Identifiers()
@@ -343,9 +258,71 @@ class Prototypes:
             # Save the name by arg id
             clean_names_id[id_] = new_name
 
+        self.name = clean_name
+        self.warp = warp or config.WARP_ALL
+        self.args = clean_names.dict
+        self.args_id = clean_names_id
+
+        self.arg_nodes = {name: target.digraph.add_node(
+            ('proc_arg', target['name'], proccode, name)
+        ) for name in clean_names_id.values()}
+
+    def get_arg(self, name):
+        """Gets an argument identifier based on the name"""
+        ident = self.args.get(name)
+        if ident is None:
+            logging.warning(
+                "Unknown argument name '%s' for prototype '%s'", name, self.name)
+            ident = "0"
+        return ident
+
+    def arg_from_id(self, argid):
+        """Gets an argument identifier from the name"""
+        ident = self.args_id.get(argid)
+        if ident is None:
+            logging.warning(
+                "Unknown argument id '%s' for prototype '%s'", argid, self.name)
+            ident = "arg" + str(monotonic_ns())
+        return ident
+
+    def args_list(self, sep=', '):
+        """Returns cleaned arguments seperated by ', '"""
+        return sep.join(self.args.values())
+
+    def mark_called(self, target, block):
+        """
+        Saves the type of the calling block's arguments
+        """
+
+        for id_, value in block['inputs'].items():
+            input_type = specmap.get_input_type(target, value)
+
+            self.arg_nodes[self.args_id[id_]].add_type(input_type)
+
+    def get_type(self, arg_name):
+        """Gets the guessed type of an argument"""
+        return self.arg_nodes[self.args[arg_name]].known_type
+
+
+class Prototypes:
+    """
+    Handles the naming and typing of custom blocks and their arguments
+    """
+
+    def __init__(self, events: Events):
+        self.events = events
+        self.prototypes = {}
+        self.prototypes_id = {}
+
+    def add_prototype(self, target, mutation, blockid):
+        """Names, saves, and returns a prototype"""
+        # Get a clean prototype name
+        proccode = mutation['proccode']
+        clean_name = self.events.clean_event(
+            "my_{name}", {'name': sanitizer.strip_pcodes(proccode)})
+
         # Create the protype tuple
-        prototype = Prototype(cb_name, bool(
-            warp), clean_names.dict, clean_names_id)
+        prototype = Prototype(target, mutation, clean_name)
 
         # Save the tuple by proccode and blockid
         self.prototypes[proccode] = prototype
@@ -361,12 +338,7 @@ class Prototypes:
         """Gets a prototype by proccode"""
         return self.prototypes[proccode]
 
-    def mark_called(self, block):
+    def mark_called(self, target, block):
         """Runs type guessing for a procedure call"""
         prototype = self.from_proccode(block['mutation']['proccode'])
-        prototype.mark_called(block)
-
-    def guess_types(self):
-        """Guesses the type of each procedure argument"""
-        for prototype in self.prototypes.values():
-            prototype.guess_types()
+        prototype.mark_called(target, block)

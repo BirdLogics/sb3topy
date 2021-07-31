@@ -10,6 +10,7 @@ import logging
 from .. import config
 from . import naming, specmap
 from .variables import Variables
+from .typing import DiGraph
 
 
 class Targets:
@@ -23,6 +24,7 @@ class Targets:
     def __init__(self):
         self.names = naming.Sprites()
         self.targets: dict[str, Target] = {}
+        self.digraph = DiGraph()
 
     def add_targets(self, targets):
         """Creates and adds each target to the internal dict"""
@@ -30,7 +32,8 @@ class Targets:
         for target in targets:
             self.targets[target['name']] = Target(
                 target,
-                self.names.create_identifier(target['name'])
+                self.names.create_identifier(target['name']),
+                self.digraph
             )
 
     def name_items(self):
@@ -65,14 +68,16 @@ class Target:
     prototype - The prototype currently being used by the parser
     """
 
-    def __init__(self, target, name):
+    def __init__(self, target, name, digraph: DiGraph):
         self.target = target
+        self.clean_name = name
         self.blocks = target['blocks']
         self.hats = []
 
-        self.clean_name = name
+        self.digraph = digraph
 
-        self.vars = Variables(target['isStage'])
+        self.vars = Variables(name, target['isStage'])
+
         self.events = naming.Events()
         self.prototypes = naming.Prototypes(self.events)
 
@@ -101,7 +106,7 @@ class Target:
 
             # Create a prototype with the block
             elif block['opcode'] == 'procedures_prototype':
-                self.prototypes.add_prototype(block['mutation'], blockid)
+                self.prototypes.add_prototype(self, block['mutation'], blockid)
 
             # Note the variable as a universal
             elif block['opcode'] == 'sensing_of':
@@ -118,7 +123,7 @@ class Target:
                       self.target['name'])
 
         # Gets names for all variables
-        self.vars.second_pass(self)
+        self.vars.second_pass(self.target, self.digraph)
 
         for block in self.blocks.values():
             # Skip variables not in a block
@@ -129,7 +134,7 @@ class Target:
 
             # Type guess with the argument values
             if block['opcode'] == 'procedures_call':
-                self.prototypes.mark_called(block)
+                self.prototypes.mark_called(self, block)
 
             # Type guess hint with the value being set
             if opcode == 'data_setvariableto':
@@ -137,7 +142,7 @@ class Target:
 
             # Type guess hint that the variable is a number
             elif opcode == 'data_changevariableby':
-                self.vars.mark_changed(self, block)
+                self.vars.mark_changed(block)
 
             # Note blocks which modify the list
             elif opcode in ('data_addtolist', 'data_deleteoflist',
@@ -148,14 +153,6 @@ class Target:
             # Note usages which may benefit from a dict
             elif opcode in ('data_itemnumoflist', 'data_listcontainsitem'):
                 self.vars.mark_indexed(block)
-
-        # Guess the type of each variable
-        if config.VAR_TYPES:
-            self.vars.guess_types()
-
-        # Guess the type of each prototype arg
-        if config.ARG_TYPES:
-            self.prototypes.guess_types()
 
     def get(self, key, default=None):
         """Gets an item from the internal dict"""

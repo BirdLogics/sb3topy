@@ -9,7 +9,6 @@ TODO Proper type detection
 
 import logging
 import textwrap
-from collections import namedtuple
 
 from ... import config
 from .. import sanitizer
@@ -79,7 +78,7 @@ def get_blockmap(block, target):
     return BlockMap(*blockmap)
 
 
-def get_type(value):
+def get_literal_type(value):
     """Attempts to determine the type of a literal value"""
 
     if str(value).isdigit() and len(str(value)) < config.SIG_DIGITS:
@@ -111,10 +110,16 @@ def get_input_type(target, value):
 
     # 4-8 Number, 9-10 String, # 11 Broadcast
     if 4 <= value[0] <= 10:
-        return get_type(value[1])
+        return get_literal_type(value[1])
 
     # 12 Variable
     if value[0] == 12:
-        return ('var', target['name'], value[1])
+        var = target.variables.get_var('var', value[1])
+        return ('var', var.target_name, value[1])
 
-    return None
+    # 13 List reporter
+    if value[0] == 13:
+        # TODO List reporter typing
+        return 'str'
+
+    return 'any'
