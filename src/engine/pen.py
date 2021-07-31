@@ -90,11 +90,14 @@ class Pen:
     def move(self):
         """Moves and draws with the pen"""
         if self.isdown:
+            # Get the pen offset
+            offset = 0.5 if self.size in (1, 3) else 0
+
             # Get new position
             end_pos = (self.target._xpos + STAGE_SIZE[0]//2,
                        STAGE_SIZE[1]//2 - self.target._ypos)
 
-            size = max(1, round(self.size * self._scale/2)) * 2
+            size = max(1, round(self.size * self._scale))
 
             # Used to draw transparent lines in pg
             # TODO Pen transparency with colorkey faster?
@@ -106,14 +109,14 @@ class Pen:
             # Draw the line
             rect = pg.draw.line(
                 surf, self.color,
-                scale_point(self.position, self._scale),
-                scale_point(end_pos, self._scale), size)
+                scale_point(self.position, self._scale, offset),
+                scale_point(end_pos, self._scale, offset), size)
             rect.union_ip(pg.draw.circle(
                 surf, self.color,
-                scale_point(self.position, self._scale), size/2))
+                scale_point(self.position, self._scale, offset), size/2))
             rect.union_ip(pg.draw.circle(
                 surf, self.color,
-                scale_point(end_pos, self._scale), size/2))
+                scale_point(end_pos, self._scale, offset), size/2))
             Pen.dirty.append(rect.move(self._rect.topleft))
 
             # Blit with blending transparency
@@ -265,7 +268,7 @@ def lerp(color0, color1, fraction1):
     )
 
 
-def scale_point(point, disp_scale):
+def scale_point(point, disp_scale, offset):
     """Scales and rounds point to match the display"""
-    return (round(point[0]*disp_scale),
-            round(point[1]*disp_scale))
+    return (round((point[0]+offset)*disp_scale),
+            round((point[1]+offset)*disp_scale))
