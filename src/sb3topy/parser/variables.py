@@ -155,6 +155,11 @@ class Variables:
         if not name.startswith(prefix):
             name = prefix + '_' + name
 
+        # Verify the variable doesn't already exist
+        if name in self.local_vars.dict:
+            logging.warning("Duplicate local var '%s'", name)
+            return self.local_vars.dict[name]
+        
         # Check if a universal identifier already exists
         if name in self.universal_vars.dict:
             # Get the universal identifier
@@ -166,11 +171,6 @@ class Variables:
             logging.debug(
                 "Creating local var '%s' as universal '%s'", name, ident)
 
-            return self.local_vars.dict[name]
-
-        # Verify the variable doesn't already exist
-        if name in self.local_vars.dict:
-            logging.warning("Duplicate local var '%s'", name)
             return self.local_vars.dict[name]
 
         # Remove invalid characters
