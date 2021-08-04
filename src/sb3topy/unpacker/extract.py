@@ -2,14 +2,15 @@
 extract.py
 
 Used to extract a project into the temp folder.
-
-TODO Validate the md5 of extracted files
 """
 
 import json
 import logging
 import zipfile
+from hashlib import md5
+from os import path
 
+from .. import config
 from ..project import Project
 
 __all__ = ['extract_project', 'Extract']
@@ -77,4 +78,29 @@ class Extract:
         Extracts an asset and saves it to the output folder
         based on a md5ext. The md5ext must be validated.
         """
-        self.project_zip.extract(md5ext, self.project.output_dir)
+        # Get the save path from the md5ext
+        save_path = path.join(self.project.output_dir, md5ext)
+
+        # If the file already exists, don't download it
+        if path.isfile(save_path) and not config.FRESHEN_ASSETS:
+            logging.debug("Skipping existing asset '%s'", md5ext)
+            return True
+
+        logging.debug("Extracting asset '%s' to '%s'", md5ext, save_path)
+
+        # Extract the asset
+        asset = self.project_zip.read(md5ext)
+
+        # Verify the asset's md5 hash
+        if config.VERIFY_ASSETS:
+            md5_hash = md5(asset).hexdigest()
+            if not md5_hash + '.' + md5ext.partion('.')[2] == md5ext:
+                logging.error(
+                    "Extracted asset '%s' has an invalid md5: '%s'", md5ext, md5_hash)
+                return False
+
+        # Save the asset
+        with open(save_path, 'wb') as asset_file:
+            asset_file.write(asset)
+
+        return True

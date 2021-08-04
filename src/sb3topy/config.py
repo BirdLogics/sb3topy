@@ -102,3 +102,13 @@ FALLBACK_IMAGE = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x
 BLANK_SVG_HASHES = ('3339a2953a3bf62bb80e54ff575dbced.svg',)
 FORMAT_JSON = False
 OVERWRITE_ENGINE = True
+
+# Redownload/extract existing assets
+FRESHEN_ASSETS = False
+
+# Reconvert already converted assets
+RECONVERT_SOUNDS = False
+RECONVERT_IMAGES = True
+
+# Verify the md5 of downloaded/extracted assets
+VERIFY_ASSETS = True

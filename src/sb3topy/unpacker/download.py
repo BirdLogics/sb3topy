@@ -6,6 +6,7 @@ Used to download a project into the temp folder.
 
 import logging
 import re
+from hashlib import md5
 from multiprocessing.pool import ThreadPool
 from os import path
 
@@ -80,11 +81,26 @@ class Download:
         url = f"{config.ASSET_HOST}/internalapi/asset/{md5ext}/get/"
         save_path = path.join(self.project.output_dir, md5ext)
 
-        logging.debug("Downloading %s to %s", url, save_path)
+        # If the file already exists, don't download it
+        if path.isfile(save_path) and not config.FRESHEN_ASSETS:
+            logging.debug("Skipping existing asset '%s'", md5ext)
+            return True
+
+        logging.debug("Downloading asset '%s' to '%s'", url, save_path)
 
         # Download the asset
         resp = requests.get(url)
 
-        # Save the set
+        # Verify the asset's md5 hash
+        if config.VERIFY_ASSETS:
+            md5_hash = md5(resp.content).hexdigest()
+            if not md5_hash + '.' + md5ext.partion('.')[2] == md5ext:
+                logging.error(
+                    "Downloaded asset '%s' has an invalid md5: '%s'", md5ext, md5_hash)
+                return False
+
+        # Save the asset
         with open(save_path, 'wb') as asset_file:
             asset_file.write(resp.content)
+
+        return True

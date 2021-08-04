@@ -86,6 +86,10 @@ class Convert:
         save_path = path.join(self.project.output_dir,
                               md5ext.rstrip('.mp3') + '-mp3.wav')
 
+        # Possibly don't reconvert the asset
+        if path.isfile(save_path) and not config.RECONVERT_SOUNDS:
+            return True, f"Skipping conversion of mp3 '{md5ext}' (already converted)"
+
         # Get the conversion command
         cmd = shlex.split(config.MP3_COMMAND.format(
             INPUT=shlex.quote(asset_path),
@@ -108,6 +112,10 @@ class Convert:
         asset_path = path.join(self.project.output_dir, md5ext)
         save_path = path.join(self.project.output_dir,
                               md5ext.rstrip('.svg') + '-svg.png')
+
+        # Possibly don't reconvert the asset
+        if path.isfile(save_path) and not config.RECONVERT_IMAGES:
+            return True, f"Skipping conversion of svg '{md5ext}' (already converted)"
 
         # Some blank svg files fail to convert with cariosvg
         # Use a fallback pre-converted png image instead
