@@ -12,7 +12,6 @@ import logging
 from .. import config
 from . import sanitizer, specmap, typing
 from .naming import Identifiers
-from . import typing
 
 
 class Variables:
@@ -158,7 +157,10 @@ class Variables:
 
         # Verify the variable doesn't already exist
         if name in self.local_vars.dict:
-            logging.warning("Duplicate local var '%s'", name)
+            # TODO Identify variables with their id as well
+            # Sometimes a variable has an invisible duplicate in the json
+            # Once fixed, the below should be changed back to warning
+            logging.debug("Duplicate local var '%s'", name)
 
             self.local_vars.dict[name].node.add_type(
                 specmap.get_literal_type(initial_value))

@@ -4,9 +4,10 @@ config.py
 Loads converter configuration
 """
 
-import sys
-import json
+# pylint: disable=line-too-long
 
+import json
+import sys
 
 # Allows CONFIG_PATH to be set with a module reload
 try:
@@ -22,7 +23,7 @@ except FileNotFoundError:
     _CONFIG = {}
 
 PROJECT_PATH = _CONFIG.get('project_path')
-TEMP_FOLDER = _CONFIG.get('temp_folder', "temp")
+TEMP_FOLDER = _CONFIG.get('temp_folder')
 
 # Parser options
 SPECMAP_PATH = _CONFIG.get("specmap_path", "data/specmap2.txt")
@@ -33,16 +34,19 @@ WARP_ALL = _CONFIG.get("warp_all", False)
 IMAGE_TYPES = ('png', 'svg', 'jpg')
 SOUND_TYPES = ('wav', 'mp3')
 
+INKSCAPE_PATH = '"C:/Program Files/Inkscape/bin/inkscape.exe"'
 SVG_COMMAND = _CONFIG.get(
-    'svg_convert_cmd',
-    '"C:/Program Files/Inkscape/bin/inkscape.exe" -l -o "{OUTPUT}" "{INPUT}"'
+    'svg_convert_cmd', '{INKSCAPE_PATH} -l -o "{OUTPUT}" "{INPUT}"'
 )
 SVG_DPI = _CONFIG.get('svg_dpi')
 SVG_SCALE = _CONFIG.get('svg_scale')
 
+VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
 MP3_COMMAND = _CONFIG.get(
-    'mp3_convert_cmd',
-    '"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe" -I dummy --sout "#transcode{{acodec=s16l,channels=2}}:std{{access=file,mux=wav,dst=\'{OUTPUT}\'}}" "{INPUT}" vlc://quit'
+    'mp3_convert_cmd', (
+        '{VLC_PATH} -I dummy --sout "#transcode{{acodec=s16l,channels=2}}:'
+        'std{{access=file,mux=wav,dst={OUTPUT}}}" {INPUT} vlc://quit'
+    )
 )
 
 LOG_LEVEL = _CONFIG.get('log_level', 20)
@@ -78,3 +82,23 @@ CHANGED_NUM_CAST = True
 # Replace all int casts with float
 # TODO This option shouldn't be necesary
 DISABLE_INT_CAST = True
+
+# Number of threads to use to download projects
+DOWNLOAD_THREADS = 16
+
+# Website to download projects from
+PROJECT_HOST = "https://projects.scratch.mit.edu"
+ASSET_HOST = "https://assets.scratch.mit.edu"
+
+# TODO Define config values here
+PROJECT_URL = "339207237"
+OUTPUT_FOLDER = TEMP_FOLDER
+CONVERT_ASSETS = True
+CONVERT_MP3 = True
+USE_CAIROSVG = True
+
+# Blank PNG fallback image
+FALLBACK_IMAGE = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0bIDAT\x18Wc`\x00\x02\x00\x00\x05\x00\x01\xaa\xd5\xc8Q\x00\x00\x00\x00IEND\xaeB`\x82'
+BLANK_SVG_HASHES = ('3339a2953a3bf62bb80e54ff575dbced.svg',)
+FORMAT_JSON = False
+OVERWRITE_ENGINE = True

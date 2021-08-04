@@ -1,42 +1,61 @@
 """
-main.py
+__main__.py
 
-Run the parser with the settings in config
+Orchastrates unpacking, converting assets, parsing
+the project, and copying files based on configuration.
 """
 
-import json
 import logging
-import shutil
-from os import path
 
-from . import config, parser, unpacker
+from . import config, packer, parser, unpacker
 
 
 def main():
-    """Handles the module being called from the command line"""
+    """
+    Converts the project using the settings saved in config
+    """
+    # Setup the logger
     logging.basicConfig(
         format="[%(levelname)s] %(message)s", level=config.LOG_LEVEL)
 
-    sb3, manifest = unpacker.unpack()
+    # Download the project from the internet
+    if config.PROJECT_URL:
+        project = unpacker.download_project(
+            config.PROJECT_URL, config.OUTPUT_FOLDER)
 
+    # Extract the project from an sb3
+    elif config.PROJECT_PATH:
+        project = unpacker.extract_project(
+            config.PROJECT_PATH, config.OUTPUT_FOLDER)
+
+    else:
+        logging.error("A project url/path was not provided.")
+        project = None
+
+    # Verify the project was unpacked
+    if project is None:
+        logging.critical("Failed to unpack project.")
+        return False
+
+    # Save a debug json
     if config.DEBUG_JSON:
-        json_path = path.join(config.TEMP_FOLDER, "project.json")
-        logging.info("Saving debug json to '%s'", json_path)
-        with open(json_path, 'w') as file:
-            json.dump(sb3, file)
+        project.save_json(config.FORMAT_JSON)
 
-    # logging.getLogger().setLevel(0)
-    code = parser.Parser().parse(sb3)
+    # Convert project assets
+    if config.CONVERT_ASSETS:
+        unpacker.convert_assets(project)
 
-    save_path = path.join(config.TEMP_FOLDER, "project.py")
-    with open(save_path, 'w', encoding="utf-8", errors="ignore") as file:
-        file.write(code)
-    logging.info(f"Saved to '{save_path}'")
+    # Parse the project
+    code = parser.parse_project(project)
+
+    # Save the project's code
+    packer.save_code(project, code)
 
     # Copy engine files
-    logging.info("Copying engine files")
-    shutil.rmtree(path.join(config.TEMP_FOLDER, "engine"), )
-    shutil.copytree("engine", path.join(config.TEMP_FOLDER, "engine"))
+    packer.copy_engine(project)
+
+    while True:
+        input(project.output_dir)
 
 
 if __name__ == '__main__':

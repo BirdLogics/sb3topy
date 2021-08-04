@@ -4,8 +4,8 @@ __init__.py
 
 # flake8: noqa
 
-from . import config, unpacker
-from .parser import parser, sanitizer
+from . import config, packer, parser, project, unpacker
+from .parser import sanitizer
 
 
 def load_config(path):
