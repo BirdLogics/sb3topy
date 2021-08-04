@@ -11,15 +11,14 @@ TODO Smart variable type detection
 import logging
 
 from .. import config
-from ..project import Project
-from . import sanitizer, specmap, targets, typing
+from . import sanitizer, specmap, targets
 from .specmap import codemap
 from .variables import Variables
 
 __all__ = ('parse_project', 'Parser')
 
 
-def parse_project(project: Project):
+def parse_project(project):
     """Parses project and returns the Python code"""
     logging.info("Compiling project into Python...")
     return Parser().parse(project)
