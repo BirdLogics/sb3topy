@@ -8,7 +8,8 @@ import subprocess
 import threading
 import time
 import tkinter as tk
-from tkinter import filedialog, ttk
+from ctypes import windll
+from tkinter import ttk
 
 FORMATS = {
     '[DEBUG]': "debug",
@@ -18,9 +19,9 @@ FORMATS = {
     '[CRITICAL]': "critical"
 }
 
-# TODO Scaling for 4k displays
-# from ctypes import windll
-# windll.shcore.SetProcessDpiAwareness(True)
+# TODO Checkboxes are small on 4k displays
+windll.shcore.SetProcessDpiAwareness(True)
+
 # self.tk.call('tk', 'scaling', 4.0)
 
 
@@ -169,7 +170,7 @@ class ConvertFrame(ttk.Frame):
 
     def browse_project(self):
         """Show a dialog to select the project file"""
-        path = filedialog.askopenfilename(
+        path = tk.filedialog.askopenfilename(
             filetypes=[("Project Files", "*.sb3;*.zip"),
                        ("All Files", "*.*")])
         if path:
@@ -177,7 +178,7 @@ class ConvertFrame(ttk.Frame):
 
     def browse_folder(self):
         """Show a dialog to select the output folder"""
-        self.folder_path.set(filedialog.askdirectory())
+        self.folder_path.set(tk.filedialog.askdirectory())
 
     def convert(self):
         """Run the converter"""
@@ -188,7 +189,7 @@ class ConvertFrame(ttk.Frame):
 
     def browse_zip(self):
         """Show a dialog to select the output zip path"""
-        path = filedialog.asksaveasfilename(
+        path = tk.filedialog.asksaveasfilename(
             defaultextension=".zip",
             filetypes=[("ZIP Files", "*.zip"),
                        ("All Files", "*.*")])
@@ -200,7 +201,7 @@ class ConvertFrame(ttk.Frame):
 
     def browse_exe(self):
         """Show a dialog to select the output exe path"""
-        path = filedialog.asksaveasfilename(
+        path = tk.filedialog.asksaveasfilename(
             defaultextension=".exe",
             filetypes=[("EXE Files", "*.exe"),
                        ("All Files", "*.*")])
@@ -294,7 +295,7 @@ class OutputFrame(ttk.Frame):
 
     def export_log(self):
         """Save the current log to a file"""
-        path = filedialog.asksaveasfilename(
+        path = tk.filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("Text File", "*.txt;*.log"),
                        ("All Files", "*.*")])
@@ -619,8 +620,8 @@ class App(tk.Tk):
         self.mode.set("output")
 
         cmd = [
-            "py", "-3.8", "-u", "main.py",
-            "-c", self.save_config("data/config.json"),
+            "py", "-u", '-m', "sb3topy",
+            self.save_config("data/config.json"),
             self.convert.project_path.get()
         ]
         if options:
