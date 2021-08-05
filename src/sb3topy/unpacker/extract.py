@@ -79,7 +79,7 @@ class Extract:
         based on a md5ext. The md5ext must be validated.
         """
         # Get the save path from the md5ext
-        save_path = path.join(self.project.output_dir, md5ext)
+        save_path = path.join(self.project.output_dir, "assets", md5ext)
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:

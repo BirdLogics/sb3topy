@@ -6,6 +6,7 @@ Holds a class which holds the project.json and other info
 
 import json
 import logging
+import os
 import tempfile
 from os import path
 
@@ -39,6 +40,11 @@ class Project:
             self._tempdir = tempfile.TemporaryDirectory()
             self.output_dir = self._tempdir.name
             logging.info("Created temp file at '%s'", self.output_dir)
+
+        # Create an assets folder if one doesnt exist
+        assets_dir = path.join(self.output_dir, "assets")
+        if not path.isdir(assets_dir):
+            os.mkdir(assets_dir)
 
         # Read assets from the project json
         self.assets = set()

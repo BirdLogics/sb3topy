@@ -82,8 +82,8 @@ class Convert:
     def convert_mp3(self, md5ext):
         """Converts an mp3 asset to wav"""
         # Get the input and output paths
-        asset_path = path.join(self.project.output_dir, md5ext)
-        save_path = path.join(self.project.output_dir,
+        asset_path = path.join(self.project.output_dir, "assets", md5ext)
+        save_path = path.join(self.project.output_dir, "assets",
                               md5ext.rstrip('.mp3') + '-mp3.wav')
 
         # Possibly don't reconvert the asset
@@ -109,8 +109,8 @@ class Convert:
     def convert_svg(self, md5ext):
         """Converts an svg asset to png"""
         # Get the input and output paths
-        asset_path = path.join(self.project.output_dir, md5ext)
-        save_path = path.join(self.project.output_dir,
+        asset_path = path.join(self.project.output_dir, "assets", md5ext)
+        save_path = path.join(self.project.output_dir, "assets",
                               md5ext.rstrip('.svg') + '-svg.png')
 
         # Possibly don't reconvert the asset

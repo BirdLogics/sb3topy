@@ -79,7 +79,7 @@ class Download:
         """
         # Get download and save paths from md5ext
         url = f"{config.ASSET_HOST}/internalapi/asset/{md5ext}/get/"
-        save_path = path.join(self.project.output_dir, md5ext)
+        save_path = path.join(self.project.output_dir, "assets", md5ext)
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
