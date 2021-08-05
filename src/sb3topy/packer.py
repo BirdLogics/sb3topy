@@ -7,6 +7,7 @@ Handles several tasks specific to saving files
 import logging
 import shutil
 from os import path
+import sys
 
 from . import config
 from .project import Project
@@ -66,3 +67,12 @@ def copy_engine(project: Project):
             "Alternatively, you can create a file name 'DISABLE_OVERWRITE'"
             "to disable modifying these files.\n"
         ))
+
+
+def run_project(output_dir):
+    """Runs the project.py stored in output_dir"""
+    #pylint: disable=all
+    logging.info("Running project...")
+    sys.path.insert(1, output_dir)
+    import project  # type:ignore
+    project.engine.start_program()

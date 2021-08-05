@@ -108,7 +108,7 @@ FRESHEN_ASSETS = False
 
 # Reconvert already converted assets
 RECONVERT_SOUNDS = False
-RECONVERT_IMAGES = True
+RECONVERT_IMAGES = False
 
 # Verify the md5 of downloaded/extracted assets
 VERIFY_ASSETS = True

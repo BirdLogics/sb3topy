@@ -3,6 +3,11 @@ __main__.py
 
 Orchastrates unpacking, converting assets, parsing
 the project, and copying files based on configuration.
+
+To allow simple configuration from the command line, the
+path to a configuration json can be passed as an argument.
+
+TODO Better commandline interface
 """
 
 import logging
@@ -34,7 +39,7 @@ def main():
 
     # Verify the project was unpacked
     if project is None:
-        logging.critical("Failed to unpack project.")
+        logging.error("Failed to unpack project.")
         return False
 
     # Save a debug json
@@ -54,8 +59,13 @@ def main():
     # Copy engine files
     packer.copy_engine(project)
 
-    while True:
-        input(project.output_dir)
+    logging.info("Finished converting project. Saved in '%s'",
+                 project.output_dir)
+
+    if config.AUTORUN:
+        packer.run_project(project.output_dir)
+
+    return True
 
 
 if __name__ == '__main__':
