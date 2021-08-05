@@ -220,7 +220,7 @@ class DiGraph:
         """Creates a node from id data"""
         # Verify the node hasn't been created
         if id_tuple not in self.nodes:
-            logging.debug("Created type node %s", id_tuple)
+            logging.debug("Creating type node %s", id_tuple)
             self.nodes[id_tuple] = Node(id_tuple, self.unresolved)
 
         else:
