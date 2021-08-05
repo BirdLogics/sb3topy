@@ -91,15 +91,22 @@ PROJECT_HOST = "https://projects.scratch.mit.edu"
 ASSET_HOST = "https://assets.scratch.mit.edu"
 
 # TODO Define config values here
-PROJECT_URL = "339207237"
+PROJECT_URL = ""
 OUTPUT_FOLDER = TEMP_FOLDER
 CONVERT_ASSETS = True
 CONVERT_MP3 = True
 USE_CAIROSVG = True
+AUTORUN = True
 
 # Blank PNG fallback image
 FALLBACK_IMAGE = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0bIDAT\x18Wc`\x00\x02\x00\x00\x05\x00\x01\xaa\xd5\xc8Q\x00\x00\x00\x00IEND\xaeB`\x82'
-BLANK_SVG_HASHES = ('3339a2953a3bf62bb80e54ff575dbced.svg',)
+BLANK_SVG_HASHES = (
+    '3339a2953a3bf62bb80e54ff575dbced.svg',
+
+    # TODO Verify these are actually blank (pokemon4.sb3)
+    '14e46ec3e2ba471c2adfe8f119052307.svg',
+    '09f60d713153e3d836152b1db500afd1.svg'
+)
 FORMAT_JSON = False
 OVERWRITE_ENGINE = True
 
