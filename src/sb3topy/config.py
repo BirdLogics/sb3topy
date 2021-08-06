@@ -8,6 +8,7 @@ Loads converter configuration
 
 import json
 import sys
+import os
 
 # Allows CONFIG_PATH to be set with a module reload
 try:
@@ -34,12 +35,14 @@ WARP_ALL = _CONFIG.get("warp_all", False)
 IMAGE_TYPES = ('png', 'svg', 'jpg')
 SOUND_TYPES = ('wav', 'mp3')
 
-INKSCAPE_PATH = '"C:/Program Files/Inkscape/bin/inkscape.exe"'
+# "cairosvg {INPUT} -o {OUTPUT} -s {SCALE}"
+INKSCAPE_PATH = '"C:/Program Files/Inkscape/bin/inkscape.com"'
 SVG_COMMAND = _CONFIG.get(
-    'svg_convert_cmd', '{INKSCAPE_PATH} -l -o "{OUTPUT}" "{INPUT}"'
+    'svg_convert_cmd', '{INKSCAPE_PATH} -l -d {DPI} -o "{OUTPUT}" "{INPUT}"'
 )
-SVG_DPI = _CONFIG.get('svg_dpi')
-SVG_SCALE = _CONFIG.get('svg_scale')
+BASE_DPI = _CONFIG.get('svg_dpi', 96)
+SVG_SCALE = int(_CONFIG.get('svg_scale', 2))
+SVG_DPI = BASE_DPI * SVG_SCALE
 
 VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
 MP3_COMMAND = _CONFIG.get(
@@ -97,6 +100,7 @@ CONVERT_ASSETS = True
 CONVERT_MP3 = True
 USE_CAIROSVG = True
 AUTORUN = True
+CONVERT_THREADS = os.cpu_count()
 
 # Blank PNG fallback image
 FALLBACK_IMAGE = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0bIDAT\x18Wc`\x00\x02\x00\x00\x05\x00\x01\xaa\xd5\xc8Q\x00\x00\x00\x00IEND\xaeB`\x82'
@@ -115,7 +119,7 @@ FRESHEN_ASSETS = False
 
 # Reconvert already converted assets
 RECONVERT_SOUNDS = False
-RECONVERT_IMAGES = False
+RECONVERT_IMAGES = True
 
 # Verify the md5 of downloaded/extracted assets
 VERIFY_ASSETS = True

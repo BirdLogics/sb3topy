@@ -1,7 +1,19 @@
 """
 convert.py
 
+Handles the conversion of assets from unsupported formats, such as svg
+and mp3, to supported formats, such as png and wav.
 
+The conversion is run with multiple threads, each of which calls a
+a command in a subprocess to convert the asset.
+
+The conversion is intended to run with Inkscape or cairosvg for svgs
+and VLC for mp3s, but other tools which can be run with a command
+should work as well.
+
+It is not necesary to convert mp3s to wav when using Pygame 2+, but it
+may a good idea since, according to the Pygame docs, mp3 support is
+limited and can crash with certain formats on some systems.
 """
 
 import logging
@@ -31,13 +43,10 @@ class Convert:
         self.project = project
 
         # Convert assets
-        pool = ThreadPool()
+        pool = ThreadPool(config.CONVERT_THREADS)
         results = pool.imap_unordered(self.convert_asset, self.assets_iter())
-        for sucesss, msg in results:
-            if sucesss:
-                logging.debug(msg)
-            else:
-                logging.error(msg)
+        for md5ext, new_md5ext in results:
+            project.assets[md5ext] = new_md5ext
         pool.close()
         pool.join()
 
@@ -79,8 +88,14 @@ class Convert:
         if ext == 'svg':
             return self.convert_svg(md5ext)
 
+        logging.error("Unexpected asset type for '%s'", md5ext)
+        return md5ext, None
+
     def convert_mp3(self, md5ext):
         """Converts an mp3 asset to wav"""
+        # Get the new md5ext reflecting the conversion
+        new_md5ext = md5ext.rstrip('.mp3') + '-mp3.wav'
+
         # Get the input and output paths
         asset_path = path.join(self.project.output_dir, "assets", md5ext)
         save_path = path.join(self.project.output_dir, "assets",
@@ -88,7 +103,9 @@ class Convert:
 
         # Possibly don't reconvert the asset
         if path.isfile(save_path) and not config.RECONVERT_SOUNDS:
-            return True, f"Skipping conversion of mp3 '{md5ext}' (already converted)"
+            logging.debug(
+                "Skipping conversion of mp3 '%s' (already converted)")
+            return md5ext, new_md5ext
 
         # Get the conversion command
         cmd = shlex.split(config.MP3_COMMAND.format(
@@ -100,44 +117,52 @@ class Convert:
         # Attempt to run the command
         try:
             subprocess.run(cmd, check=True, capture_output=True, text=True)
+            logging.debug("Converted sound '%s' to wav", md5ext)
+            return md5ext, new_md5ext
         except subprocess.CalledProcessError as error:
-            return False, f"Error when converting mp3 '{md5ext}':" + \
-                f"\n{cmd}\n{error.stderr.rstrip()}"
-
-        return True, f"Converted sound '{md5ext}' to wav"
+            logging.error("Failed to convert mp3 '%s':\n%s\n%s\n",
+                          md5ext, cmd, error.stderr.rstrip())
 
     def convert_svg(self, md5ext):
         """Converts an svg asset to png"""
+        # Get the new md5ext reflecting the conversion
+        new_md5ext = f"{md5ext.rstrip('.svg')}-svg-{config.SVG_SCALE}x.png"
+
         # Get the input and output paths
         asset_path = path.join(self.project.output_dir, "assets", md5ext)
-        save_path = path.join(self.project.output_dir, "assets",
-                              md5ext.rstrip('.svg') + '-svg.png')
+        save_path = path.join(self.project.output_dir, "assets", new_md5ext)
 
         # Possibly don't reconvert the asset
         if path.isfile(save_path) and not config.RECONVERT_IMAGES:
-            return True, f"Skipping conversion of svg '{md5ext}' (already converted)"
+            logging.debug(
+                "Skipping conversion of svg '%s' (already converted)", md5ext)
+            return md5ext, new_md5ext
 
         # Some blank svg files fail to convert with cariosvg
         # Use a fallback pre-converted png image instead
         if md5ext in config.BLANK_SVG_HASHES:
             self.fallback_image(save_path)
-            return True, f"Used fallback image for blank svg '{md5ext}'"
+            logging.debug("Used fallback image for blank svg '%s'", md5ext)
+            return md5ext, new_md5ext
 
         # Get the conversion command
         cmd = shlex.split(config.SVG_COMMAND.format(
             INPUT=shlex.quote(asset_path),
             OUTPUT=shlex.quote(save_path),
+            DPI=config.SVG_DPI,
+            SCALE=config.SVG_SCALE,
             INKSCAPE_PATH=config.INKSCAPE_PATH
         ))
 
         # Attempt to run the command
         try:
             subprocess.run(cmd, check=True, text=True, capture_output=True)
+            logging.debug("Converted svg '%s' to png", md5ext)
+            return md5ext, new_md5ext
         except subprocess.CalledProcessError as error:
-            return False, f"Error when converting svg '{md5ext}':" + \
-                f"\n{cmd}\n{error.stderr.rstrip()}"
-
-        return True, f"Converted image '{md5ext}' to png"
+            logging.error("Failed to convert svg '%s':\n%s\n%s\n",
+                          md5ext, cmd, error.stderr.rstrip())
+            return md5ext, None
 
     @staticmethod
     def fallback_image(save_path):

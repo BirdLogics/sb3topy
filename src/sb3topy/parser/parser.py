@@ -21,7 +21,7 @@ __all__ = ('parse_project', 'Parser')
 def parse_project(project):
     """Parses project and returns the Python code"""
     logging.info("Compiling project into Python...")
-    return Parser().parse(project)
+    return Parser(project).parse()
 
 
 class Parser:
@@ -32,15 +32,14 @@ class Parser:
     TODO Sprite class
     """
 
-    target: targets.Target
-
-    def __init__(self):
+    def __init__(self, project):
         self.targets = targets.Targets()
+        self.project = project
 
-    def parse(self, sb3):
+    def parse(self):
         """Parses the sb3 and returns Python code"""
         # Run the first parsing pass
-        self.first_pass(sb3)
+        self.first_pass()
 
         # Run the second parsing pass
         self.second_pass()
@@ -48,7 +47,7 @@ class Parser:
         # Run the final parsing pass
         return self.third_pass()
 
-    def first_pass(self, sb3):
+    def first_pass(self):
         """
         Runs the first pass of the parser.
         The first pass creates classes for targets and prototypes,
@@ -56,7 +55,7 @@ class Parser:
         """
 
         # Create a class for each target
-        self.targets.add_targets(sb3['targets'])
+        self.targets.add_targets(self.project['targets'])
 
         # Have each target run a first pass
         for target in self.targets:
@@ -98,7 +97,7 @@ class Parser:
         header_code = codemap.create_header(target) + "\n\n"
 
         # Parse variables, lists, costumes, and sounds
-        init_code = codemap.create_init(target) + "\n\n"
+        init_code = codemap.create_init(target, self.project.assets) + "\n\n"
 
         # Parse all blocks into code
         block_code = self.parse_blocks()

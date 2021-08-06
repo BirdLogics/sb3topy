@@ -47,7 +47,7 @@ class Project:
             os.mkdir(assets_dir)
 
         # Read assets from the project json
-        self.assets = set()
+        self.assets = {}
         self._init_assets()
 
     def _init_assets(self):
@@ -57,7 +57,7 @@ class Project:
             # Read costume md5exts
             for costume in sprite['costumes']:
                 if sanitizer.valid_md5ext(costume['md5ext']):
-                    self.assets.add(costume['md5ext'])
+                    self.assets[costume['md5ext']] = None
                 else:
                     logging.error("Invalid costume md5ext '%s'",
                                   costume['md5ext'])
@@ -65,7 +65,7 @@ class Project:
             # Read sound md5exts
             for sound in sprite['sounds']:
                 if sanitizer.valid_md5ext(sound['md5ext']):
-                    self.assets.add(sound['md5ext'])
+                    self.assets[sound['md5ext']] = None
                 else:
                     logging.error("Invalid sound md5ext '%s'", sound['md5ext'])
 

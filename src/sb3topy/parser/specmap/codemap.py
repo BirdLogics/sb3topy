@@ -5,6 +5,7 @@ Used to store and generate code snippets
 """
 
 import logging
+import re
 from textwrap import indent
 
 from .. import sanitizer
@@ -37,12 +38,12 @@ def file_footer():
     """Creates the code at the end to run the program"""
     # Create an if __name__ == '__main__' statement
     return (
-        "if __name__ == '__main__':"
+        "if __name__ == '__main__':\n"
         "    engine.start_program()"
     )
 
 
-def create_init(target):
+def create_init(target, assets):
     """Creates Python __init__ code for a target dict"""
     info = (
         "self._xpos = {xpos}\n"
@@ -57,7 +58,7 @@ def create_init(target):
         visible=target.get('visible', True)
     ) + "\n\n"
 
-    costumes = parse_costumes(target) + "\n\n"
+    costumes = parse_costumes(target, assets) + "\n\n"
     sounds = parse_sounds(target) + "\n\n"
 
     vars_init = parse_variables(target) + "\n\n"
@@ -91,7 +92,7 @@ def target_class(code, name, clean_name):
     )
 
 
-def parse_costumes(target):
+def parse_costumes(target, assets):
     """Creates code to init costumes for a target"""
     costumes = []
 
@@ -99,12 +100,18 @@ def parse_costumes(target):
     for costume in target['costumes']:
         name = sanitizer.quote_string(costume['name'])
 
-        # Validate the costume path
-        if not sanitizer.valid_md5ext(costume['md5ext']):
-            logging.error(
-                "Invalid costume format or path '%s'", costume['md5ext'])
+        # Get the validated and modified md5ext from assets
+        if costume['md5ext'] not in assets:
+            logging.error("Missing costume asset '%s'", costume['md5ext'])
             costumes.append("{'name': " + name + "}")
             continue
+        md5ext = assets[costume['md5ext']] or costume['md5ext']
+
+        # Get the bitmap scale for converted svgs
+        if "-svg" in md5ext:
+            scale = int(re.search(r"-svg-(\d+)x", md5ext)[1])
+        else:
+            scale = int(costume['bitmapResolution'])
 
         # Create the costume dict
         costumes.append((
@@ -116,13 +123,12 @@ def parse_costumes(target):
             "}}"
         ).format(
             name=name,
-            path=sanitizer.quote_string(costume['md5ext']),
+            path=sanitizer.quote_string(md5ext),
             center=(
                 int(costume['rotationCenterX']),
                 int(costume['rotationCenterY'])
             ),
-            # TODO Missing bitmapResolution caused by unpacker?
-            scale=int(costume.get('bitmapResolution', 2))
+            scale=scale
         ))
 
     # Create the costumes list string
@@ -209,12 +215,11 @@ def parse_lists(target: Target):
         items = []
         for value in lst[1]:
             items.append(sanitizer.quote_number(value))
-        
+
         # Get the list Variable object
         var = target.vars.get_var('list', lst[0])
         list_class = 'BaseList' if var.is_modified else 'StaticList'
         logging.debug("Treating list '%s' as %s", var.clean_name, list_class)
-        
 
         # Create code to initialize the list
         list_init.append((
