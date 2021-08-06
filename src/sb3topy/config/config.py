@@ -1,110 +1,168 @@
 """
 config.py
 
-Loads converter configuration
+Contains default configuration settings
+
+General Settings:
+    OUTPUT_PATH: The default folder in which to save the converted
+        project, download/extracted assets, and converted assets.
+
+    PROJECT_PATH: The path to a project sb3 file to convert
+    PROJECT_URL: The web url to a project
+
+    AUTORUN: Automatically run the project after the conversion has
+        completed.
+    TODO Disable autorun if there were warnings/errors
+
+Asset Settings:
+    IMAGE_TYPES: A tuple of known supported image types
+    SOUND_TYPES: A tuple of known supported sound types
+
+    FRESHEN_ASSETS: Overwrite existing assets when downloading or
+        extracting the project rather than skipping them.
+    VALIDATE_ASSETS: Validate downloaded or extracted assets before
+        saving them.
+
+    CONVERT_MP3: Allows disabling of mp3 conversion. When using
+        Pygame 2+, mp3 conversion is not required, but it is still
+        recommended.
+    CONVERT_ASSETS: Allows disabling of asset conversion. The project
+        will not be able to if any svgs are in the project.
+
+    RECONVERT_SOUNDS: Convert and overwrite previously converted
+        sounds. Useful if sounds were corrupted during conversion.
+    RECONVERT_IMAGES: Convert and overwrite previously converted
+        images. Useful if images were corrupted during conversion.
+
+    CONVERT_THREADS: The number of threads to use when converting
+        assets. Note that each thread usually creates a process.
+    TODO Default CONVERT_THREADS to cpu_count?
+
+    SVG_COMMAND: The command used to convert an svg file to a png file.
+        The input and output path will be passed through {INPUT} and
+        {OUTPUT} format parameters. {DPI} or {SCALE} should also be
+        used to allow adjustable bitmap resolution.
+    INKSCAPE_PATH: Passed to SVG_COMMAND as {INKSCAPE_PATH}
+    TODO Remove INKSCAPE_PATH
+
+    BASE_DPI: The DPI of an unscaled SVG image.
+    SVG_SCALE: How much to scale SVGs when converting to bitmap.
+    SVG_DPI: The calculated DPI of the SVG conversion.
+
+    BLANK_SVG_HASHES: A tuple of md5exts which are blanks svg images.
+        Some svg converters (cairosvg) don't work with these svgs, so
+        the FALLBACK_IMAGE is used rather than attempting conversion.
+    FALLBACK_IMAGE: The binary data of a blank png image.
+
+    MP3_COMMAND: The command used to convert an mp3 file to a wav file.
+        The input and output path will be passed through {INPUT} and
+        {OUTPUT} format parameters.
+    VLC_PATH: Passed to MP3_COMMAND as {VLC_PATH}.
+    TODO Remove VLC_PATH
+
+Typing Settings:
+    LEGACY_LISTS: Use list classes wth maximum compatibility for legacy
+        indices (first, last, random, all). Only necesary if a block
+        containing a legacy index is used instead of directly putting
+        first/last/random/all in the list block.
+
+    VAR_TYPES: Enables variable type guessing. Disabling may improve
+        compatibility as type guessing is still a work in progress.
+
+    ARG_TYPES: Enables type guessing for custom block arguments. As
+        with VAR_TYPES, disabling may improve compatibility.
+
+    LIST_TYPES: Enables lists to be detected a Static, or unchanging.
+    TODO LIST_TYPES is a bad name
+
+    DISABLE_ANY_CAST: Causes the type guesser to ignore items with the
+        'any' type when guessing the type of an object. If the object
+        is set to a item of any type, the item will be casted to the
+        guessed type of the object.
+
+    AGGRESSIVE_NUM_CAST: If an object is ever set to a number, assume
+        the object is of a numeric type.
+
+    CHANGED_NUM_CAST: If a variable is ever changed using the "data_change
+       variableby" block, assume the variable is of a numeric type.
+
+    DISABLE_STR_CAST: If an object is set to both a string and a
+        number assume the object is of the any type rather than the str
+        type. Assuming the object is any prevents a primarily numeric
+        object from frequently casting a number to a string, and then
+        back to a number again when the object is used.
+    TODO Used as type detection?
+
+    DISABLE_INT_CAST: Due to flaws in type detection, float objects can
+        sometimes be incorrectly detected as integer objects.
+    TODO Use block return types in type detection
+
+    SIG_DIGITS: Floating point values lose accuracy when they get too
+        long. Only values which have fewer characters than SIG_DIGITS
+        after the decimal point (or the entire value for ints) will be
+        detected a number. Other values are assumed to be strings.
+
+Download Settings:
+    PROJECT_HOST: The path to the projects website.
+    ASSET_HOST: The path to the assets website.
+
+    DOWNLOAD_THREADS: The number of threads to use when downloading
+        project assets.
+
+DEBUG_SETTINGS:
+    LOG_LEVEL: The log level to set when initializing the logger.
+
+    DEBUG_JSON: Saves a copy of the project.json when converting the
+        project. Adds a small amount of time to the conversion
+        process.
+
+    FORMAT_JSON: Adds indentation to the saved debug json. Adds even
+        more time to the conversion process.
+
+    OVERWRITE_ENGINE: Deletes the engine folder from the output
+        directory before copying files. Otherwise, if the engine folder
+        exists, the engine will not be copied, even if it has been
+        modified.
+
+Miscellaneous:
+    WARP_ALL: Enables warp on every custom block. May improve
+        performance with certain projects, but will cause major issues
+        with other projects.
 """
 
-# pylint: disable=line-too-long
+# General Settings
+OUTPUT_PATH = ""
 
-import json
-import sys
-import os
+PROJECT_PATH = ""
+PROJECT_URL = ""
 
-# Allows CONFIG_PATH to be set with a module reload
-try:
-    CONFIG_PATH  # type: ignore
-except NameError:
-    CONFIG_PATH = sys.argv[1] if len(sys.argv) == 2 else 'data/config.json'
+AUTORUN = True
 
-# Load config json
-try:
-    with open(CONFIG_PATH, 'r') as _file:
-        _CONFIG = json.load(_file)
-except FileNotFoundError:
-    _CONFIG = {}
 
-PROJECT_PATH = _CONFIG.get('project_path')
-TEMP_FOLDER = _CONFIG.get('temp_folder')
-
-# Parser options
-SPECMAP_PATH = _CONFIG.get("specmap_path", "data/specmap2.txt")
-
-WARP_ALL = _CONFIG.get("warp_all", False)
-
-# Unpacker options
+# Asset Settings
 IMAGE_TYPES = ('png', 'svg', 'jpg')
 SOUND_TYPES = ('wav', 'mp3')
 
+FRESHEN_ASSETS = False
+VERIFY_ASSETS = True
+
+CONVERT_MP3 = True
+CONVERT_ASSETS = True
+RECONVERT_SOUNDS = False
+RECONVERT_IMAGES = False
+
+
+CONVERT_THREADS = 8
+
+# SVG Conversion
 # "cairosvg {INPUT} -o {OUTPUT} -s {SCALE}"
+SVG_COMMAND = '{INKSCAPE_PATH} -l -d {DPI} -o "{OUTPUT}" "{INPUT}"'
 INKSCAPE_PATH = '"C:/Program Files/Inkscape/bin/inkscape.com"'
-SVG_COMMAND = _CONFIG.get(
-    'svg_convert_cmd', '{INKSCAPE_PATH} -l -d {DPI} -o "{OUTPUT}" "{INPUT}"'
-)
-BASE_DPI = _CONFIG.get('svg_dpi', 96)
-SVG_SCALE = int(_CONFIG.get('svg_scale', 2))
+
+BASE_DPI = 96
+SVG_SCALE = 2
 SVG_DPI = BASE_DPI * SVG_SCALE
 
-VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
-MP3_COMMAND = _CONFIG.get(
-    'mp3_convert_cmd', (
-        '{VLC_PATH} -I dummy --sout "#transcode{{acodec=s16l,channels=2}}:'
-        'std{{access=file,mux=wav,dst={OUTPUT}}}" {INPUT} vlc://quit'
-    )
-)
-
-LOG_LEVEL = _CONFIG.get('log_level', 20)
-DEBUG_JSON = _CONFIG.get('debug_json', True)
-
-# Max number of digits to convert str to float
-SIG_DIGITS = 17
-
-# Disable variable type guessing
-VAR_TYPES = True
-ARG_TYPES = True
-LIST_TYPES = True
-ENABLE_INT_ARGS = False
-
-# Force legacy list indexing (first, last, random all)
-LEGACY_LISTS = False
-
-# If a variable is set to an unkown type, attempt to cast the
-# unkown type rather than assuming the variable's type is unkown
-DISABLE_ANY_CAST = True
-
-# If a variable is ever set to a numeric value, assume
-# it's type is numeric even if it is also set to a string
-AGGRESSIVE_NUM_CAST = False
-
-# If a variable is set to both a string and a number, assume the variable's
-# type is unkown and don't cast when setting rather than casting to string
-# Safer than AGGRESSIVE_NUM_CAST
-DISABLE_STR_CAST = True
-
-# If a variable is changed using the change by block, assume it is numeric
-CHANGED_NUM_CAST = True
-
-# Replace all int casts with float
-# TODO This option shouldn't be necesary
-DISABLE_INT_CAST = True
-
-# Number of threads to use to download projects
-DOWNLOAD_THREADS = 16
-
-# Website to download projects from
-PROJECT_HOST = "https://projects.scratch.mit.edu"
-ASSET_HOST = "https://assets.scratch.mit.edu"
-
-# TODO Define config values here
-PROJECT_URL = ""
-OUTPUT_FOLDER = TEMP_FOLDER
-CONVERT_ASSETS = True
-CONVERT_MP3 = True
-USE_CAIROSVG = True
-AUTORUN = True
-CONVERT_THREADS = os.cpu_count()
-
-# Blank PNG fallback image
-FALLBACK_IMAGE = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0bIDAT\x18Wc`\x00\x02\x00\x00\x05\x00\x01\xaa\xd5\xc8Q\x00\x00\x00\x00IEND\xaeB`\x82'
 BLANK_SVG_HASHES = (
     '3339a2953a3bf62bb80e54ff575dbced.svg',
 
@@ -112,15 +170,49 @@ BLANK_SVG_HASHES = (
     '14e46ec3e2ba471c2adfe8f119052307.svg',
     '09f60d713153e3d836152b1db500afd1.svg'
 )
-FORMAT_JSON = False
+FALLBACK_IMAGE = (
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+    b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0bIDAT\x18Wc`\x00"
+    b"\x02\x00\x00\x05\x00\x01\xaa\xd5\xc8Q\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+
+# MP3 Conversion
+MP3_COMMAND = (
+    '{VLC_PATH} -I dummy --sout "#transcode{{acodec=s16l,channels=2}}:'
+    'std{{access=file,mux=wav,dst={OUTPUT}}}" {INPUT} vlc://quit'
+)
+VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
+
+
+# Typing Settings
+LEGACY_LISTS = False
+
+VAR_TYPES = True
+ARG_TYPES = True
+LIST_TYPES = True
+
+# Adjust Aggression
+# TODO DISABLE_INT_CAST shouldn't be necesary
+DISABLE_ANY_CAST = True
+AGGRESSIVE_NUM_CAST = False
+CHANGED_NUM_CAST = True
+DISABLE_STR_CAST = True
+DISABLE_INT_CAST = True
+
+SIG_DIGITS = 17
+
+
+# Download Settings
+PROJECT_HOST = "https://projects.scratch.mit.edu"
+ASSET_HOST = "https://assets.scratch.mit.edu"
+
+DOWNLOAD_THREADS = 16
+
+# Debug Settings
+LOG_LEVEL = 20
+DEBUG_JSON = True
+FORMAT_JSON = True
 OVERWRITE_ENGINE = True
 
-# Redownload/extract existing assets
-FRESHEN_ASSETS = False
-
-# Reconvert already converted assets
-RECONVERT_SOUNDS = False
-RECONVERT_IMAGES = False
-
-# Verify the md5 of downloaded/extracted assets
-VERIFY_ASSETS = True
+# Miscellaneous
+WARP_ALL = False
