@@ -61,6 +61,7 @@ SIG_DIGITS = 17
 # Disable variable type guessing
 VAR_TYPES = True
 ARG_TYPES = True
+LIST_TYPES = True
 ENABLE_INT_ARGS = False
 
 # Force legacy list indexing (first, last, random all)
@@ -119,7 +120,7 @@ FRESHEN_ASSETS = False
 
 # Reconvert already converted assets
 RECONVERT_SOUNDS = False
-RECONVERT_IMAGES = True
+RECONVERT_IMAGES = False
 
 # Verify the md5 of downloaded/extracted assets
 VERIFY_ASSETS = True
