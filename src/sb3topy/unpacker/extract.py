@@ -66,7 +66,7 @@ class Extract:
 
         # Extract assets from the project
         for md5ext in self.project.assets:
-            self.project_zip.extract(md5ext, self.project.output_dir)
+            self.extract_asset(md5ext)
 
     def extract_json(self):
         """Extracts and returns the project.json"""
