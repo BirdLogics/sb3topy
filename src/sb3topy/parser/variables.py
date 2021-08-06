@@ -239,16 +239,14 @@ class Variables:
 
     def mark_set(self, target, block):
         """Parses a data_setvariableto block for type guessing"""
-        if config.VAR_TYPES:
-            input_type = specmap.get_input_type(
-                target, block['inputs']['VALUE'])
-            self.get_var('var', block['fields']
-                         ['VARIABLE'][0]).mark_set(input_type)
+        input_type = specmap.get_input_type(
+            target, block['inputs']['VALUE'])
+        self.get_var('var', block['fields']
+                     ['VARIABLE'][0]).mark_set(input_type)
 
     def mark_changed(self, block):
         """Parses a data_changevariableby block for type guessing """
-        if config.VAR_TYPES:
-            self.get_var('var', block['fields']['VARIABLE'][0]).mark_changed()
+        self.get_var('var', block['fields']['VARIABLE'][0]).mark_changed()
 
     def mark_modified(self, block):
         """Marks a list as modified by block"""
@@ -313,4 +311,6 @@ class Variable:
 
     def get_list_type(self):
         """Gets the class which should be used for a list"""
-        # TODO get_list_type
+        if config.LIST_TYPES and not self.is_modified:
+            return "StaticList"
+        return "BaseList"

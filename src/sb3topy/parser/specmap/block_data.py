@@ -530,7 +530,7 @@ BLOCKS = {
 
     # Sensing blocks
     'sensing_touchingobject': block(
-        'bool', 'field TOUCHINGOBJECTMENU',
+        'bool', 'str TOUCHINGOBJECTMENU',
         "self.get_touching(util, {TOUCHINGOBJECTMENU})"
     ),
 

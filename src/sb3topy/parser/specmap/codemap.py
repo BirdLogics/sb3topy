@@ -220,7 +220,7 @@ def parse_lists(target: Target):
 
         # Get the list Variable object
         var = target.vars.get_var('list', lst[0])
-        list_class = 'BaseList' if var.is_modified else 'StaticList'
+        list_class = var.get_list_type()
         logging.debug("Treating list '%s' as %s", var.clean_name, list_class)
 
         # Create code to initialize the list

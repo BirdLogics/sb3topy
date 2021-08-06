@@ -22,7 +22,6 @@ TODO Consider using known_type rather than types_set?
 import logging
 
 from .. import config
-from . import specmap
 
 
 TYPE_COLORS = {
@@ -55,7 +54,7 @@ class Node:
         self.unresolved = unresolved
         self.unresolved.add(self)
 
-        self.known_type = None
+        self.known_type = 'any'
 
         self.types_set = set()
         # self.get_types = set()
@@ -116,7 +115,7 @@ class Node:
                 self.types_set.update(parent.resolve(chain, branch_loops))
 
                 # Remove the parent if it has resolved
-                if parent.known_type is not None:
+                if parent not in self.unresolved:
                     self.parent_nodes.remove(parent)
 
                 # Loops in the parent do matter for this branch
