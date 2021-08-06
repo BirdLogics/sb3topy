@@ -110,6 +110,8 @@ def parse_costumes(target, assets):
         # Get the bitmap scale for converted svgs
         if "-svg" in md5ext:
             scale = int(re.search(r"-svg-(\d+)x", md5ext)[1])
+            costume['rotationCenterX'] *= scale
+            costume['rotationCenterY'] *= scale
         else:
             scale = int(costume['bitmapResolution'])
 
