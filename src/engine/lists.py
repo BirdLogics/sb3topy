@@ -253,11 +253,11 @@ class StaticList(BaseList):
 
         self.dict = {}
         for i, item in enumerate(values):
-            self.dict[search_str(item)] = i + 1
+            self.dict.setdefault(search_str(item), i+1)
 
     def index(self, item):
         """Gets the position of item in list"""
-        return self.dict[search_str(item)]
+        return self.dict.get(search_str(item), 0)
 
     def __contains__(self, item):
         return search_str(item) in self.dict
