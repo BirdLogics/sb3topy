@@ -6,6 +6,7 @@ Handles several tasks specific to saving files
 
 import logging
 import shutil
+import os
 from os import path
 import sys
 
@@ -70,9 +71,19 @@ def copy_engine(project: Project):
 
 
 def run_project(output_dir):
-    """Runs the project.py stored in output_dir"""
+    """
+    Runs the project.py stored in output_dir.
+    """
     #pylint: disable=all
     logging.info("Running project...")
+
+    old_cwd = os.getcwd()
+    os.chdir(output_dir)
+
     sys.path.insert(1, output_dir)
     import project  # type:ignore
+
     project.engine.start_program()
+
+    sys.path.pop(1)
+    os.chdir(old_cwd)
