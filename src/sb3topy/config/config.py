@@ -15,7 +15,8 @@ TODO This method of configuration feels hacky
 import argparse
 import json
 
-from . import config
+from .. import config
+from . import defaults
 
 __all__ = ('restore_defaults', 'save_config', 'load_config', 'parse_args')
 
@@ -60,8 +61,6 @@ MODIFIABLE = {
     "WARP_ALL"
 }
 
-DEFAULTS = {value: getattr(config, value) for value in MODIFIABLE}
-
 
 def get_config():
     """Returns a dict containing modifiable config values"""
@@ -83,7 +82,8 @@ def set_config(new_config):
 
 def restore_defaults():
     """Restores the default values of modifiable options"""
-    for name, value in DEFAULTS.items():
+    for name in MODIFIABLE:
+        value = getattr(defaults, name)
         setattr(config, name, value)
 
 
@@ -96,9 +96,9 @@ def save_config(path, skip_unmodified=True):
 
     # Remove unmodified config values
     if skip_unmodified:
-        for key, value in current_config.items():
-            if value == DEFAULTS[key]:
-                del current_config[key]
+        for name, value in current_config.items():
+            if value == getattr(defaults, name):
+                del current_config[name]
 
     # Save the configuration
     with open(path, 'w') as config_file:

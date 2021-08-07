@@ -130,7 +130,6 @@ Miscellaneous:
         with other projects.
 """
 
-from .config_funcs import *
 
 # General Settings
 OUTPUT_PATH = ""
@@ -139,7 +138,6 @@ PROJECT_PATH = ""
 PROJECT_URL = ""
 
 AUTORUN = True
-
 
 # Asset Settings
 IMAGE_TYPES = ('png', 'svg', 'jpg')
@@ -152,7 +150,6 @@ CONVERT_MP3 = True
 CONVERT_ASSETS = True
 RECONVERT_SOUNDS = False
 RECONVERT_IMAGES = False
-
 
 CONVERT_THREADS = 8
 
@@ -185,7 +182,6 @@ MP3_COMMAND = (
 )
 VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
 
-
 # Typing Settings
 LEGACY_LISTS = False
 
@@ -202,7 +198,6 @@ DISABLE_STR_CAST = True
 DISABLE_INT_CAST = True
 
 SIG_DIGITS = 17
-
 
 # Download Settings
 PROJECT_HOST = "https://projects.scratch.mit.edu"

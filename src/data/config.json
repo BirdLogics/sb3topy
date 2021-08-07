@@ -1,12 +1,13 @@
 {
-"project_path": "C:/Users/username/Local Docs/tmp_sb3topy/projects/BASS.zip",
-"temp_folder": "C:/Users/username/Local Docs/tmp_sb3topy",
-"zip_create": false,
-"zip_overwrite": false,
-"zip_path": "",
-"exe_create": false,
-"exe_overwrite": false,
-"exe_path": "",
-"log_level": 20,
-"debug_json": false
+    "PROJECT_PATH": "C:/Users/username/Local Docs/pokemon battle v4.sb3.zip",
+    "OUTPUT_PATH": "C:/Users/username/Local Docs/tmp_sb3topy",
+    "zip_create": false,
+    "zip_overwrite": false,
+    "zip_path": "",
+    "exe_create": false,
+    "exe_overwrite": false,
+    "exe_path": "",
+    "log_level": 20,
+    "debug_json": false,
+    "svg_convert_cmd": "cairosvg {INPUT} -o {OUTPUT} -s {SCALE}"
 }
