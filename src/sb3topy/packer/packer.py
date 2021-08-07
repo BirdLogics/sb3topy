@@ -10,7 +10,7 @@ import os
 from os import path
 import sys
 
-from . import config
+from .. import config
 from ..project import Project
 
 __all__ = ('save_code', 'copy_engine', 'run_project')
@@ -36,7 +36,7 @@ def copy_engine(project: Project):
     """
 
     # Get the path to copy from and to
-    read_dir = path.join(path.dirname(__file__), "..", "engine")
+    read_dir = path.join(path.dirname(__file__), "..", "..", "engine")
     save_dir = path.join(project.output_dir, "engine")
 
     if path.isfile(path.join(save_dir, "DISABLE_OVERWRITE")):

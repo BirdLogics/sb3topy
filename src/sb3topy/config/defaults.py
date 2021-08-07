@@ -38,6 +38,9 @@ Asset Settings:
         assets. Note that each thread usually creates a process.
     TODO Default CONVERT_THREADS to cpu_count?
 
+    CONVERT_TIMEOUT: The amount of time to allow an asset to convert.
+        Useful to diagnose hanging during asset conversion.
+
     SVG_COMMAND: The command used to convert an svg file to a png file.
         The input and output path will be passed through {INPUT} and
         {OUTPUT} format parameters. {DPI} or {SCALE} should also be
@@ -152,10 +155,11 @@ RECONVERT_SOUNDS = False
 RECONVERT_IMAGES = False
 
 CONVERT_THREADS = 8
+CONVERT_TIMEOUT = None
 
 # SVG Conversion
-# "cairosvg {INPUT} -o {OUTPUT} -s {SCALE}"
-SVG_COMMAND = '{INKSCAPE_PATH} -l -d {DPI} -o "{OUTPUT}" "{INPUT}"'
+SVG_COMMAND = "cairosvg {INPUT} -o {OUTPUT} -s {SCALE}"
+# SVG_COMMAND = '{INKSCAPE_PATH} -l -d {DPI} -o {OUTPUT} {INPUT}'
 INKSCAPE_PATH = '"C:/Program Files/Inkscape/bin/inkscape.com"'
 
 BASE_DPI = 96

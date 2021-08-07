@@ -59,11 +59,9 @@ class Convert:
             ext = md5ext.partition('.')[-1]
 
             if ext == 'mp3':
-                logging.debug("Converting sound '%s' to wav", md5ext)
                 yield md5ext
 
             elif ext == 'svg':
-                logging.debug("Converting image '%s' to png", md5ext)
                 yield md5ext
 
             elif ext not in ('png', 'bmp', 'jpg', 'jpeg', 'wav'):
@@ -116,12 +114,25 @@ class Convert:
 
         # Attempt to run the command
         try:
-            subprocess.run(cmd, check=True, capture_output=True, text=True)
-            logging.debug("Converted sound '%s' to wav", md5ext)
-            return md5ext, new_md5ext
+            logging.debug("Converting mp3 '%s' to wav", md5ext)
+            result = subprocess.run(cmd, check=True, capture_output=True,
+                                    text=True, timeout=config.CONVERT_TIMEOUT)
         except subprocess.CalledProcessError as error:
             logging.error("Failed to convert mp3 '%s':\n%s\n%s\n",
-                          md5ext, cmd, error.stderr.rstrip())
+                          md5ext, shlex.join(cmd), error.stderr.rstrip())
+            return md5ext, None
+        except subprocess.TimeoutExpired:
+            logging.error(
+                "Failed to convert mp3 '%s': Timeout expired.", md5ext)
+            return md5ext, None
+
+        # Verify the file exists
+        if not path.isfile(save_path):
+            logging.error("Failed to convert svg '%s':\n%s\n%s\n",
+                          md5ext, shlex.join(cmd), result.stderr.rstrip())
+            return md5ext, None
+
+        return md5ext, new_md5ext
 
     def convert_svg(self, md5ext):
         """Converts an svg asset to png"""
@@ -156,13 +167,25 @@ class Convert:
 
         # Attempt to run the command
         try:
-            subprocess.run(cmd, check=True, text=True, capture_output=True)
-            logging.debug("Converted svg '%s' to png", md5ext)
-            return md5ext, new_md5ext
+            logging.debug("Converting svg '%s' to png", md5ext)
+            result = subprocess.run(cmd, check=True, capture_output=True,
+                                    text=True, timeout=config.CONVERT_TIMEOUT)
         except subprocess.CalledProcessError as error:
             logging.error("Failed to convert svg '%s':\n%s\n%s\n",
-                          md5ext, cmd, error.stderr.rstrip())
+                          md5ext, shlex.join(cmd), error.stderr.rstrip())
             return md5ext, None
+        except subprocess.TimeoutExpired:
+            logging.error(
+                "Failed to convert svg '%s': Timeout expired.", md5ext)
+            return md5ext, None
+
+        # Verify the file exists
+        if not path.isfile(save_path):
+            logging.error("Failed to save svg '%s':\n%s\n%s\n",
+                          md5ext, shlex.join(cmd), result.stderr.rstrip())
+            return md5ext, None
+
+        return md5ext, new_md5ext
 
     @staticmethod
     def fallback_image(save_path):

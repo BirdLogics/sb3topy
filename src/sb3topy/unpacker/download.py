@@ -83,7 +83,7 @@ class Download:
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
-            logging.debug("Skipping existing asset '%s'", md5ext)
+            logging.debug("Skipping download of asset '%s' (already exists)", md5ext)
             return True
 
         logging.debug("Downloading asset '%s' to '%s'", url, save_path)

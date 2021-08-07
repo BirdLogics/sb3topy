@@ -83,7 +83,7 @@ class Extract:
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
-            logging.debug("Skipping existing asset '%s'", md5ext)
+            logging.debug("Skipping extraction of asset '%s' (already exists)", md5ext)
             return True
 
         logging.debug("Extracting asset '%s' to '%s'", md5ext, save_path)
