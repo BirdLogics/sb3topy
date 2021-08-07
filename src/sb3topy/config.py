@@ -130,6 +130,8 @@ Miscellaneous:
         with other projects.
 """
 
+from .config_funcs import *
+
 # General Settings
 OUTPUT_PATH = ""
 

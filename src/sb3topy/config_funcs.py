@@ -1,5 +1,5 @@
 """
-config_file.py
+config_funcs.py
 
 Handles reading and writing the configuration to a json file.
 
