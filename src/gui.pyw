@@ -11,6 +11,8 @@ import tkinter as tk
 from ctypes import windll
 from tkinter import ttk
 
+from sb3topy import config
+
 FORMATS = {
     '[DEBUG]': "debug",
     '[INFO]': "info",
@@ -560,7 +562,7 @@ class App(tk.Tk):
         self.task = Task()
         # self.start_task("python -u junkprov.py")
 
-        self.load_config("data/config.json")
+        self.read_config()
 
     def cb_mode(self, *_):
         """Called when the mode switches"""
@@ -578,50 +580,43 @@ class App(tk.Tk):
 
     def save_config(self, path):
         """Saves the config to a json file"""
-        with open(path, 'r') as file:
-            config = json.load(file)
 
-        config.update(
-            project_path=self.convert.project_path.get(),
-            temp_folder=self.convert.folder_path.get(),
+        config.PROJECT_PATH = self.convert.project_path.get()
+        config.OUTPUT_PATH = self.convert.folder_path.get()
 
-            zip_create=self.convert.zip_create.get(),
-            zip_overwrite=self.convert.zip_overwrite.get(),
-            zip_path=self.convert.zip_path.get(),
+        # zip_create = self.convert.zip_create.get(),
+        # zip_overwrite = self.convert.zip_overwrite.get(),
+        # zip_path = self.convert.zip_path.get(),
 
-            exe_create=self.convert.exe_create.get(),
-            exe_overwrite=self.convert.exe_overwrite.get(),
-            exe_path=self.convert.exe_path.get()
-        )
+        # exe_create = self.convert.exe_create.get(),
+        # exe_overwrite = self.convert.exe_overwrite.get(),
+        # exe_path = self.convert.exe_path.get()
 
-        with open(path, 'w') as file:
-            json.dump(config, file, indent=0)
+        config.save_config(path)
 
         return path
 
-    def load_config(self, path):
-        """Loads the config from a json file"""
-        with open(path, 'r') as file:
-            config = json.load(file)
+    def read_config(self):
+        """Reads the configuration from config"""
 
-        self.convert.project_path.set(config.get("project_path"))
-        self.convert.folder_path.set(config.get("temp_folder"))
+        self.convert.project_path.set(config.PROJECT_PATH)
+        self.convert.folder_path.set(config.OUTPUT_PATH)
 
-        self.convert.zip_create.set(config.get("zip_create"))
-        self.convert.zip_overwrite.set(config.get("zip_overwrite"))
-        self.convert.zip_path.set(config.get("zip_path"))
+        # self.convert.zip_create.set(config.get("zip_create"))
+        # self.convert.zip_overwrite.set(config.get("zip_overwrite"))
+        # self.convert.zip_path.set(config.get("zip_path"))
 
-        self.convert.exe_create.set(config.get("exe_create"))
-        self.convert.exe_overwrite.set(config.get("exe_overwrite"))
-        self.convert.exe_path.set(config.get("exe_path"))
+        # self.convert.exe_create.set(config.get("exe_create"))
+        # self.convert.exe_overwrite.set(config.get("exe_overwrite"))
+        # self.convert.exe_path.set(config.get("exe_path"))
 
     def run_main(self, options=None):
         """Runs the converter with options"""
         self.mode.set("output")
 
         cmd = [
-            "py", "-u", '-m', "sb3topy",
-            self.save_config("data/config.json"),
+            "py", "-u", '-m', "sb3topy", "-c",
+            self.save_config(config.CONFIG_PATH),
             self.convert.project_path.get()
         ]
         if options:
@@ -658,6 +653,7 @@ class App(tk.Tk):
 
 def main():
     """Run the app"""
+    config.parse_args()
     app = App()
     app.mainloop()
 

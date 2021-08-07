@@ -25,6 +25,7 @@ MODIFIABLE = {
     "PROJECT_PATH",
     "PROJECT_URL",
     "AUTORUN",
+    "CONFIG_PATH",
 
     "FRESHEN_ASSETS",
     "VERIFY_ASSETS",
@@ -97,13 +98,14 @@ def save_config(path, skip_unmodified=True):
 
     # Remove unmodified config values
     if skip_unmodified:
-        for name, value in current_config.items():
-            if value == getattr(defaults, name):
-                del current_config[name]
+        current_config = {
+            name: value for name, value in current_config.items()
+            if not value == getattr(defaults, name)
+        }
 
     # Save the configuration
     with open(path, 'w') as config_file:
-        json.dump(current_config, config_file)
+        json.dump(current_config, config_file, indent=4)
 
 
 def load_config(path, load_defaults=True):

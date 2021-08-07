@@ -10,6 +10,9 @@ General Settings:
     PROJECT: The path to a project sb3 file to convert
     DOWNLOAD_PROJECT: Specifies that the project path is a url
 
+    CONFIG_PATH: The config path specified by the command line -c
+        argument.
+
     AUTORUN: Automatically run the project after the conversion has
         completed.
     TODO Disable autorun if there were warnings/errors
@@ -139,6 +142,8 @@ OUTPUT_PATH = ""
 
 PROJECT_PATH = ""
 PROJECT_URL = ""
+
+CONFIG_PATH = ""
 
 AUTORUN = True
 
