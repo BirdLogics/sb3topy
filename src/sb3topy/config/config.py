@@ -7,8 +7,8 @@ General Settings:
     OUTPUT_PATH: The default folder in which to save the converted
         project, download/extracted assets, and converted assets.
 
-    PROJECT_PATH: The path to a project sb3 file to convert
-    PROJECT_URL: The web url to a project
+    PROJECT: The path to a project sb3 file to convert
+    DOWNLOAD_PROJECT: Specifies that the project path is a url
 
     AUTORUN: Automatically run the project after the conversion has
         completed.
@@ -20,7 +20,7 @@ Asset Settings:
 
     FRESHEN_ASSETS: Overwrite existing assets when downloading or
         extracting the project rather than skipping them.
-    VALIDATE_ASSETS: Validate downloaded or extracted assets before
+    VERIFY_ASSETS: Validate downloaded or extracted assets before
         saving them.
 
     CONVERT_MP3: Allows disabling of mp3 conversion. When using

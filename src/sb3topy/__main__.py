@@ -19,6 +19,9 @@ def main():
     """
     Converts the project using the settings saved in config
     """
+    # Load configuration from the command line
+    config.parse_args()
+
     # Setup the logger
     logging.basicConfig(
         format="[%(levelname)s] %(message)s", level=config.LOG_LEVEL)
@@ -26,12 +29,12 @@ def main():
     # Download the project from the internet
     if config.PROJECT_URL:
         project = unpacker.download_project(
-            config.PROJECT_URL, config.OUTPUT_FOLDER)
+            config.PROJECT_URL, config.OUTPUT_PATH)
 
     # Extract the project from an sb3
     elif config.PROJECT_PATH:
         project = unpacker.extract_project(
-            config.PROJECT_PATH, config.OUTPUT_FOLDER)
+            config.PROJECT_PATH, config.OUTPUT_PATH)
 
     else:
         logging.error("A project url/path was not provided.")
@@ -39,7 +42,6 @@ def main():
 
     # Verify the project was unpacked
     if project is None:
-        logging.error("Failed to unpack project.")
         return False
 
     # Save a debug json
