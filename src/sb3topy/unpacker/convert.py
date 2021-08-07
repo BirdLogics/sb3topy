@@ -149,7 +149,7 @@ class Convert:
         cmd = shlex.split(config.SVG_COMMAND.format(
             INPUT=shlex.quote(asset_path),
             OUTPUT=shlex.quote(save_path),
-            DPI=config.SVG_DPI,
+            DPI=config.BASE_DPI*config.SVG_SCALE,
             SCALE=config.SVG_SCALE,
             INKSCAPE_PATH=config.INKSCAPE_PATH
         ))
