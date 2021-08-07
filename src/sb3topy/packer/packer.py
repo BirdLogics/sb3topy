@@ -11,9 +11,9 @@ from os import path
 import sys
 
 from . import config
-from .project import Project
+from ..project import Project
 
-__all__ = ('save_code')
+__all__ = ('save_code', 'copy_engine', 'run_project')
 
 
 def save_code(project: Project, code: str):
@@ -74,7 +74,7 @@ def run_project(output_dir):
     """
     Runs the project.py stored in output_dir.
     """
-    #pylint: disable=all
+    # pylint: disable=all
     logging.info("Running project...")
 
     old_cwd = os.getcwd()
