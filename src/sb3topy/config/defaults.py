@@ -190,7 +190,6 @@ ARG_TYPES = True
 LIST_TYPES = True
 
 # Adjust Aggression
-# TODO DISABLE_INT_CAST shouldn't be necesary
 DISABLE_ANY_CAST = True
 AGGRESSIVE_NUM_CAST = False
 CHANGED_NUM_CAST = True
