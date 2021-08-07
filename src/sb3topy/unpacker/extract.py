@@ -94,7 +94,7 @@ class Extract:
         # Verify the asset's md5 hash
         if config.VERIFY_ASSETS:
             md5_hash = md5(asset).hexdigest()
-            if not md5_hash + '.' + md5ext.partion('.')[2] == md5ext:
+            if not md5_hash + '.' + md5ext.partition('.')[2] == md5ext:
                 logging.error(
                     "Extracted asset '%s' has an invalid md5: '%s'", md5ext, md5_hash)
                 return False
