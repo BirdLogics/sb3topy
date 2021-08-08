@@ -25,6 +25,7 @@ MODIFIABLE = {
     "PROJECT_PATH",
     "PROJECT_URL",
     "AUTORUN",
+    "USE_GUI",
     "CONFIG_PATH",
 
     "FRESHEN_ASSETS",
@@ -144,9 +145,15 @@ def parse_args(args=None):
                         help="path to a configuration json")
     parser.add_argument("-d", dest="DOWNLOAD_PROJECT", action="store_true",
                         help="marks the project path as a URL")
+    parser.add_argument("--no-gui", dest="USE_GUI", action="store_false",
+                        help="disables the gui even when PROJECT is not specified")
 
     # Parse arguments
     args = parser.parse_args(args)
+
+    # If a project is specified, disable GUI
+    if args.PROJECT:
+        args.USE_GUI = False
 
     # Load a config file
     if args.CONFIG_PATH:

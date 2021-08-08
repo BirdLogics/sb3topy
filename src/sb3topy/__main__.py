@@ -12,7 +12,7 @@ TODO Better commandline interface
 
 import logging
 
-from . import config, packer, parser, unpacker
+from . import config, gui, packer, parser, unpacker
 
 
 def main():
@@ -25,6 +25,11 @@ def main():
     # Setup the logger
     logging.basicConfig(
         format="[%(levelname)s] %(message)s", level=config.LOG_LEVEL)
+
+    # Run the gui if it is enabled
+    if config.USE_GUI:
+        gui.run_app()
+        return True
 
     # Download the project from the internet
     if config.PROJECT_URL:

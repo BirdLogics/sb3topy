@@ -13,6 +13,9 @@ General Settings:
     CONFIG_PATH: The config path specified by the command line -c
         argument.
 
+    USE_GUI: Whether the GUI should be run rather than running the
+        converter directly.
+
     AUTORUN: Automatically run the project after the conversion has
         completed.
     TODO Disable autorun if there were warnings/errors
@@ -144,6 +147,8 @@ PROJECT_PATH = ""
 PROJECT_URL = ""
 
 CONFIG_PATH = ""
+
+USE_GUI = False
 
 AUTORUN = True
 
