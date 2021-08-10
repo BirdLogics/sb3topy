@@ -226,6 +226,6 @@ def list_item(block, _):
         return BLOCKS['data_itemoflist_legacy'] if config.LEGACY_LISTS else None
 
     # Check if the if the index is special
-    if value in ('first', 'last', 'random'):
+    if value[1] in ('first', 'last', 'random'):
         return BLOCKS['data_itemoflist_legacy']
     return None
