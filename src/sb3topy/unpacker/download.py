@@ -27,7 +27,7 @@ def download_project(project_url, output_dir=None):
     output_dir: An optional folder to save the downloaded data to.
         If a folder is not provided, one will be created by Project.
     """
-    match = re.match(r"\d+", project_url)
+    match = re.search(r"\d+", project_url)
     if match is None:
         logging.error("Invalid project url '%s'", project_url)
         return None
@@ -94,7 +94,7 @@ class Download:
         # Verify the asset's md5 hash
         if config.VERIFY_ASSETS:
             md5_hash = md5(resp.content).hexdigest()
-            if not md5_hash + '.' + md5ext.partion('.')[2] == md5ext:
+            if not md5_hash + '.' + md5ext.partition('.')[2] == md5ext:
                 logging.error(
                     "Downloaded asset '%s' has an invalid md5: '%s'", md5ext, md5_hash)
                 return False
