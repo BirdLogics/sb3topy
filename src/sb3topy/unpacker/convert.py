@@ -102,7 +102,7 @@ class Convert:
         # Possibly don't reconvert the asset
         if path.isfile(save_path) and not config.RECONVERT_SOUNDS:
             logging.debug(
-                "Skipping conversion of mp3 '%s' (already converted)")
+                "Skipping conversion of mp3 '%s' (already converted)", md5ext)
             return md5ext, new_md5ext
 
         # Get the conversion command
