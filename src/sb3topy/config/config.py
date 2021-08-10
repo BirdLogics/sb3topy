@@ -61,6 +61,7 @@ MODIFIABLE = {
     "DEBUG_JSON",
     "FORMAT_JSON",
     "OVERWRITE_ENGINE",
+    "DEFAULT_GUI_TAB",
 
     "WARP_ALL"
 }

@@ -138,6 +138,10 @@ DEBUG_SETTINGS:
         directory before copying files. Otherwise, if the engine folder
         exists, the engine will not be copied, even if it has been
         modified.
+    
+    DEFAULT_GUI_TAB: The default tab to switch to in the GUI. It can be
+        useful to automatically switch to examples when testing. May be
+        'convert', 'examples', 'output', or 'settings'
 
 Miscellaneous:
     WARP_ALL: Enables warp on every custom block. May improve
@@ -233,6 +237,7 @@ LOG_LEVEL = 20
 DEBUG_JSON = True
 FORMAT_JSON = True
 OVERWRITE_ENGINE = True
+DEFAULT_GUI_TAB = "convert"
 
 # Miscellaneous
 WARP_ALL = False

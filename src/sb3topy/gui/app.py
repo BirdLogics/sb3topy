@@ -51,7 +51,7 @@ class App(tk.Tk):
         self.columnconfigure(1, minsize=300, weight=1)
         self.rowconfigure(0, minsize=300, weight=1)
 
-        self.mode.set("convert")
+        self.mode.set(config.DEFAULT_GUI_TAB)
 
         self.geometry("720x480")
         self.resizable(0, 0)
