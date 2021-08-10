@@ -20,6 +20,12 @@ General Settings:
         completed.
     TODO Disable autorun if there were warnings/errors
 
+    PARSE_PROJECT: Whether to parse the project. Normally True.
+
+    COPY_ENGINE: Whether to attempt to copy engine files. Normally
+        True. To avoid overwritting modified engine files, use
+        OVERWRITE_ENGINE instead.
+
 Asset Settings:
     IMAGE_TYPES: A tuple of known supported image types
     SOUND_TYPES: A tuple of known supported sound types
@@ -152,6 +158,9 @@ USE_GUI = False
 
 AUTORUN = True
 
+PARSE_PROJECT = True
+COPY_ENGINE = True
+
 # Asset Settings
 IMAGE_TYPES = ('png', 'svg', 'jpg')
 SOUND_TYPES = ('wav', 'mp3')
@@ -181,7 +190,8 @@ BLANK_SVG_HASHES = (
 
     # TODO Verify these are actually blank (pokemon4.sb3)
     '14e46ec3e2ba471c2adfe8f119052307.svg',
-    '09f60d713153e3d836152b1db500afd1.svg'
+    '09f60d713153e3d836152b1db500afd1.svg',
+    '5adf038af4cd6319154b5601237092fa.svg'
 )
 FALLBACK_IMAGE = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"

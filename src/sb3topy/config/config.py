@@ -18,7 +18,8 @@ import json
 from .. import config
 from . import defaults
 
-__all__ = ('restore_defaults', 'save_config', 'load_config', 'parse_args')
+__all__ = ('restore_defaults', 'save_config', 'load_config',
+           'parse_args', 'get_config', 'set_config')
 
 MODIFIABLE = {
     "OUTPUT_PATH",

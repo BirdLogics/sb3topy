@@ -7,13 +7,8 @@ Contains the Output tab of the GUI
 import tkinter as tk
 from tkinter import ttk
 
-LOG_FORMATS = {
-    '[DEBUG]': "debug",
-    '[INFO]': "info",
-    '[WARNING]': "warn",
-    '[ERROR]': "error",
-    '[CRITICAL]': "critical"
-}
+import queue
+import logging
 
 
 class OutputFrame(ttk.Frame):
@@ -22,6 +17,9 @@ class OutputFrame(ttk.Frame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
 
+        self.process = None
+        self.queue = None
+
         self.text = tk.Text(self, width=32, height=17.5, state="disabled")
         scroll = ttk.Scrollbar(self, orient="vertical",
                                command=self.text.yview)
@@ -29,9 +27,6 @@ class OutputFrame(ttk.Frame):
 
         self.show_info = tk.BooleanVar(value=True)
         self.show_debug = tk.BooleanVar()
-        verbose_check = ttk.Checkbutton(
-            self, text="Verbose Ouput",
-            variable=self.show_info, command=self.info_tag)
         debug_check = ttk.Checkbutton(
             self, text="Debug Ouput",
             variable=self.show_debug, command=self.debug_tag)
@@ -44,8 +39,7 @@ class OutputFrame(ttk.Frame):
                        sticky="NSEW", pady=5)
         scroll.grid(column=4, row=0, sticky="NS", pady=5)
 
-        verbose_check.grid(column=0, row=1, sticky="NSW")
-        debug_check.grid(column=1, row=1, sticky="NSW", padx=15)
+        debug_check.grid(column=0, row=1, sticky="NSW", padx=15)
 
         export_button.grid(row=1, column=3, sticky="NSW")
 
@@ -55,47 +49,58 @@ class OutputFrame(ttk.Frame):
         # Output theme
         self.font = "Courier 10"
         self.debug_tag()
-        self.info_tag()
-        self.text.tag_config("warn", foreground="gold", font=self.font+" bold")
-        self.text.tag_config("warn_text", font=self.font)
-        self.text.tag_config("error", foreground="red", font=self.font+" bold")
-        self.text.tag_config("error_text", foreground="red", font=self.font)
+        self.text.tag_config("INFO", foreground="green",
+                             font=self.font+" bold")
+        self.text.tag_config("INFO_text", font=self.font)
+        self.text.tag_config("WARNING", foreground="gold", font=self.font+" bold")
+        self.text.tag_config("WARNING_text", font=self.font)
+        self.text.tag_config("ERROR", foreground="red", font=self.font+" bold")
+        self.text.tag_config("ERROR_text", foreground="red", font=self.font)
         self.text.tag_config(
-            "critical", foreground="dark red", font=self.font+" bold")
+            "CRITICAL", foreground="dark red", font=self.font+" bold")
         self.text.tag_config(
-            "critical_text", foreground="dark red", font=self.font+" bold")
-        self.text.tag_config("default", font=self.font)
-        self.text.tag_config("default_text", font=self.font)
-
-    def log_line(self, line):
-        """Display and format a line"""
-        self.text["state"] = "normal"
-
-        # Get a tag based on the first word
-        keyword = line.split(' ', 1)[0]
-        tag = LOG_FORMATS.get(keyword, "default")
-
-        self.text.insert("end", keyword, (tag,))
-        self.text.insert("end", line.lstrip(keyword), (tag+"_text",))
-
-        self.text["state"] = "disabled"
+            "CRITICAL_text", foreground="dark red", font=self.font+" bold")
 
     def debug_tag(self):
         """Configures debug text tags, shown/hidden"""
         value = not self.show_debug.get()
-        self.text.tag_config("debug", foreground="grey",
+        self.text.tag_config("DEBUG", foreground="grey",
                              font=self.font, elide=value)
-        self.text.tag_config("debug_text", foreground="grey",
+        self.text.tag_config("DEBUG_text", foreground="grey",
                              font=self.font, elide=value)
         self.text.see("end")
 
-    def info_tag(self):
-        """Configures info text tags, shown/hidden"""
-        value = not self.show_info.get()
-        self.text.tag_config("info", foreground="green",
-                             font=self.font+" bold", elide=value)
-        self.text.tag_config("info_text", font=self.font, elide=value)
+    def start_watching(self, process, log_queue):
+        """Starts watching a queue for log records until process ends"""
+        self.process = process
+        self.queue = log_queue
+        self.after(1, self.update_loop)
+
+    def handle_record(self, record: logging.LogRecord):
+        """
+        Display and formats a log record. The internal Text widget
+        must be set to the active state before calling this function
+        """
+        levelname = record.levelname
+        self.text.insert("end", f"[{levelname}] ", (levelname,))
+        self.text.insert("end", record.message + "\n", (levelname+"_text",))
+
+    def update_loop(self):
+        """Updates the textbox with log messages"""
+
+        self.text["state"] = "normal"
+
+        while True:
+            try:
+                self.handle_record(self.queue.get_nowait())
+            except queue.Empty:
+                break
+
         self.text.see("end")
+        self.text["state"] = "disabled"
+
+        if self.process.is_alive():
+            self.after(1, self.update_loop)
 
     def export_log(self):
         """Save the current log to a file"""

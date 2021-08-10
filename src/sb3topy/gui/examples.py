@@ -143,10 +143,12 @@ class ExamplesFrame(ttk.Frame):
         self.download_link.set(f"https://scratch.mit.edu/{project['id']}/")
 
     def download_project(self):
-        pass
+        """Downloads and converts the project"""
+        self.app.download_project(False)
 
     def download_run_project(self):
-        pass
+        """Downloads, converts, and runs the project"""
+        self.app.download_project(True)
 
     def switch_to(self):
         """Called when this tab is shown"""
