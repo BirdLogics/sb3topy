@@ -503,10 +503,9 @@ BLOCKS = {
         "return None"
     ),
 
-    # TODO Stop other scripts
     'control_stop_other_scripts_in_sprite': block(
         'stack', 'field STOP_OPTION',
-        "pass  # self.stop_other()"
+        "self.stop_other()"
     ),
 
     'control_stop_all': block(
