@@ -102,7 +102,7 @@ class OutputFrame(ttk.Frame):
             self.text["state"] = "disabled"
 
         if self.process.is_alive():
-            self.after(1, self.update_loop)
+            self.after(10, self.update_loop)
 
     def export_log(self):
         """Save the current log to a file"""
