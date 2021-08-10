@@ -52,7 +52,8 @@ class OutputFrame(ttk.Frame):
         self.text.tag_config("INFO", foreground="green",
                              font=self.font+" bold")
         self.text.tag_config("INFO_text", font=self.font)
-        self.text.tag_config("WARNING", foreground="gold", font=self.font+" bold")
+        self.text.tag_config("WARNING", foreground="gold",
+                             font=self.font+" bold")
         self.text.tag_config("WARNING_text", font=self.font)
         self.text.tag_config("ERROR", foreground="red", font=self.font+" bold")
         self.text.tag_config("ERROR_text", foreground="red", font=self.font)
@@ -88,16 +89,17 @@ class OutputFrame(ttk.Frame):
     def update_loop(self):
         """Updates the textbox with log messages"""
 
-        self.text["state"] = "normal"
+        if not self.queue.empty():
+            self.text["state"] = "normal"
 
-        while True:
-            try:
-                self.handle_record(self.queue.get_nowait())
-            except queue.Empty:
-                break
+            while True:
+                try:
+                    self.handle_record(self.queue.get_nowait())
+                except queue.Empty:
+                    break
 
-        self.text.see("end")
-        self.text["state"] = "disabled"
+            self.text.see("end")
+            self.text["state"] = "disabled"
 
         if self.process.is_alive():
             self.after(1, self.update_loop)
