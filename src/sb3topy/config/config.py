@@ -149,6 +149,8 @@ def parse_args(args=None):
                         help="marks the project path as a URL")
     parser.add_argument("--no-gui", dest="USE_GUI", action="store_false",
                         help="disables the gui even when PROJECT is not specified")
+    parser.add_argument("-r", dest="AUTORUN", action="store_true",
+                        help="automatically runs the project when done")
 
     # Parse arguments
     args = parser.parse_args(args)

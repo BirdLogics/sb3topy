@@ -160,7 +160,7 @@ CONFIG_PATH = ""
 
 USE_GUI = False
 
-AUTORUN = True
+AUTORUN = False
 
 PARSE_PROJECT = True
 COPY_ENGINE = True
