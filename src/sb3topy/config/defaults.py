@@ -100,6 +100,7 @@ Typing Settings:
 
     CHANGED_NUM_CAST: If a variable is ever changed using the "data_change
        variableby" block, assume the variable is of a numeric type.
+       NOTE: This is NOT disabled by VAR_TYPES.
 
     DISABLE_STR_CAST: If an object is set to both a string and a
         number assume the object is of the any type rather than the str
@@ -220,7 +221,7 @@ LIST_TYPES = True
 # Adjust Aggression
 DISABLE_ANY_CAST = True
 AGGRESSIVE_NUM_CAST = False
-CHANGED_NUM_CAST = True
+CHANGED_NUM_CAST = False
 DISABLE_STR_CAST = True
 DISABLE_INT_CAST = True
 
