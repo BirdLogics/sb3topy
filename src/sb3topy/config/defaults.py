@@ -213,8 +213,8 @@ VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
 # Typing Settings
 LEGACY_LISTS = False
 
-VAR_TYPES = True
-ARG_TYPES = True
+VAR_TYPES = False
+ARG_TYPES = False
 LIST_TYPES = True
 
 # Adjust Aggression
