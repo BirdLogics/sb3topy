@@ -40,6 +40,10 @@ class Events:
             if task is not None:
                 task.cancel()
 
+                # Backwards compatibility hack
+                # Used instead of the Python 3.9 cancel msg
+                task.was_restarted = True
+
         # Get a list of child tasks to runs
         tasks = []
         for sprite in sprites.sprites():
@@ -65,7 +69,7 @@ class Events:
             await task
         except asyncio.CancelledError:
             # Verify the task was cancelled and not this function
-            if not task.cancelled():
+            if not hasattr(task, "was_restarted"):
                 raise
 
     def send_to(self, util, target, event):
