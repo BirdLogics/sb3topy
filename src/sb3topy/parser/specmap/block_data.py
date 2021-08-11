@@ -204,8 +204,8 @@ BLOCKS = {
 
     'looks_switchbackdroptoandwait': block(
         'stack', 'any BACKDROP', (
-            "util.sprites.stage.costume.switch({BACKDROP})"
-            "await util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)"
+            "util.sprites.stage.costume.switch({BACKDROP})\n"
+            "await util.send_wait('onbackdrop_' + util.sprites.stage.costume.name, True)"
         )
     ),
 
@@ -458,7 +458,7 @@ BLOCKS = {
 
     'event_broadcastandwait': block(
         'stack', 'str BROADCAST_INPUT',
-        "await util.send_broadcast({BROADCAST_INPUT})"
+        "await util.send_broadcast_wait({BROADCAST_INPUT})"
     ),
 
     # Control blocks

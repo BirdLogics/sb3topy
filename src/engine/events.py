@@ -6,6 +6,7 @@ and a class for managing user inputs.
 """
 
 import asyncio
+import logging
 
 import pygame as pg
 
@@ -15,16 +16,57 @@ from . import config
 class Events:
     """Contains useful functions for sending events"""
 
-    def send(self, util, sprites, event, restart=False):
-        """Starts an event for all sprites"""
-        # Get a list of tasks to runs
+    def __init__(self):
+        self.events = {}
+
+    def _send(self, util, sprites, event, restart):
+        """
+        Creates a tasks for every couroutine tied to an event, and
+        creates a parent task waiting for each of the child tasks to
+        finish.
+
+        When an event is restarted, both the child tasks and the parent
+        tasks are cancelled. Although the parent task would eventually
+        return if just the children were cancelled, there is a delay
+        which makes it necesary to cancel the parent as well.
+
+        Because the parent task can be cancelled, it is necesary to
+        wrap awaits for the parent in a try except block to catch the
+        cancellation.
+        """
+        if restart:
+            # If a parent is in self.events, cancel it
+            task = self.events.pop(event, None)
+            if task is not None:
+                task.cancel()
+
+        # Get a list of child tasks to runs
         tasks = []
         for sprite in sprites.sprites():
             tasks.extend(sprite.target.start_event(util, event, restart))
         tasks.extend(sprites.stage.start_event(util, event, restart))
 
-        # Return an awaitable task
-        return asyncio.create_task(self._handle_tasks(tasks))
+        # Save and return the parent task
+        task = asyncio.create_task(self._handle_tasks(tasks))
+        self.events[event] = task
+        return task
+
+    def send(self, util, sprites, event, restart=False):
+        """Starts an event for all sprites. Cannot be awaited."""
+        self._send(util, sprites, event, restart)
+
+    async def send_wait(self, util, sprites, event, restart):
+        """Starts an event for all sprites. Should be awaited."""
+        # Get the task
+        task = self._send(util, sprites, event, restart)
+
+        # Wait for it, but catch if it is cancelled
+        try:
+            await task
+        except asyncio.CancelledError:
+            # Verify the task was cancelled and not this function
+            if not task.cancelled():
+                raise
 
     def send_to(self, util, target, event):
         """Starts an event for a single target"""
@@ -37,19 +79,27 @@ class Events:
         if not tasks:
             return
 
-        # Will not stop for a cancellation, only errors
         done, _ = await asyncio.wait(
             tasks, return_when=asyncio.FIRST_EXCEPTION)
 
         # Handle any errors
         for task in done:
-            if not task.cancelled() and task.exception() is not None:
-                raise task.exception()
+            try:
+                task.result()
+            except asyncio.CancelledError:
+                pass
+            except Exception:  # pylint: disable=broad-except
+                logging.exception("Error in gathered task '%s'", task)
 
     def broadcast(self, util, sprites, event):
-        """Parses a broadcast name and sends it"""
+        """Parses a broadcast name and sends it. Not awaitable."""
         event = 'broadcast_' + event.lower()
-        return self.send(util, sprites, event, True)
+        self._send(util, sprites, event, True)
+
+    async def broadcast_wait(self, util, sprites, event):
+        """Parses a broadcast name and sends it. Awaitable."""
+        event = 'broadcast_' + event.lower()
+        await self.send_wait(util, sprites, event, True)
 
 
 class Inputs:

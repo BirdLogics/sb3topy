@@ -41,11 +41,19 @@ class Util:
 
     def send_event(self, event, restart=False):
         """Send an event"""
-        return self.events.send(self, self.sprites, event, restart)
+        self.events.send(self, self.sprites, event, restart)
+
+    async def send_wait(self, event, restart=False):
+        """Send an event"""
+        await self.events.send_wait(self, self.sprites, event, restart)
 
     def send_broadcast(self, event):
         """Sends a broadcast"""
         return self.events.broadcast(self, self.sprites, event)
+
+    async def send_broadcast_wait(self, event):
+        """Sends a broadcast"""
+        await self.events.broadcast_wait(self, self.sprites, event)
 
     def stop_all(self):
         """Ends execution of the main loop"""
