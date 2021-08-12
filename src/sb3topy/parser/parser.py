@@ -270,7 +270,7 @@ class Parser:
         # A list reporter
         elif start_type == 'list_reporter':
             start_type = 'block'
-            value = self.target.vars.get_reference('var', value) + '.join()'
+            value = self.target.vars.get_reference('list', value) + '.join()'
 
         # Directly cast a literal
         if start_type == 'literal':
