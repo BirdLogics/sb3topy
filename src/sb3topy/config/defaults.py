@@ -1,7 +1,13 @@
 """
 config.py
 
-Contains default configuration settings
+Contains default configuration settings. All of the values in this file
+should be considered modifiable through user configuration.
+
+Do not modify the values of this module at runtime.
+    eg. config.defaults.AUTORUN = True
+Instead, modify the values imported from this module into config.
+    eg. config.AUTORUN = True
 
 General Settings:
     OUTPUT_PATH: The default folder in which to save the converted
@@ -27,9 +33,6 @@ General Settings:
         OVERWRITE_ENGINE instead.
 
 Asset Settings:
-    IMAGE_TYPES: A tuple of known supported image types
-    SOUND_TYPES: A tuple of known supported sound types
-
     FRESHEN_ASSETS: Overwrite existing assets when downloading or
         extracting the project rather than skipping them.
     VERIFY_ASSETS: Validate downloaded or extracted assets before
@@ -61,13 +64,10 @@ Asset Settings:
     TODO Remove INKSCAPE_PATH
 
     BASE_DPI: The DPI of an unscaled SVG image.
-    SVG_SCALE: How much to scale SVGs when converting to bitmap.
-    SVG_DPI: The calculated DPI of the SVG conversion.
 
-    BLANK_SVG_HASHES: A tuple of md5exts which are blanks svg images.
-        Some svg converters (cairosvg) don't work with these svgs, so
-        the FALLBACK_IMAGE is used rather than attempting conversion.
-    FALLBACK_IMAGE: The binary data of a blank png image.
+    SVG_SCALE: How much to scale SVGs when converting to bitmap.
+
+    SVG_DPI: The calculated DPI of the SVG conversion.
 
     MP3_COMMAND: The command used to convert an mp3 file to a wav file.
         The input and output path will be passed through {INPUT} and
@@ -120,6 +120,7 @@ Typing Settings:
 
 Download Settings:
     PROJECT_HOST: The path to the projects website.
+
     ASSET_HOST: The path to the assets website.
 
     DOWNLOAD_THREADS: The number of threads to use when downloading
@@ -139,7 +140,7 @@ DEBUG_SETTINGS:
         directory before copying files. Otherwise, if the engine folder
         exists, the engine will not be copied, even if it has been
         modified.
-    
+
     DEFAULT_GUI_TAB: The default tab to switch to in the GUI. It can be
         useful to automatically switch to examples when testing. May be
         'convert', 'examples', 'output', or 'settings'
@@ -167,9 +168,6 @@ PARSE_PROJECT = True
 COPY_ENGINE = True
 
 # Asset Settings
-IMAGE_TYPES = ('png', 'svg', 'jpg')
-SOUND_TYPES = ('wav', 'mp3')
-
 FRESHEN_ASSETS = False
 VERIFY_ASSETS = True
 
@@ -189,20 +187,6 @@ INKSCAPE_PATH = '"C:/Program Files/Inkscape/bin/inkscape.com"'
 BASE_DPI = 96
 SVG_SCALE = 2
 SVG_DPI = BASE_DPI * SVG_SCALE
-
-BLANK_SVG_HASHES = (
-    '3339a2953a3bf62bb80e54ff575dbced.svg',
-
-    # TODO Verify these are actually blank (pokemon4.sb3)
-    '14e46ec3e2ba471c2adfe8f119052307.svg',
-    '09f60d713153e3d836152b1db500afd1.svg',
-    '5adf038af4cd6319154b5601237092fa.svg'
-)
-FALLBACK_IMAGE = (
-    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
-    b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\x0bIDAT\x18Wc`\x00"
-    b"\x02\x00\x00\x05\x00\x01\xaa\xd5\xc8Q\x00\x00\x00\x00IEND\xaeB`\x82"
-)
 
 # MP3 Conversion
 MP3_COMMAND = (

@@ -1,77 +1,41 @@
 """
-config_funcs.py
+config.py
 
-Handles reading and writing the configuration to a json file.
+Contains functions for handling configuration files, parsing command
+line arguments, and creating config dicts.
 
-MODIFIABLE: A set of all converter settings which can be set
-    using a config file.
-
-DEFAULTS: A dict containing the default values of all modifiable config
-    values.
-
-TODO This method of configuration feels hacky
+Although this method of storing config feels a little hacky, the end
+result seems to work quite well.
 """
 
 import argparse
 import json
 
-from .. import config
-from . import defaults
+from ..config import __dict__ as config
+from .consts import __dict__ as consts
+from .defaults import __dict__ as defaults
 
 __all__ = ('restore_defaults', 'save_config', 'load_config',
            'parse_args', 'get_config', 'set_config')
 
-MODIFIABLE = {
-    "OUTPUT_PATH",
-    "PROJECT_PATH",
-    "PROJECT_URL",
-    "AUTORUN",
-    "USE_GUI",
-    "CONFIG_PATH",
 
-    "FRESHEN_ASSETS",
-    "VERIFY_ASSETS",
-    "CONVERT_MP3",
-    "CONVERT_ASSETS",
-    "RECONVERT_SOUNDS",
-    "RECONVERT_IMAGES",
-    "CONVERT_THREADS",
-    "CONVERT_TIMEOUT",
-    "SVG_COMMAND",
-    "INKSCAPE_PATH",
-    "SVG_SCALE",
-    "MP3_COMMAND",
-    "VLC_PATH",
+def get_config(skip_unmodified=False):
+    """
+    Returns a dict containing modifiable config values, optionally
+    omitting config values which have not been modified.
+    """
+    if skip_unmodified:
+        # Return modifiable config values which have been modified
+        return {
+            name: value for name, value in config.items()
+            if name in defaults and value != defaults[name]
+        }
 
-    "LEGACY_LISTS",
-    "VAR_TYPES",
-    "ARG_TYPES",
-    "LIST_TYPES",
-    "DISABLE_ANY_CAST",
-    "AGGRESSIVE_NUM_CAST",
-    "CHANGED_NUM_CAST",
-    "DISABLE_STR_CAST",
-    "DISABLE_INT_CAST",
-
-    "PROJECT_HOST",
-    "ASSET_HOST",
-    "DOWNLOAD_THREADS",
-
-    "LOG_LEVEL",
-    "DEBUG_JSON",
-    "FORMAT_JSON",
-    "OVERWRITE_ENGINE",
-    "DEFAULT_GUI_TAB",
-
-    "WARP_ALL"
-}
-
-
-def get_config():
-    """Returns a dict containing modifiable config values"""
-    # Get current configuration values
-    return {value: getattr(config, value)
-            for value in MODIFIABLE}
+    # Return all modified config values
+    return {
+        name: value for name, value in config.items()
+        if name in defaults
+    }
 
 
 def set_config(new_config):
@@ -80,31 +44,24 @@ def set_config(new_config):
 
     If the value of a setting is None, it will be skipped.
     """
-    for name, value in new_config.items():
-        if name in MODIFIABLE and value is not None:
-            setattr(config, name, value)
+    # Remove names not in defaults and None values
+    filtered = {name: value for name, value in new_config.items()
+                if name in defaults and value is not None}
+    config.update(filtered)
 
 
 def restore_defaults():
-    """Restores the default values of modifiable options"""
-    for name in MODIFIABLE:
-        value = getattr(defaults, name)
-        setattr(config, name, value)
+    """Sets modifiable config values to their defaults"""
+    config.update(defaults)
 
 
 def save_config(path, skip_unmodified=True):
     """
     Saves the configuration in a json file, optionally skipping
-    unmodified configuration values.
+    unmodified config values.
     """
-    current_config = get_config()
-
-    # Remove unmodified config values
-    if skip_unmodified:
-        current_config = {
-            name: value for name, value in current_config.items()
-            if not value == getattr(defaults, name)
-        }
+    # Get the current configuration
+    current_config = get_config(skip_unmodified)
 
     # Save the configuration
     with open(path, 'w') as config_file:
@@ -113,7 +70,7 @@ def save_config(path, skip_unmodified=True):
 
 def load_config(path, load_defaults=True):
     """
-    Loads a configuration from a json file, optionally restoring
+    Loads the configuration from a json file, optionally restoring
     defaults before doing so.
     """
     # Restore defaults
