@@ -15,6 +15,7 @@ __all__ = ['start_program', 'sprite']
 
 import asyncio
 import logging
+import random
 import time
 
 import pygame as pg
@@ -207,6 +208,10 @@ class Sprites:
 def start_program():
     """Run the program"""
     logging.basicConfig(level=logging.DEBUG)
+
+    if config.RANDOM_SEED is not None:
+        random.seed(config.RANDOM_SEED)
+
     runtime = None
     try:
         runtime = Runtime(SPRITES)

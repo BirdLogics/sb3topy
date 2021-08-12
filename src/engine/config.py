@@ -22,6 +22,8 @@ FS_SCALE - Changes the display size in fullscreen, potentially increasing
 AUDIO_CHANNELS - The number of audio channels created for the pygame mixer
 
 KEY_MAP - Maps pygame keys to their names in the project
+
+RANDOM_SEED - Optionally seed the random function at project start.
 """
 
 import json
@@ -101,3 +103,4 @@ KEY_MAP = {
 
 # Misc
 USERNAME = _CONFIG.get('username', "")
+RANDOM_SEED = None
