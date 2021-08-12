@@ -81,7 +81,7 @@ class Variables:
             return "util.sprites.stage." + self.global_vars.dict[name].clean_name
 
         # This should not occur, but can be handled
-        logging.warning("Unregistered var '%s'", name)
+        logging.warning("Unregistered var ref '%s'", name)
 
         # Create a new local variable
         return "self." + self.create_local('', name, typing.DiGraph()).clean_name
@@ -103,7 +103,7 @@ class Variables:
             return self.global_vars.dict[name].get_type()
 
         # This should not occur, but can be handled
-        logging.warning("Unregistered var '%s'", name)
+        logging.warning("Unregistered var type '%s'", name)
 
         # Create a new local variable
         return self.create_local('', name, typing.DiGraph()).get_type()
