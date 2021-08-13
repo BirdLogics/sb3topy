@@ -134,7 +134,7 @@ BLOCKS = {
     ),
 
     'motion_setrotationstyle': block(
-        'stack', 'str STYLE',
+        'stack', 'field STYLE',
         "self.costume.rotation_style = {STYLE}"
     ),
 
@@ -197,7 +197,7 @@ BLOCKS = {
     'looks_switchbackdropto': block(
         'stack', 'any BACKDROP', (
             "util.sprites.stage.costume.switch({BACKDROP})\n"
-            "util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)"
+            "util.send_event('backdrop_' + util.sprites.stage.costume.name, True)"
 
         )
     ),
@@ -205,7 +205,7 @@ BLOCKS = {
     'looks_switchbackdroptoandwait': block(
         'stack', 'any BACKDROP', (
             "util.sprites.stage.costume.switch({BACKDROP})\n"
-            "await util.send_wait('onbackdrop_' + util.sprites.stage.costume.name, True)"
+            "await util.send_wait('backdrop_' + util.sprites.stage.costume.name, True)"
         )
     ),
 
@@ -971,6 +971,6 @@ BLOCKS = {
     ),
 
     'default': block(
-        'literal', '', '0'
+        'stack', '', '0'
     )
 }

@@ -72,7 +72,7 @@ def get_blockmap(block, target):
 
         # Report an error and return a fallback
         if blockmap is None:
-            logging.error("Unkown block with opcode '%s'", block['opcode'])
+            logging.warning("Unkown block with opcode '%s'", block['opcode'])
             blockmap = BLOCKS['default']
 
     return BlockMap(*blockmap)
