@@ -27,15 +27,6 @@
         "config": {}
     },
     {
-        "name": "Hexplore",
-        "id": 248263497,
-        "link": "https://scratch.mit.edu/projects/248263497/",
-        "author": "Dad76",
-        "description": "View on Scratch\nA hand drawn point and click adventure, made for Scratch.",
-        "sha256": "f74c3eee03f8f3e6e01c066be59592a3145f6abbbfd9128f21796dd172be4f15",
-        "config": {}
-    },
-    {
         "name": "Pokemon Battle!",
         "id": 356302497,
         "link": "https://scratch.mit.edu/projects/356302497/",
