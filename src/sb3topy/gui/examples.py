@@ -8,6 +8,7 @@ Causes issues without internet
 """
 
 import json
+import logging
 import tkinter as tk
 import webbrowser
 from os import path
@@ -60,6 +61,7 @@ class ExamplesFrame(ttk.Frame):
         self.username = tk.StringVar()
         self.userlink = tk.StringVar()
         self.project_desc = tk.StringVar()
+        self.json_sha = None
 
         info_frame = ttk.Frame(project_frame)
         user_label = ttk.Label(info_frame, text="Made by")
@@ -126,21 +128,31 @@ class ExamplesFrame(ttk.Frame):
 
     def update_project(self, _=None):
         """Updates the project info"""
-        project = self.examples[self.listbox.curselection()[0]]
+        # Can happen when not on examples tab for some reason
+        if not self.listbox.curselection():
+            return
 
-        self.thumbnail.set_image(project['id'])
+        example = self.examples[self.listbox.curselection()[0]]
 
-        self.username.set("@" + project['author'])
+        self.thumbnail.set_image(example['id'])
+
+        self.username.set("@" + example['author'])
         self.userlink.set(
-            f"https://scratch.mit.edu/users/{project['author']}/")
+            f"https://scratch.mit.edu/users/{example['author']}/")
 
-        self.project_link.set(project['link'])
-        self.project_viewer.set(project['description'].split('\n')[0])
+        self.project_link.set(example['link'])
+        self.project_viewer.set(example['description'].split('\n')[0])
 
         self.project_desc.set(
-            '\n'.join(project['description'].split('\n')[1:]))
+            '\n'.join(example['description'].split('\n')[1:]))
 
-        self.download_link.set(f"https://scratch.mit.edu/{project['id']}/")
+        self.download_link.set(f"https://scratch.mit.edu/{example['id']}/")
+
+        self.json_sha = example.get("sha256")
+        if not self.json_sha:
+            logging.warning(
+                "No JSON SHA256 set for '%s'!", example['name'])
+            self.json_sha = True
 
     def download_project(self):
         """Downloads and converts the project"""

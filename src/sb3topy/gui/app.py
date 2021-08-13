@@ -4,18 +4,15 @@ app.py
 Contains the gui app
 """
 
-import logging
-import multiprocessing
-import tkinter as tk
 # from ctypes import windll
-from tkinter import ttk
+import tkinter as tk
 
+from .. import config, main
 from .convert import ConvertFrame
 from .examples import ExamplesFrame
 from .output import OutputFrame
 from .settings import SettingsFrame
 from .sidebar import Sidebar
-from .. import main, config
 
 # windll.shcore.SetProcessDpiAwareness(True)
 
@@ -87,6 +84,7 @@ class App(tk.Tk):
         config.PROJECT_PATH = None
         config.PROJECT_URL = self.examples.download_link.get()
         config.AUTORUN = autorun
+        config.JSON_SHA = self.examples.json_sha
 
         self.mode.set("output")
 

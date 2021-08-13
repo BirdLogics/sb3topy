@@ -6,7 +6,7 @@ Used to download a project into the temp folder.
 
 import logging
 import re
-from hashlib import md5
+from hashlib import md5, sha256
 from multiprocessing.pool import ThreadPool
 from os import path
 
@@ -53,6 +53,11 @@ class Download:
         # Download the project json
         project_json = self.download_json()
 
+        # Verify the json was loaded correctly
+        if project_json is None:
+            self.project = None
+            return
+
         # Create the Project instance
         self.project = Project(project_json, output_dir)
 
@@ -67,7 +72,24 @@ class Download:
     def download_json(self):
         """Downloads and returns the project.json"""
         url = f"{config.PROJECT_HOST}/{self.project_id}"
-        resp = requests.get(url)
+
+        # Download the project.json
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            logging.error(
+                "Failed to download project json from '%s':\n%s", url, exc)
+            return None
+
+        # Verify the json SHA256 matches
+        if config.JSON_SHA:
+            json_hash = sha256(resp.content).hexdigest()
+            if json_hash != config.JSON_SHA:
+                logging.error(
+                    "SHA256 of JSON failed (project has been modified):\n%s", json_hash)
+                return None
+
         return resp.json()
 
     def download_asset(self, md5ext):
@@ -83,13 +105,20 @@ class Download:
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
-            logging.debug("Skipping download of asset '%s' (already exists)", md5ext)
+            logging.debug(
+                "Skipping download of asset '%s' (already exists)", md5ext)
             return True
 
         logging.debug("Downloading asset '%s' to '%s'", url, save_path)
 
         # Download the asset
-        resp = requests.get(url)
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            logging.error(
+                "Failed to download asset from '%s':\n%s", url, exc)
+            return False
 
         # Verify the asset's md5 hash
         if config.VERIFY_ASSETS:

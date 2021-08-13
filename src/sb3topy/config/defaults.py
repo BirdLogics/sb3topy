@@ -32,6 +32,12 @@ General Settings:
         True. To avoid overwritting modified engine files, use
         OVERWRITE_ENGINE instead.
 
+    JSON_SHA: The expected SHA256 of a downloaded project.json. If
+        the hash doesn't match when the json is downloaded, the
+        conversion process will be aborted. Used as a safety measure to
+        prevent a vulnerability from being exploited in one of the
+        example projects. Not checked for extracted projects.
+
 Asset Settings:
     FRESHEN_ASSETS: Overwrite existing assets when downloading or
         extracting the project rather than skipping them.
@@ -166,6 +172,8 @@ AUTORUN = False
 
 PARSE_PROJECT = True
 COPY_ENGINE = True
+
+JSON_SHA = None
 
 # Asset Settings
 FRESHEN_ASSETS = False
