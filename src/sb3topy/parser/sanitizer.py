@@ -44,12 +44,26 @@ def clean_identifier(text, default='identifier'):
 
 def quote_string(text):
     """Double "quotes" text"""
-    return '"' + re.sub(r'()(?=\\|")', r"\\", str(text)) + '"'
+    # Escape back slashes and double quotes
+    text = re.sub(r'()(?=\\|")', r"\\", str(text))
+
+    # Escape newlines
+    text = '\\n'.join(text.splitlines())
+
+    # Double quote the string
+    return '"' + text + '"'
 
 
 def quote_field(text):
     """Single 'quotes' text"""
-    return "'" + re.sub(r"()(?=\\|')", r"\\", str(text)) + "'"
+    # Escape back slashes and single quotes
+    text = re.sub(r"()(?=\\|')", r"\\", str(text))
+
+    # Escape newlines
+    text = '\\n'.join(text.splitlines())
+
+    # Single quote the string
+    return "'" + text + "'"
 
 
 def quote_number(text):
