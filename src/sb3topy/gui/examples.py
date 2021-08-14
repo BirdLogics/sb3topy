@@ -45,6 +45,7 @@ class ExamplesFrame(ttk.Frame):
 
         self.thumbnail = Thumbnail(project_frame)
 
+        self.download_link_raw = ""
         self.download_link = tk.StringVar(self.app, name="PROJECT_URL")
 
         download_frame = ttk.Frame(project_frame)
@@ -62,6 +63,7 @@ class ExamplesFrame(ttk.Frame):
         self.username = tk.StringVar()
         self.userlink = tk.StringVar()
         self.project_desc = tk.StringVar()
+        self.json_sha = tk.Variable(self.app, name="JSON_SHA")
 
         info_frame = ttk.Frame(project_frame)
         user_label = ttk.Label(info_frame, text="Made by")
@@ -71,9 +73,10 @@ class ExamplesFrame(ttk.Frame):
             info_frame, self.project_link, textvariable=self.project_viewer)
         description = ttk.Label(
             info_frame, textvariable=self.project_desc)
-
-        # instr_label = ttk.LabelFrame(right, text="Instructions")
-        # instr_box = tk.Text(instr_label, width=57)
+        copyright_label = Hyperlink(
+            info_frame, tk.StringVar(
+                value="https://creativecommons.org/licenses/by-sa/2.0/"),
+            text="CC BY-SA-2.0")
 
         # Grid everything
         self.listbox.grid(column=0, row=0, sticky='NSW', pady=5, padx=(0, 2))
@@ -92,20 +95,19 @@ class ExamplesFrame(ttk.Frame):
         info_frame.grid(column=0, row=2, sticky='NEW')
         user_label.grid(column=0, row=1, sticky='NW')
         user_link.grid(column=1, row=1, sticky='NW')
+        copyright_label.grid(column=2, row=1, sticky='NE')
         info_frame.columnconfigure(1, weight=1)
 
-        project_link.grid(column=0, row=2, columnspan=2, sticky='NW')
+        project_link.grid(column=0, row=2, columnspan=3, sticky='NW')
 
-        description.grid(column=0, row=3, columnspan=2, sticky='NW')
-
-        # instr_label.grid(column=0, row=2, sticky='NSEW', padx=5)
-        # instr_box.grid(sticky='NSEW')
+        description.grid(column=0, row=3, columnspan=3, sticky='NW')
 
         self.columnconfigure(1, weight=0)
         self.rowconfigure(0, weight=1)
 
         # Bind events
         self.listbox.bind("<<ListboxSelect>>", self.update_project)
+        self.download_link.trace_add('write', self.download_changed)
 
         # Load examples data
         self.examples = {}
@@ -129,9 +131,14 @@ class ExamplesFrame(ttk.Frame):
         # Update the listbox items
         self.examples_list.set([example['name'] for example in self.examples])
 
+    def download_changed(self, *_):
+        """Called when the download link is changed"""
+        if self.download_link.get() != self.download_link_raw:
+            self.listbox.selection_clear("1", "end")
+            self.json_sha.set(False)
+
     def update_project(self, _=None):
         """Updates the project info"""
-        # Can happen when not on examples tab for some reason
         if not self.listbox.curselection():
             return
 
@@ -149,9 +156,10 @@ class ExamplesFrame(ttk.Frame):
         self.project_desc.set(
             '\n'.join(example['description'].split('\n')[1:]))
 
-        self.download_link.set(f"https://scratch.mit.edu/{example['id']}/")
+        self.download_link_raw = f"https://scratch.mit.edu/{example['id']}/"
+        self.download_link.set(self.download_link_raw)
 
-        self.app.setvar("JSON_SHA", example.get("sha256", True))
+        self.json_sha.set(example.get("sha256", True))
 
     def download_project(self):
         """Downloads and converts the project"""
@@ -167,6 +175,7 @@ class ExamplesFrame(ttk.Frame):
 
     def switch_to(self):
         """Called when this tab is shown"""
+        self.listbox.selection_clear(1, "end")
         self.listbox.selection_set(0)
         self.update_project()
 

@@ -85,14 +85,17 @@ class Download:
 
         # Verify the json SHA256 matches
         if config.JSON_SHA:
+            logging.debug("Validating JSON SHA256...")
             json_hash = sha256(resp.content).hexdigest()
-            if json_hash != config.JSON_SHA:
+
+            # If JSON_SHA is set to True, give a warning
+            # Tkinter variables treat True as 1
+            if config.JSON_SHA in (True, 1):
+                logging.warning("SHA256 not provided for JSON:\n%s", json_hash)
+            elif json_hash != config.JSON_SHA:
                 logging.error(
                     "SHA256 of JSON failed (project has been modified):\n%s", json_hash)
-
-                # JSON_SHA is set to True to indicate it should be used
-                if config.JSON_SHA is not True:
-                    return None
+                return None
 
         return resp.json()
 
