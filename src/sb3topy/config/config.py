@@ -11,6 +11,7 @@ result seems to work quite well.
 import argparse
 import json
 import logging
+from os import path
 
 from ..config import __dict__ as config
 from .consts import __dict__ as consts
@@ -67,7 +68,7 @@ def restore_defaults():
     config.update(defaults)
 
 
-def save_config(path, skip_unmodified=True):
+def save_config(save_path, skip_unmodified=True):
     """
     Saves the configuration in a json file, optionally skipping
     unmodified config values.
@@ -76,11 +77,11 @@ def save_config(path, skip_unmodified=True):
     current_config = get_config(skip_unmodified)
 
     # Save the configuration
-    with open(path, 'w') as config_file:
+    with open(save_path, 'w') as config_file:
         json.dump(current_config, config_file, indent=4)
 
 
-def load_config(path, load_defaults=True):
+def load_config(load_path, load_defaults=True):
     """
     Loads the configuration from a json file, optionally restoring
     defaults before doing so.
@@ -90,7 +91,7 @@ def load_config(path, load_defaults=True):
         restore_defaults()
 
     # Load the json
-    with open(path, 'r') as config_file:
+    with open(load_path, 'r') as config_file:
         new_config = json.load(config_file)
 
     # Read the settings
@@ -134,3 +135,7 @@ def parse_args(args=None):
 
     # Read config data
     set_config(vars(args))
+
+
+# Load config file from the directory of this module
+load_config(path.join(path.dirname(__file__), "config.json"))
