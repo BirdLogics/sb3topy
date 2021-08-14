@@ -161,8 +161,7 @@ class Convert:
             INPUT=shlex.quote(asset_path),
             OUTPUT=shlex.quote(save_path),
             DPI=config.BASE_DPI*config.SVG_SCALE,
-            SCALE=config.SVG_SCALE,
-            INKSCAPE_PATH=config.INKSCAPE_PATH
+            SCALE=config.SVG_SCALE
         ))
 
         # Attempt to run the command

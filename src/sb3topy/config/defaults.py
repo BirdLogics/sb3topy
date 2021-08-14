@@ -190,12 +190,10 @@ CONVERT_TIMEOUT = None
 
 # SVG Conversion
 SVG_COMMAND = "cairosvg {INPUT} -o {OUTPUT} -s {SCALE}"
-# SVG_COMMAND = '{INKSCAPE_PATH} -l -d {DPI} -o {OUTPUT} {INPUT}'
-INKSCAPE_PATH = '"C:/Program Files/Inkscape/bin/inkscape.com"'
+# SVG_COMMAND = 'inkscape -l -d {DPI} -o {OUTPUT} {INPUT}'
 
 BASE_DPI = 96
 SVG_SCALE = 2
-SVG_DPI = BASE_DPI * SVG_SCALE
 
 # MP3 Conversion
 MP3_COMMAND = (
