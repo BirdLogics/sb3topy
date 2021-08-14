@@ -1,5 +1,7 @@
 """
 Unit tests for sanitization
+
+TODO Test for quoting text containg newlines
 """
 
 import sys
@@ -80,6 +82,11 @@ class SanitizationTests(unittest.TestCase):
         result = sanitizer.quote_string(3.14)
         self.assertEqual(result, '"3.14"', "Float not quoted correctly")
 
+        # NOTE A trailing newline is removed. Is that bad?
+        result = sanitizer.quote_string("hello\rworld\n\n")
+        self.assertEqual(result, '"hello\\nworld\\n"',
+                         "Newline not escaped correctly")
+
     def test_quote_field(self):
         """Tests the quote_field method"""
         result = sanitizer.quote_field("hello world")
@@ -104,6 +111,10 @@ class SanitizationTests(unittest.TestCase):
 
         result = sanitizer.quote_field(3.14)
         self.assertEqual(result, "'3.14'", "Float not quoted correctly")
+
+        result = sanitizer.quote_field("hello\rworld\n\n")
+        self.assertEqual(result, "'hello\\nworld\\n'",
+                         "Newline not escaped correctly")
 
     def test_quote_number(self):
         """Tests the quote_number method"""
