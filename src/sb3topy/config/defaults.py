@@ -232,6 +232,7 @@ DEBUG_JSON = True
 FORMAT_JSON = True
 OVERWRITE_ENGINE = True
 DEFAULT_GUI_TAB = "convert"
+EXAMPLES_PATH = None
 
 # Miscellaneous
 WARP_ALL = False

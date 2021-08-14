@@ -8,13 +8,14 @@ Causes issues without internet
 """
 
 import json
-import logging
 import tkinter as tk
 import webbrowser
 from os import path
 from tkinter import ttk
 
 import requests
+
+from .. import config
 
 
 class ExamplesFrame(ttk.Frame):
@@ -113,7 +114,10 @@ class ExamplesFrame(ttk.Frame):
     def read_examples(self):
         """Reads examples from a json file"""
         # Get the path to the examples file
-        examples_path = path.join(path.dirname(__file__), "examples.json")
+        if config.EXAMPLES_PATH is None:
+            examples_path = path.join(path.dirname(__file__), "examples.json")
+        else:
+            examples_path = config.EXAMPLES_PATH
 
         # Read the json file, if it exists
         if path.isfile(examples_path):
