@@ -13,8 +13,9 @@ General Settings:
     OUTPUT_PATH: The default folder in which to save the converted
         project, download/extracted assets, and converted assets.
 
-    PROJECT: The path to a project sb3 file to convert
-    DOWNLOAD_PROJECT: Specifies that the project path is a url
+    PROJECT_PATH: The path to a project sb3 file to extract and convert
+
+    PROJECT_URL: The path to a project to download and convert
 
     CONFIG_PATH: The config path specified by the command line -c
         argument.
