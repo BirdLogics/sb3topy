@@ -45,7 +45,7 @@ class ExamplesFrame(ttk.Frame):
 
         self.thumbnail = Thumbnail(project_frame)
 
-        self.download_link = tk.StringVar()
+        self.download_link = tk.StringVar(self.app, name="PROJECT_URL")
 
         download_frame = ttk.Frame(project_frame)
         download_box = ttk.Entry(
