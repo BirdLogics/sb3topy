@@ -52,7 +52,7 @@ class OutputFrame(ttk.Frame):
         self.text.tag_config("INFO", foreground="green",
                              font=self.font+" bold")
         self.text.tag_config("INFO_text", font=self.font)
-        self.text.tag_config("WARNING", foreground="gold",
+        self.text.tag_config("WARNING", foreground="orange",
                              font=self.font+" bold")
         self.text.tag_config("WARNING_text", font=self.font)
         self.text.tag_config("ERROR", foreground="red", font=self.font+" bold")
