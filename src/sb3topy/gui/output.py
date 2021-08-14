@@ -75,6 +75,11 @@ class OutputFrame(ttk.Frame):
         """Starts watching a queue for log records until process ends"""
         self.process = process
         self.queue = log_queue
+
+        self.text["state"] = "normal"
+        self.text.delete("1.0", "end")
+        self.text["state"] = "disabled"
+
         self.after(1, self.update_loop)
 
     def handle_record(self, record: logging.LogRecord):

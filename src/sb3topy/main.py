@@ -23,10 +23,16 @@ def main():
     # Load configuration from the command line
     config.parse_args()
 
+    # Run the gui if it is enabled
+    if config.USE_GUI:
+        gui.run_app()
+        return
+
     # Setup the logger
     logging.basicConfig(
         format="[%(levelname)s] %(message)s", level=config.LOG_LEVEL)
 
+    # Run the conversion
     run()
 
 
@@ -34,10 +40,6 @@ def run():
     """
     Converts the project using the settings saved in config
     """
-    # Run the gui if it is enabled
-    if config.USE_GUI:
-        gui.run_app()
-        return True
 
     # Download the project from the internet
     if config.PROJECT_URL:

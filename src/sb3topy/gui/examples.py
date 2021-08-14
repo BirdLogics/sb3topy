@@ -24,7 +24,7 @@ class ExamplesFrame(ttk.Frame):
         super().__init__(parent, **kwargs)
         self.app = parent
 
-        # Create styls
+        # Create styles
         style = ttk.Style(self)
         style.map(
             "Hyperlink.TLabel",
@@ -61,7 +61,6 @@ class ExamplesFrame(ttk.Frame):
         self.username = tk.StringVar()
         self.userlink = tk.StringVar()
         self.project_desc = tk.StringVar()
-        self.json_sha = None
 
         info_frame = ttk.Frame(project_frame)
         user_label = ttk.Label(info_frame, text="Made by")
@@ -148,19 +147,19 @@ class ExamplesFrame(ttk.Frame):
 
         self.download_link.set(f"https://scratch.mit.edu/{example['id']}/")
 
-        self.json_sha = example.get("sha256")
-        if not self.json_sha:
-            logging.warning(
-                "No JSON SHA256 set for '%s'!", example['name'])
-            self.json_sha = True
+        self.app.setvar("JSON_SHA", example.get("sha256", True))
 
     def download_project(self):
         """Downloads and converts the project"""
-        self.app.download_project(False)
+        self.app.setvar("AUTORUN", False)
+        self.app.write_config()
+        self.app.run_main()
 
     def download_run_project(self):
         """Downloads, converts, and runs the project"""
-        self.app.download_project(True)
+        self.app.setvar("AUTORUN", True)
+        self.app.write_config()
+        self.app.run_main()
 
     def switch_to(self):
         """Called when this tab is shown"""
