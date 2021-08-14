@@ -33,6 +33,7 @@ def download_project(project_url, output_dir=None):
         return None
 
     logging.info("Downloading project...")
+    logging.debug("Downloading project '%s'", match[0])
 
     return Download(match[0], output_dir).project
 
@@ -88,7 +89,10 @@ class Download:
             if json_hash != config.JSON_SHA:
                 logging.error(
                     "SHA256 of JSON failed (project has been modified):\n%s", json_hash)
-                return None
+
+                # JSON_SHA is set to True to indicate it should be used
+                if config.JSON_SHA is not True:
+                    return None
 
         return resp.json()
 
@@ -109,7 +113,7 @@ class Download:
                 "Skipping download of asset '%s' (already exists)", md5ext)
             return True
 
-        logging.debug("Downloading asset '%s' to '%s'", url, save_path)
+        logging.debug("Downloading asset '%s'", md5)
 
         # Download the asset
         try:

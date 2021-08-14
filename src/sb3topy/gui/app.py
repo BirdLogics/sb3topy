@@ -100,7 +100,6 @@ class App(tk.Tk):
         self.setvar("PROJECT_URL", config.PROJECT_URL)
         self.setvar("AUTORUN", config.AUTORUN)
         self.setvar("JSON_SHA", config.JSON_SHA)
-        print(self.getvar("OUTPUT_PATH"))
 
     def write_config(self):
         """

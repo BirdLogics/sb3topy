@@ -10,6 +10,7 @@ result seems to work quite well.
 
 import argparse
 import json
+import logging
 
 from ..config import __dict__ as config
 from .consts import __dict__ as consts
@@ -44,6 +45,17 @@ def set_config(new_config):
 
     If the value of a setting is None, it will be skipped.
     """
+    for name, value in new_config.items():
+        if name in defaults:
+            if value is not None:
+                config[name] = value
+        elif name in consts:
+            logging.warning(
+                "Attempt to set constant config value '%s' to '%s", name, value)
+        else:
+            logging.warning(
+                "Cannot set unknown config value '%s' to '%s'", name, value)
+
     # Remove names not in defaults and None values
     filtered = {name: value for name, value in new_config.items()
                 if name in defaults and value is not None}
@@ -96,14 +108,14 @@ def parse_args(args=None):
     )
 
     # Add arguments
-    parser.add_argument("PROJECT", nargs='?',
+    parser.add_argument("PROJECT_PATH", nargs='?',
                         help="path to a sb3 project")
-    parser.add_argument("OUTPUT_DIR", nargs='?',
+    parser.add_argument("OUTPUT_PATH", nargs='?',
                         help="specifies an output directory")
     parser.add_argument("-c", dest="CONFIG_PATH", metavar="file",
                         help="path to a configuration json")
-    parser.add_argument("-d", dest="DOWNLOAD_PROJECT", action="store_true",
-                        help="marks the project path as a URL")
+    # parser.add_argument("-d", dest="DOWNLOAD_PROJECT", action="store_true",
+    #                     help="marks the project path as a URL")
     parser.add_argument("--no-gui", dest="USE_GUI", action="store_false",
                         help="disables the gui even when PROJECT is not specified")
     parser.add_argument("-r", dest="AUTORUN", action="store_true",
@@ -113,7 +125,7 @@ def parse_args(args=None):
     args = parser.parse_args(args)
 
     # If a project is specified, disable GUI
-    if args.PROJECT:
+    if args.PROJECT_PATH:
         args.USE_GUI = False
 
     # Load a config file

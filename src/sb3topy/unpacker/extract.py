@@ -25,6 +25,8 @@ def extract_project(project_path, output_dir=None):
     output_dir: An optional folder to save the downloaded data to.
         If a folder is not provided, one will be created by Project.
     """
+    logging.info("Extracting project...")
+    logging.debug("Extracting project from '%s'", project_path)
     project_zip = None
     try:
         project_zip = zipfile.ZipFile(project_path, 'r')
@@ -34,7 +36,6 @@ def extract_project(project_path, output_dir=None):
                 "Could not find 'project.json' in '%s'", project_path)
             return None
 
-        logging.info("Extracting project...")
         return Extract(project_zip, output_dir).project
 
     except FileNotFoundError:
@@ -83,10 +84,11 @@ class Extract:
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
-            logging.debug("Skipping extraction of asset '%s' (already exists)", md5ext)
+            logging.debug(
+                "Skipping extraction of asset '%s' (already exists)", md5ext)
             return True
 
-        logging.debug("Extracting asset '%s' to '%s'", md5ext, save_path)
+        logging.debug("Extracting asset '%s'", md5ext)
 
         # Extract the asset
         asset = self.project_zip.read(md5ext)
