@@ -1,10 +1,10 @@
 """
 variables.py
 
-Handles variable naming.
+Handles variable naming and interfaces with the typing module to create
+type Nodes to determine variable types.
 
-TODO Variable type optimizations
-TODO Names such as 'x position' are marked as universals
+TODO Are names such as 'x position' are still marked as universals?
 """
 
 import logging
@@ -16,17 +16,23 @@ from .naming import Identifiers
 
 class Variables:
     """
-    Handles variable and list naming for a target
+    Handles variable and list naming for a target.
 
-    local_vars - Contains variables used by a single sprite
+    Class Attributes:
+        global_vars: Identifiers instance used to name and contain
+            variables owned by the stage
 
-    global_vars - Contains variables owned by the stage
-    universal_vars - Contains variable names which should be kept
-        consistent across sprites since they are used in sensing_of
+        universal_vars: Identifiers instance used to contain variable
+            names which should be kept consistent across sprites, such
+            as those used in the sensing_of block.
 
-    Universal variable names must be marked before adding variables.
+    Attributes:
+        local_vars: Identifiers instance used to name and contain
+            variables for this sprite
 
+    All universal variables must be marked before variables are added.
     """
+
     global_vars: Identifiers = None
     universal_vars: Identifiers = None
 
@@ -262,13 +268,17 @@ class Variable:
     Represents a variable or list
 
     Attributes:
-        clean_name - The clean identifier for the variable
+        clean_name: The clean identifier for the variable
 
-        node - The digraph node used to get the type of the variable
+        node: The digraph node used to get the type of the variable
 
-        is_changed - Whether the change var by block is used on the variable
-        is_modified - Whether the list is modified in any way
-        is_indexed - Whether the item # of list or contains block is used on the list
+        is_changed: Whether the change var by block is used on the
+            variable
+
+        is_modified: Whether the list is modified in any way
+
+        is_indexed: Whether the item # of list or contains block is
+            used on the list
     """
 
     def __init__(self, clean_name, node):

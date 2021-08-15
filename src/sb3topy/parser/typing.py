@@ -24,28 +24,29 @@ import logging
 from .. import config
 
 
-TYPE_COLORS = {
-    'var': 'orange',
-    'list': 'darkorange',
-    'proc_arg': 'purple'
-}
+# TYPE_COLORS = {
+#     'var': 'orange',
+#     'list': 'darkorange',
+#     'proc_arg': 'purple'
+# }
 
 
 class Node:
     """
     Represents an item of a certain type
 
-    id_tuple - A tuple providing unique identification for the node
+    Attributes:
+        id_tuple: A tuple providing unique identification for the node
 
-    known_type - The known type of this node
+        known_type: The known type of this node
 
-    types_set - The types the item has been "set" to. Does not
-        include the type of parent Nodes until they are resolved.
+        types_set: The types the item has been "set" to. Does not
+            include the type of parent Nodes until they are resolved.
 
-    parent_nodes - A set of nodes which this node is dependent on.
+        parent_nodes: A set of nodes which this node is dependent on.
 
-    unresolved - A set which this node adds and removes
-        itself from depending on the unresolved status
+        unresolved - A set which this node adds and removes itself
+            from depending on the unresolved status
     """
 
     def __init__(self, id_tuple, unresolved):
@@ -206,9 +207,10 @@ class DiGraph:
     """
     A directed graph used to determine types.
 
-    nodes - A dict referencing nodes by their id_tuple
+    Attributes:
+        nodes: A dict referencing nodes by their id_tuple
 
-    unresolved - A set containing all unresolved nodesF
+        unresolved: A set containing all unresolved nodes
     """
 
     def __init__(self):

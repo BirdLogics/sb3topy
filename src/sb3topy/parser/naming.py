@@ -20,12 +20,13 @@ from . import sanitizer, specmap
 
 class Identifiers:
     """
-    Handles the naming of a set of identifiers
+    Handles the naming of a set of identifiers.
 
-    dict - A dictionary linking original identifiers
-        to their cleaned, safe variants
+    Attributes:
+        dict: A dictionary linking original identifiers to their
+            cleaned, safe variants.
 
-    set - A set containing all cleaned, unique identifiers
+        set: A set containing all cleaned, unique identifiers.
     """
 
     def __init__(self):
@@ -86,9 +87,9 @@ class Identifiers:
 
 class Sprites:
     """
-    Handles sprite class naming
+    Handles sprite class naming.
 
-    sprites - An instance of Identifiers
+    sprites: An instance of Identifiers.
     """
 
     def __init__(self):
@@ -141,10 +142,11 @@ class Events:
 
     This class also handles assigning safe event names to broadcasts.
 
-    events - Class attribute, an Identifiers
-        instance used to get safe event names
+    Class Attributes,
+        events: An Identifiers instance used to safely name events
 
-    identifiers - An identfiers instance used to get safe hat identifiers
+    Attributes:
+        identifiers: An identfiers instance used to safely name hats
     """
 
     events = None
@@ -227,6 +229,19 @@ class Prototype:
     Represents a custom block
 
     TODO Unittest to verify args_list() uses cleaned names
+
+    Attributes:
+        name: The cleaned name of the prototype proccode
+
+        warp: Whether the prototype has run without screen refresh set
+
+        args: A dictionary linking original argument names to cleaned
+            argument names. {orginal_name: clean_name}
+
+        args_id: A dictionary linking argument ids to cleaned argument
+            names. {arg_id: clean_name}
+
+
     """
 
     def __init__(self, target, mutation, clean_name):
@@ -307,6 +322,15 @@ class Prototype:
 class Prototypes:
     """
     Handles the naming and typing of custom blocks and their arguments
+
+    Attributes:
+        events: The Events instance used to name prototypes.
+
+        prototypes: A dictionary linking prototype proccodes to their
+            Prototype instances. {proccode: prototype_instance}
+
+        prototypes_id: A dictionary linking the blockids of prototypes
+            to their Prototype instances. {blockid: prototype_instance}
     """
 
     def __init__(self, events: Events):

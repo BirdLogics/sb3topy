@@ -2,10 +2,6 @@
 parser.py
 
 Orchestrates the job of parsing the project.json
-
-TODO Costume/Sound initializer indentation
-TODO Some literals are wrapped with a conversion
-TODO Smart variable type detection
 """
 
 import logging
@@ -28,8 +24,12 @@ class Parser:
     """
     Handles parsing a target
 
-    TODO No newlines on non stack block
-    TODO Sprite class
+    Attributes:
+        targets: A Targets instance used to handle each target in the
+            sb3 project.json.
+
+        project: A dict like object containing the data from the sb3
+            project.json.
     """
 
     def __init__(self, project):

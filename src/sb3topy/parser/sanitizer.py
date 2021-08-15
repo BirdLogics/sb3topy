@@ -1,23 +1,11 @@
 """
 sanitizer.py
 
-Contains classes which handle naming and
-functions which are useful for sanitization
+Contains functions which are useful for sanitization.
 
-TODO Make Identfiers a base class for specialized classes
-TODO Make broadcast identifers retain case
-Perhaps make an case insensitive event list used to
-obtain the capitilization of the first event discovered
-
-
-Handles the naming of:
-sprites
-hats & broadcasts
-variables / lists
-prototypes (custom blocks)
+TODO Would repr() be a better way to quote strings?
 """
 
-import itertools
 import logging
 import math
 import re
@@ -203,20 +191,3 @@ def cast_wrapper(value, from_type, to_type):
     logging.warning("Unknown cast wrap for '%s' to '%s'", from_type, to_type)
 
     return value
-
-
-def _letter_iter():
-    """
-    Creates an iterator of this pattern:
-        A, B, C, ... AA, AB, AC, ... AZZ, ...
-    """
-    return map(
-        ''.join,
-        itertools.chain.from_iterable(
-            map(
-                lambda r: itertools.permutations(
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ", r),
-                itertools.count(1)
-            )
-        )
-    )
