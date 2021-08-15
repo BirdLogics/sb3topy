@@ -16,6 +16,9 @@ from os import path
 from ..config import __dict__ as config
 from .consts import __dict__ as consts
 from .defaults import __dict__ as defaults
+from .project import __dict__ as project
+
+all_defaults = {**defaults, **project}
 
 __all__ = ('restore_defaults', 'save_config', 'load_config',
            'parse_args', 'get_config', 'set_config')
@@ -26,17 +29,18 @@ def get_config(skip_unmodified=False):
     Returns a dict containing modifiable config values, optionally
     omitting config values which have not been modified.
     """
+
     if skip_unmodified:
         # Return modifiable config values which have been modified
         return {
             name: value for name, value in config.items()
-            if name in defaults and value != defaults[name]
+            if name in all_defaults and value != all_defaults[name]
         }
 
     # Return all modified config values
     return {
         name: value for name, value in config.items()
-        if name in defaults
+        if name in all_defaults or name in project
     }
 
 
@@ -47,7 +51,7 @@ def set_config(new_config):
     If the value of a setting is None, it will be skipped.
     """
     for name, value in new_config.items():
-        if name in defaults:
+        if name in all_defaults:
             if value is not None:
                 config[name] = value
         elif name in consts:
@@ -57,15 +61,15 @@ def set_config(new_config):
             logging.warning(
                 "Cannot set unknown config value '%s' to '%s'", name, value)
 
-    # Remove names not in defaults and None values
+    # Remove names not in all_defaults and None values
     filtered = {name: value for name, value in new_config.items()
-                if name in defaults and value is not None}
+                if name in all_defaults and value is not None}
     config.update(filtered)
 
 
 def restore_defaults():
     """Sets modifiable config values to their defaults"""
-    config.update(defaults)
+    config.update(all_defaults)
 
 
 def save_config(save_path, skip_unmodified=True):

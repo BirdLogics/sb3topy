@@ -50,12 +50,14 @@ def copy_engine(project: Project):
             logging.info("Overwriting engine files at '%s'", save_dir)
             shutil.rmtree(save_dir)
             shutil.copytree(read_dir, save_dir, )
+            create_config(save_dir)
         else:
             logging.info(
                 "Did not copy engine files; OVERWRITE_ENGINE disabled.")
     else:
         logging.info("Copying engine files to '%s'", save_dir)
         shutil.copytree(read_dir, save_dir)
+        create_config(save_dir)
 
     # Create a warning message
     warn_path = path.join(save_dir, "WARNING.txt")
@@ -68,6 +70,22 @@ def copy_engine(project: Project):
             "Alternatively, you can create a file name 'DISABLE_OVERWRITE'"
             "to disable modifying these files.\n"
         ))
+
+
+def create_config(engine_dir):
+    """Creates a config.py file for the engine"""
+    # Read a formatable spec file
+    spec_path = path.join(path.dirname(__file__), "config.txt")
+    with open(spec_path, 'r') as spec_file:
+        spec_data = spec_file.read()
+
+    # Format the spec file into Python code
+    config_data = spec_data.format(**config.__dict__)
+
+    # Save the config data
+    config_path = path.join(engine_dir, "config.py")
+    with open(config_path, 'w') as config_file:
+        config_file.write(config_data)
 
 
 def run_project(output_dir):

@@ -1,0 +1,86 @@
+"""
+config.py
+
+Contains configuration data for the project.
+
+{PROJECT_DOCS}
+
+Constants:
+    PY_VERSION: Contains the Python version tuple.
+
+    PG_VERSION: Contains the Pygame version tuple.
+
+    KEY_MAP: Used to map Pygame keys to the names used in the project.
+
+Deprecated:
+    DISPLAY_FLAGS: Passed to pygame.display.set_mode. Do not use FULLSCREEN
+    or RESIZABLE; these are managed automatically.
+
+"""
+
+# pylint: disable=unused-import
+
+from sys import version_info as PY_VERSION
+
+import pygame as pg
+from pygame.version import vernum as PG_VERSION
+
+# Timing Settings
+TARGET_FPS = {TARGET_FPS!r}
+TURBO_MODE = {TURBO_MODE!r}
+WORK_TIME = 1 / {WORK_TIME_INV!r}
+WARP_TIME = {WARP_TIME!r}
+
+FLIP_THRESHOLD = 1000 / {FLIP_THRESHOLD_INV!r}
+
+# Display Settings
+STAGE_SIZE = {STAGE_SIZE!r}
+DISPLAY_SIZE = {DISPLAY_SIZE!r}
+
+ALLOW_RESIZE = {ALLOW_RESIZE!r}
+
+FS_SCALE = {FS_SCALE!r}
+SCALED_DISPLAY = {SCALED_DISPLAY!r}
+
+if SCALED_DISPLAY and PG_VERSION < (2,):
+    print("Scaled display requires Pygame 2.")
+    SCALED_DISPLAY = False
+
+DISPLAY_FLAGS = 0
+
+# Title Settings
+DYNAMIC_TITLE = {DYNAMIC_TITLE!r}
+TITLE = {TITLE!r}
+
+# Audio Settings
+AUDIO_CHANNELS = {AUDIO_CHANNELS!r}
+MASTER_VOLUME = {MASTER_VOLUME!r}
+
+# Limit Settings
+MAX_CLONES = {MAX_CLONES!r}
+MAX_LIST = {MAX_LIST!r}
+
+# Hotkey Settings
+TURBO_HOTKEY = {TURBO_HOTKEY!r}
+FULLSCREEN_HOTKEY = {FULLSCREEN_HOTKEY!r}
+DEBUG_HOTKEYS = {DEBUG_HOTKEYS!r}
+
+# Debug Settings
+DRAW_FPS = {DRAW_FPS!r}
+SPRITE_RECTS = {SPRITE_RECTS!r}
+REDRAW_RECTS = {REDRAW_RECTS!r}
+PEN_RECTS = {PEN_RECTS!r}
+
+# Miscellaneous
+USERNAME = {USERNAME!r}
+RANDOM_SEED = {RANDOM_SEED!r}
+
+# Constants
+KEY_MAP = {{
+    pg.K_SPACE: "space",
+    pg.K_UP: "up arrow",
+    pg.K_DOWN: "down arrow",
+    pg.K_RIGHT: "right arrow",
+    pg.K_LEFT: "left arrow",
+    pg.K_RETURN: "enter"
+}}
