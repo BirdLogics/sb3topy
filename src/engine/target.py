@@ -341,6 +341,12 @@ class Target:
                     continue
                 task.cancel()
 
+            # TODO Better task restart behavior
+            # Threads which are restarted are not rescheduled to be
+            # run later. Instead, they are restarted with the same
+            # place in line. Implementing this behavior with asyncio
+            # may require a custom event loop.
+
             # Start the task
             tasks.append(asyncio.create_task(cor(util)))
 
@@ -552,6 +558,9 @@ class Target:
 
             # Stop all playing sounds
             self.sounds.stop()
+
+            # Stop this task now
+            raise asyncio.CancelledError()
 
 
 def warp(func):
