@@ -202,12 +202,14 @@ MP3_COMMAND = (
 )
 VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
 
-# Typing Settings
+# Optimization Settings
 LEGACY_LISTS = False
 
 VAR_TYPES = False
 ARG_TYPES = False
 LIST_TYPES = True
+
+SOLO_BROADCASTS = True
 
 # Adjust Aggression
 DISABLE_ANY_CAST = True
@@ -226,7 +228,7 @@ DOWNLOAD_THREADS = 16
 
 # Debug Settings
 LOG_LEVEL = 20
-DEBUG_JSON = True
+DEBUG_JSON = False
 FORMAT_JSON = True
 OVERWRITE_ENGINE = True
 DEFAULT_GUI_TAB = "convert"

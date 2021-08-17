@@ -2,15 +2,14 @@
 targets.py
 
 Handles targets
-
 """
 
 import logging
+from typing import Dict
 
-from .. import config
 from . import naming, specmap
-from .variables import Variables
 from .typing import DiGraph
+from .variables import Variables
 
 
 class Targets:
@@ -23,17 +22,18 @@ class Targets:
 
     def __init__(self):
         self.names = naming.Sprites()
-        self.targets: dict[str, Target] = {}
+        self.targets: Dict[str, Target] = {}
         self.digraph = DiGraph()
 
     def add_targets(self, targets):
         """Creates and adds each target to the internal dict"""
+        Target.digraph = self.digraph
+
         # Add every target to the internal dict
         for target in targets:
             self.targets[target['name']] = Target(
                 target,
-                self.names.create_identifier(target['name']),
-                self.digraph
+                self.names.create_identifier(target['name'])
             )
 
     def name_items(self):
@@ -55,26 +55,48 @@ class Target:
     """
     Represents a target
 
-    target - The sb3 target dict
-    blocks - The sb3 blocks list of this target
-    hats - A list of hat blocks contained by this target
+    Class Attributes:
+        broadcasts: A dict used to keep track of which broadcasts only
+            have a single "when I recieve" hat. If a value of the dict
+            is None, there are mulitple recievers. Otherwise, the value
+            is an unclean target name. {broadcast: target_name | None}
 
-    clean_name - The safe and unique identifier name
+        digraph: The DiGraph instance used by the parser to handle
+            typing.
+        TODO Some things are in here just to pass them to the specmap
 
-    vars - The Variables instance handling naming for this target's variables
-    events - The Events instance handling naming for this target's hats
-    prototypes - The Prototypes instance handling this target's prototypes
+        cloned_targets: A set of clones which are likely to have clones
+            made of them.
 
-    prototype - The prototype currently being used by the parser
+    Attributes:
+        target: The sb3 target dict
+
+        blocks:  The sb3 blocks list of this target
+
+        hats: A list of hat blocks contained by this target
+
+        clean_name: The safe and unique identifier name
+
+        vars: The Variables instance used to name for this target's
+            variables
+
+        events: The Events instance used to name for this target's hats
+
+        prototypes: The Prototypes instance used to handle this target's
+            prototypes
+
+        prototype: The prototype currently being used by the parser
     """
 
-    def __init__(self, target, name, digraph: DiGraph):
+    digraph: DiGraph
+    broadcasts = {}
+    cloned_targets = set()
+
+    def __init__(self, target, name):
         self.target = target
         self.clean_name = name
         self.blocks = target['blocks']
         self.hats = []
-
-        self.digraph = digraph
 
         self.vars = Variables(name, target['isStage'])
 
@@ -88,6 +110,7 @@ class Target:
         Run the first pass on the target:
             - Removes unused variable reporters
             - Creates a list of hat blocks
+            - Keeps track of broadcast recievers
             - Initializes all Prototypes
             - Marks universal variables used in sensing_of
         """
@@ -103,6 +126,14 @@ class Target:
             # Each hat needs to be parsed
             if specmap.is_hat(block):
                 self.hats.append((blockid, block))
+
+                # Count the number of broadcast recievers
+                if block['opcode'] == 'event_whenbroadcastreceived':
+                    self.add_broadcast(block['fields']['BROADCAST_OPTION'][0].lower())
+
+            # Save when targets are cloned
+            if block['opcode'] == 'control_create_clone_of':
+                self.cloned_targets.add(specmap.get_clone(block, self))
 
             # Create a prototype with the block
             elif block['opcode'] == 'procedures_prototype':
@@ -160,3 +191,10 @@ class Target:
 
     def __getitem__(self, key):
         return self.target[key]
+
+    def add_broadcast(self, broadcast):
+        """Keeps track of which broadcasts only have a single reciever"""
+        if broadcast in self.broadcasts:
+            self.broadcasts[broadcast] = None
+        else:
+            self.broadcasts[broadcast] = self.target['name']

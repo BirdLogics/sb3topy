@@ -213,9 +213,19 @@ class Events:
         return text.lower()
 
     def name_hat(self, name, args):
-        """Gets an safe, unique identifier for a hat"""
+        """Gets a safe, unique identifier for a hat"""
         event = self.clean_event(name, args)
         return self.get_identifier(event)
+
+    def existing_hat(self, name, args):
+        """Gets the existing safe, unique identifier of a hat"""
+        event = self.clean_event(name, args)
+
+        assert event in self.identifiers.dict, "Existing hat ident doesn't exist"
+        assert len(self.identifiers.dict[event]
+                   ) == 1, "Existing hat ident should be solo"
+
+        return self.identifiers.dict[event][0]
 
     def event_items(self):
         """A generator returning event names and functions"""

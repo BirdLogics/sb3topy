@@ -3,10 +3,14 @@ switch_data.py
 
 Contains functions to handle more complex blocks
 
-TODO Update engine to support event decorators
+TODO Define hats with a single switch instead of also in block_data
+TODO Apply solo broadcast optimization to 'event_broadcast'?
 """
 
+import logging
+
 from ... import config
+from . import specmap
 from .block_data import BLOCKS, Block
 
 
@@ -28,7 +32,11 @@ def switch(switch_: str):
 
 
 def hat(name):
-    """Creates a function to create a custom blockmap"""
+    """
+    Creates a function to modify a hat block. When the created function
+    is run on a block, the base event name of the block is saved under
+    a new IDENT field, and the next block is moved to a SUBSTACK input.
+    """
     def func(block, _):
         # Get fields from the block
         # fields = {}
@@ -61,7 +69,9 @@ SWITCHES = {
 
     'event_whengreaterthan': hat('on_{WHENGREATERTHANMENU}'),
 
-    'event_whenbroadcastreceived': hat('broadcast_{BROADCAST_OPTION}'),
+    # Custom switch for event_whenbroadcastreceived
+    # 'event_whenbroadcastreceived': hat('broadcast_{BROADCAST_OPTION}'),
+
 
     'control_start_as_clone': hat('clone_start'),
 
@@ -228,4 +238,52 @@ def list_item(block, _):
     # Check if the if the index is special
     if value[1] in ('first', 'last', 'random'):
         return BLOCKS['data_itemoflist_legacy']
+    return None
+
+
+# Switches for single broadcast reciever optimizations
+
+broadcast_recieved = hat('broadcast_{BROADCAST_OPTION}')
+
+
+@fswitch('event_whenbroadcastreceived')
+def broadcast_recieved_solo(block, target):
+    """
+    Checks if a broadcast is a solo reciever, and if it is, returns
+    a special blockmap which tells the parser to use an existing hat
+    for the base event IDENT field.
+    """
+    # Modify the block with the normal hat switch
+    broadcast_recieved(block, target)
+
+    if config.SOLO_BROADCASTS:
+        broadcast = block['fields']['BROADCAST_OPTION'][0].lower()
+        target_name = target.broadcasts.get(broadcast)
+        if target_name is not None and target_name not in target.cloned_targets:
+            logging.debug(
+                "Solo broadcast '%s' in target '%s'",
+                broadcast, target_name)
+            block['fields']['TARGET'] = (target_name,)
+            return BLOCKS['event_whenbroadcastreceived_solo']
+
+    return None
+
+
+@fswitch('event_broadcastandwait')
+def broadcast_sendwait_solo(block, target):
+    """
+    Checks if the broadcast is a solo reciver, and if it is, saves the
+    base broadcast event name under a new field IDENT, the target name
+    under a new field TARGET, and returns a special blockmap to await
+    the broadcast like a custom block.
+    """
+    if config.SOLO_BROADCASTS:
+        broadcast = specmap.get_broadcast(block, target)
+        target_name = target.broadcasts.get(broadcast)
+        if target_name is not None and target_name not in target.cloned_targets:
+            block['fields']['TARGET'] = (target_name,)
+            block['fields']['IDENT'] = ('broadcast_{BROADCAST_INPUT}',)
+
+            return BLOCKS['event_broadcastandwait_solo']
+
     return None

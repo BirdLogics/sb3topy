@@ -64,8 +64,11 @@ class Parser:
     def second_pass(self):
         """
         Runs the second pass of the parser.
-        The second pass creates classes for each Variable and
-        runs type guessing for variables and procedure arguments
+
+        Creates classes for each Variable and runs type
+        guessing for variables and procedure arguments.
+
+        Also names solo broadcast recievers.
         """
 
         for target in self.targets:
@@ -74,6 +77,14 @@ class Parser:
         # Guess the type of each variable
         if config.VAR_TYPES:
             self.targets.digraph.resolve()
+
+        # Name solo broadcast recievers
+        broadcasts = targets.Target.broadcasts
+        for broadcast, target_name in broadcasts.items():
+            if target_name is not None:
+                target = self.targets.targets[target_name]
+                target.events.name_hat("broadcast_{BROADCAST}", {
+                    'BROADCAST': broadcast})
 
     def third_pass(self):
         """
@@ -153,8 +164,8 @@ class Parser:
                 args[name] = 'field', block['fields'][name][0]
 
             # Get inputs
-            for name in block['inputs']:
-                args[name] = self.parse_input(block, name)
+            for name, value in block['inputs'].items():
+                args[name] = specmap.parse_input(self.target.blocks, value)
 
             # Parse each argument using the blockmap
             clean_args = {}
@@ -180,58 +191,6 @@ class Parser:
             self.target.prototype = None
 
         return blockmap.return_type, code.strip()
-
-    def parse_input(self, block, name):
-        """
-        Parses an input and returns (type, value)
-
-        The type may be:
-         literal - A literal value which needs to be sanitized
-         blockid - A blockid which needs to be parsed
-         block - A parsed block of unkown type
-         string - A parsed block which returns a str
-        """
-
-        # Get the value of the input
-        value = block["inputs"][name]
-
-        # Handle a wrapped value
-        if value[0] == 1 and isinstance(value[1], list):
-            value = value[1]
-
-        # Handle a block input
-        # 1 wrapper with block, 2 block, 3 block over value
-        if value[0] in (1, 2, 3):
-            value = value[1]
-
-            # Empty block
-            if value is None:
-                return 'none', None
-
-            # Verify not a variable
-            if isinstance(value, str):
-                # Shadow block (dropdown)
-                if self.target.blocks[value]['shadow']:
-                    return 'literal', \
-                        self.target.blocks[value]['fields'].popitem()[1][0]
-
-                # Just a block
-                return 'blockid', value
-
-        # 12 Variable
-        if value[0] == 12:
-            return 'variable', value[1]
-
-        # 13 List
-        if value[0] == 13:
-            return 'list_reporter', value[1]
-
-        # Default to a literal
-        # 4-8 Number, 9-10 String, # 11 Broadcast
-        if not 4 <= value[0] <= 11:
-            logging.error("Unexpected input type %i", value[0])
-
-        return 'literal', value[1]
 
     def parse_arg(self, name, args, end_type, block):
         """
@@ -321,7 +280,14 @@ class Parser:
 
         # Create a hat identifier
         if end_type == 'hat_ident':
-            return self.target.events.name_hat(value, args)
+            return self.target.events.name_hat(
+                value, {name: val[1] for name, val in args.items()})
+
+        # Get an existing hat identifier for another target
+        if end_type == 'ex_hat_ident':
+            return self.targets.targets[
+                args['TARGET'][1]].events.existing_hat(
+                    value, {name: value[1] for name, value in args.items()})
 
         # Get a procedure argument identifier
         if end_type == 'proc_arg':

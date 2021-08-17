@@ -34,10 +34,14 @@ def block(return_type, args, code):
 
 
 def hat_block(args, code):
-    """Creates a block with some default hat code"""
+    """
+    Creates a block with some default hat code. Each hat has a switch
+    which saves the base event name under the field IDENT and the next
+    block under the input SUBSTACK.
+    """
     args = "hat_ident IDENT, stack SUBSTACK" + (f", {args}" if args else '')
     code = code + '\n' + (
-        "async def {IDENT}(self, util): \n"
+        "async def {IDENT}(self, util):\n"
         "    {SUBSTACK}"
     )
 
@@ -459,6 +463,21 @@ BLOCKS = {
     'event_broadcastandwait': block(
         'stack', 'str BROADCAST_INPUT',
         "await util.send_broadcast_wait({BROADCAST_INPUT})"
+    ),
+
+    # Used by solo broadcast optimization
+    'event_whenbroadcastreceived_solo': block(
+        'stack', "field TARGET, ex_hat_ident IDENT, " +\
+        "stack SUBSTACK, field BROADCAST_OPTION",
+        "@on_broadcast({BROADCAST_OPTION})\n" +\
+        "async def {IDENT}(self, util):\n" +\
+        "    {SUBSTACK}"
+
+    ),
+
+    'event_broadcastandwait_solo': block(
+        'stack', 'field TARGET, ex_hat_ident IDENT',
+        "await util.sprites[{TARGET}].{IDENT}(util)"
     ),
 
     # Control blocks
