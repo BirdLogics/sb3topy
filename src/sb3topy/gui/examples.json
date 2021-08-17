@@ -28,11 +28,14 @@
     },
     {
         "name": "Pokemon Battle!",
-        "id": 356302497,
+        "id": 561258215,
         "link": "https://scratch.mit.edu/projects/356302497/",
         "author": "im_feeling_itchy",
         "description": "View on Scratch\nA Pokemon battle game. Uses many vector images.",
-        "sha256": "d0b3580213e768c967ed0c48ce4c2416587524d203d00b75bb2a11297ccd15f8",
-        "config": {}
+        "sha256": "48fd3731d50e877b9e9cc4f6d573fb70a4905ed6ae40aa991b09e507e5457787",
+        "config": {
+            "SOLO_BROADCASTS": true
+        },
+        "TODO": "make my_printnamesandhealth patch unecessary"
     }
 ]
