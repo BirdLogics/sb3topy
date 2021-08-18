@@ -48,7 +48,8 @@ class Project:
 
         # Read assets from the project json
         self.assets = {}
-        self._init_assets()
+        if 'targets' in self.json:
+            self._init_assets()
 
     def _init_assets(self):
         """Reads and validates md5exts from the project json"""
@@ -81,3 +82,16 @@ class Project:
 
     def __getitem__(self, key):
         return self.json[key]
+
+    def __bool__(self):
+        # Verify the project is in the sb3 format
+        if not 'targets' in self.json:
+            if 'objName' in self.json:
+                logging.error((
+                    "Project is in the sb2 format.\nPlease save the "
+                    "project with Scratch 3 to convert it to an sb3."))
+            else:
+                logging.error("Invalid project.json.")
+
+            return False
+        return True

@@ -56,7 +56,7 @@ def run():
         project = None
 
     # Verify the project was unpacked
-    if project is None:
+    if not project:
         return False
 
     # Save a debug json
