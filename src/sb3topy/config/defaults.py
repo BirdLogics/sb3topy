@@ -74,15 +74,13 @@ Asset Settings:
 
     SVG_SCALE: How much to scale SVGs when converting to bitmap.
 
-    SVG_DPI: The calculated DPI of the SVG conversion.
-
     MP3_COMMAND: The command used to convert an mp3 file to a wav file.
         The input and output path will be passed through {INPUT} and
         {OUTPUT} format parameters.
     VLC_PATH: Passed to MP3_COMMAND as {VLC_PATH}.
     TODO Remove VLC_PATH
 
-Typing Settings:
+Optimizations Settings:
     LEGACY_LISTS: Use list classes wth maximum compatibility for legacy
         indices (first, last, random, all). Only necesary if a block
         containing a legacy index is used instead of directly putting
@@ -96,6 +94,10 @@ Typing Settings:
 
     LIST_TYPES: Enables lists to be detected a Static, or unchanging.
     TODO LIST_TYPES is a bad name
+
+    SOLO_BROADCASTS: Treats broadcasts with only a single reciever in sprites
+        which aren't cloned sort of like cross sprite custom blocks. May cause
+        issues with projects which use a block in the create clone of block.
 
     DISABLE_ANY_CAST: Causes the type guesser to ignore items with the
         'any' type when guessing the type of an object. If the object
@@ -125,6 +127,10 @@ Typing Settings:
         after the decimal point (or the entire value for ints) will be
         detected a number. Other values are assumed to be strings.
 
+    WARP_ALL: Enables warp on every custom block. May improve
+        performance with certain projects, but will cause major issues
+        with other projects.
+
 Download Settings:
     PROJECT_HOST: The path to the projects website.
 
@@ -151,11 +157,6 @@ DEBUG_SETTINGS:
     DEFAULT_GUI_TAB: The default tab to switch to in the GUI. It can be
         useful to automatically switch to examples when testing. May be
         'convert', 'examples', 'output', or 'settings'
-
-Miscellaneous:
-    WARP_ALL: Enables warp on every custom block. May improve
-        performance with certain projects, but will cause major issues
-        with other projects.
 """
 
 

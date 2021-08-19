@@ -2,6 +2,7 @@
 project.py
 
 Contains configuration values which change how the project runs.
+Note that this module contains the *default* values.
 
 Timing Settings:
     TARGET_FPS: The fps at which to try to run the program
@@ -11,19 +12,22 @@ Timing Settings:
         limit.
 
     WORK_TIME: How much time to spend running blocks before
-        redrawing (seconds). WORK_TIME = 1 / WORK_TIME_INV
+        redrawing (seconds).
+      = 1 / WORK_TIME_INV
 
     WARP_TIME: How long custom blocks are allowed to run without a
         screen refresh (seconds).
 
     FLIP_THRESHOLD: How long a screen redraw should take before Pygame
         should switch to flipping the entire screen (seconds.)
-    FLIP_THRESHOLD = 1000 / FLIP_THRESHOLD_INV
+      = 1000 / FLIP_THRESHOLD_INV
 
 Display Settings:
-    STAGE_SIZE: The size of the stage (width, height)
+    STAGE_SIZE: The size of the stage.
+      = (STAGE_WIDTH, STAGE_HEIGHT)
 
     DISPLAY_SIZE: The initial size of the window.
+      = (DISPLAY_WIDTH, DISPLAY_HEIGHT)
 
     ALLOW_RESIZE: Allows the user to adjust the display size.
 
@@ -77,7 +81,7 @@ Miscellaneous:
         before the project starts.
 """
 
-PROJECT_DOCS = ''.join(__doc__.splitlines(True)[5:])
+PROJECT_DOCS = ''.join(__doc__.splitlines(True)[6:])
 
 # Timing Settings
 TARGET_FPS = 31
@@ -88,8 +92,10 @@ WARP_TIME = 0.5
 FLIP_THRESHOLD_INV = 40
 
 # Display Settings
-STAGE_SIZE = (480, 360)
-DISPLAY_SIZE = (480, 360)
+STAGE_WIDTH = 480
+STAGE_HEIGHT = 360
+DISPLAY_WIDTH = 480
+DISPLAY_HEIGHT = 360
 
 ALLOW_RESIZE = True
 

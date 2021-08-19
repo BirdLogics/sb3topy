@@ -13,12 +13,19 @@ import json
 import logging
 from os import path
 
-from ..config import __dict__ as config
-from .consts import __dict__ as consts
-from .defaults import __dict__ as defaults
-from .project import __dict__ as project
+from ..config import __dict__ as _config
+from .consts import __dict__ as _consts
+from .defaults import __dict__ as _defaults
+from .project import __dict__ as _project
 
-all_defaults = {**defaults, **project}
+all_defaults = {}
+
+for _key, _value in _defaults.items():
+    if not _key[0] == '_':
+        all_defaults[_key] = _value
+for _key, _value in _project.items():
+    if not _key[0] == '_':
+        all_defaults[_key] = _value
 
 __all__ = ('restore_defaults', 'save_config', 'load_config',
            'parse_args', 'get_config', 'set_config')
@@ -33,14 +40,14 @@ def get_config(skip_unmodified=False):
     if skip_unmodified:
         # Return modifiable config values which have been modified
         return {
-            name: value for name, value in config.items()
+            name: value for name, value in _config.items()
             if name in all_defaults and value != all_defaults[name]
         }
 
     # Return all modified config values
     return {
-        name: value for name, value in config.items()
-        if name in all_defaults or name in project
+        name: value for name, value in _config.items()
+        if name in all_defaults or name in _project
     }
 
 
@@ -53,8 +60,8 @@ def set_config(new_config):
     for name, value in new_config.items():
         if name in all_defaults:
             if value is not None:
-                config[name] = value
-        elif name in consts:
+                _config[name] = value
+        elif name in _consts:
             logging.warning(
                 "Attempt to set constant config value '%s' to '%s", name, value)
         else:
@@ -64,12 +71,12 @@ def set_config(new_config):
     # Remove names not in all_defaults and None values
     filtered = {name: value for name, value in new_config.items()
                 if name in all_defaults and value is not None}
-    config.update(filtered)
+    _config.update(filtered)
 
 
 def restore_defaults():
     """Sets modifiable config values to their defaults"""
-    config.update(all_defaults)
+    _config.update(all_defaults)
 
 
 def save_config(save_path, skip_unmodified=True):
@@ -143,3 +150,9 @@ def parse_args(args=None):
 
 # Load config file from the directory of this module
 load_config(path.join(path.dirname(__file__), "config.json"))
+
+
+def set_all(value=1):
+    """Used for debugging the gui, sets every setting to value"""
+    for _key in all_defaults:
+        _config[_key] = value
