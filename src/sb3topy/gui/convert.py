@@ -117,7 +117,7 @@ class ConvertFrame(ttk.Frame):
 
     def convert(self):
         """Run the converter"""
-        self.app.setvar("AUTORUN", False)
+        self.app.setvar("AUTORUN", True)
         self.app.setvar("PROJECT_URL", "")
         self.app.setvar("JSON_SHA", False)
         self.app.write_config()
