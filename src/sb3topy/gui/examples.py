@@ -8,6 +8,7 @@ Causes issues without internet
 """
 
 import json
+import logging
 import tkinter as tk
 import webbrowser
 from os import path
@@ -18,12 +19,76 @@ import requests
 from .. import config
 
 
-class ExamplesFrame(ttk.Frame):
-    """Handles the Examples tab"""
+class Example:
+    """
+    Represents an example project
+    """
 
-    def __init__(self, parent, **kwargs):
-        super().__init__(parent, **kwargs)
-        self.app = parent
+    def __init__(self, example):
+        self.name = example['name']
+        self.download_link = "https://scratch.mit.edu/projects/" + \
+            str(example['id']) + "/"
+
+        self.thumb_link = "https://cdn2.scratch.mit.edu/get_image/project/" + \
+            str(example['id']) + "_480x360.png"
+        self.thumb_image = None
+
+        self.viewer = example['description'].partition('\n')[0]
+        self.view_link = example['link']
+
+        self.username = '@' + example['author']
+        self.user_link = "https://scratch.mit.edu/users/" + \
+            example['author'] + "/"
+
+        self.description = example['description'].partition('\n')[2]
+        self.sha256 = example['sha256']
+        self.config = example['config']
+
+    def get_image(self):
+        """Gets a PhotoImage of the example thumbnail"""
+        if self.thumb_image is None:
+            resp = requests.get(self.thumb_link)
+            self.thumb_image = tk.PhotoImage(data=resp.content)
+        return self.thumb_image
+
+
+def read_examples():
+    """Reads and returns the examples.json data"""
+    # Get the path to the examples file
+    if config.EXAMPLES_PATH is None:
+        examples_path = path.join(path.dirname(__file__), "examples.json")
+    else:
+        examples_path = config.EXAMPLES_PATH
+
+    # Attempt to read the json file
+    try:
+        with open(examples_path, 'r') as examples_file:
+            return json.load(examples_file)
+    except OSError:
+        logging.exception(
+            "Failed to load examples json '%s'", examples_path)
+        return []
+    except json.JSONDecodeError:
+        logging.exception("Failed to parse examples json '%s'", examples_path)
+        return []
+
+
+class ExamplesFrame(ttk.Frame):
+    """
+    Handles the Examples tab
+
+    When the examples tab is switched to, if the current download link
+    is blank or equal to that of the last download link, the details of
+    the current example will be loaded. Otherwise, all example tabs
+    will be deselected.
+
+    Notable Attributes:
+        last_download_link:
+    """
+
+    def __init__(self, app, **kwargs):
+        super().__init__(app, **kwargs)
+        self.app = app
 
         # Create styles
         style = ttk.Style(self)
@@ -43,7 +108,7 @@ class ExamplesFrame(ttk.Frame):
         project_frame = ttk.Frame(self, relief='groove',
                                   borderwidth=1, padding="0 0 2 0")
 
-        self.thumbnail = Thumbnail(project_frame)
+        self.thumbnail = ttk.Label(project_frame)
 
         self.download_link_raw = ""
         self.download_link = tk.StringVar(self.app, name="PROJECT_URL")
@@ -83,7 +148,7 @@ class ExamplesFrame(ttk.Frame):
 
         project_frame.grid(column=1, row=0, sticky='NSEW', pady=5)
 
-        self.thumbnail.grid(column=0, row=0, sticky='NW')
+        self.thumbnail.grid(column=0, row=0, sticky='NS')
 
         download_frame.grid(column=0, row=1, sticky='NEW')
         download_box.grid(column=0, row=0, sticky='WE', padx=2)
@@ -102,64 +167,58 @@ class ExamplesFrame(ttk.Frame):
 
         description.grid(column=0, row=3, columnspan=3, sticky='NW')
 
-        self.columnconfigure(1, weight=0)
+        project_frame.columnconfigure(0, minsize=480*app.scale)
+        project_frame.rowconfigure(0, minsize=360*app.scale)
+
+        self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
 
         # Bind events
-        self.listbox.bind("<<ListboxSelect>>", self.update_project)
+        self.listbox.bind("<<ListboxSelect>>", self.listbox_changed)
         self.download_link.trace_add('write', self.download_changed)
 
         # Load examples data
-        self.examples = {}
-        self.read_examples()
-
-    def read_examples(self):
-        """Reads examples from a json file"""
-        # Get the path to the examples file
-        if config.EXAMPLES_PATH is None:
-            examples_path = path.join(path.dirname(__file__), "examples.json")
-        else:
-            examples_path = config.EXAMPLES_PATH
-
-        # Read the json file, if it exists
-        if path.isfile(examples_path):
-            with open(examples_path, 'r') as examples_file:
-                self.examples = json.load(examples_file)
-        else:
-            self.examples = []
-
-        # Update the listbox items
-        self.examples_list.set([example['name'] for example in self.examples])
+        self.examples = [Example(example) for example in read_examples()]
+        self.examples_list.set([example.name for example in self.examples])
+        self.example = self.examples[0] if self.examples else None
+        self.listbox.select_set([0])
 
     def download_changed(self, *_):
         """Called when the download link is changed"""
-        if self.download_link.get() != self.download_link_raw:
-            self.listbox.selection_clear("1", "end")
-            self.json_sha.set(False)
+        if self.download_link.get() != self.example.download_link:
+            self.thumbnail['image'] = ""
 
-    def update_project(self, _=None):
+    def listbox_changed(self, _):
+        """Called when the listbox selection is changed by the user"""
+        # Avoid weird events when on another tab
+        selected = self.listbox.curselection()
+        if selected and self.app.mode.get() == 'examples':
+            self.example = self.examples[selected[0]]
+            self.download_link.set("")
+            self.update_project()
+
+    def update_project(self):
         """Updates the project info"""
-        if not self.listbox.curselection():
+        dw_link = self.download_link.get()
+        example = self.example
+
+        # Don't update the project if the dw link is modified
+        if dw_link and dw_link != example.download_link:
+            self.thumbnail['image'] = ""
+            self.listbox.selection_clear(0, "end")
             return
 
-        example = self.examples[self.listbox.curselection()[0]]
+        self.thumbnail['image'] = example.get_image()
 
-        self.thumbnail.set_image(example['id'])
+        self.username.set(example.username)
+        self.userlink.set(example.user_link)
 
-        self.username.set("@" + example['author'])
-        self.userlink.set(
-            f"https://scratch.mit.edu/users/{example['author']}/")
+        self.project_viewer.set(example.viewer)
+        self.project_link.set(example.view_link)
 
-        self.project_link.set(example['link'])
-        self.project_viewer.set(example['description'].split('\n')[0])
+        self.download_link.set(example.download_link)
 
-        self.project_desc.set(
-            '\n'.join(example['description'].split('\n')[1:]))
-
-        self.download_link_raw = f"https://scratch.mit.edu/{example['id']}/"
-        self.download_link.set(self.download_link_raw)
-
-        self.json_sha.set(example.get("sha256", True))
+        self.json_sha.set(example.sha256)
 
     def download_project(self):
         """Downloads and converts the project"""
@@ -175,24 +234,9 @@ class ExamplesFrame(ttk.Frame):
 
     def switch_to(self):
         """Called when this tab is shown"""
-        self.listbox.selection_clear(1, "end")
-        self.listbox.selection_set(0)
         self.update_project()
-
-
-class Thumbnail(tk.Label):
-    """Handles displaying a project thumbnail"""
-
-    def __init__(self, parent, **kwargs):
-        super().__init__(parent, width=480, **kwargs)
-        self.image = None
-
-    def set_image(self, project_id):
-        """Sets the image to a project's thumbnail"""
-        resp = requests.get(
-            f"https://cdn2.scratch.mit.edu/get_image/project/{project_id}_480x360.png")
-        self.image = tk.PhotoImage(data=resp.content)
-        self['image'] = self.image
+        if self.download_link.get() != self.example.download_link:
+            self.listbox.selection_clear(0, "end")
 
 
 class Hyperlink(ttk.Label):

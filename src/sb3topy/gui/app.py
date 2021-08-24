@@ -31,6 +31,11 @@ class App(tk.Tk):
         super().__init__()
         self.title("sb3topy")
 
+        # Adjust the window size
+        scale = round(self.winfo_fpixels('1i')) / 96
+        self.geometry(f"{round(720*scale)}x{round(480*scale)}")
+        self.resizable(0, 0)
+        self.scale = scale
 
         # Create config variables
         self.init_config()
@@ -281,11 +286,11 @@ class App(tk.Tk):
         re.sub('tk.+name="(.+)".+', r'self.setvar("\1", config.\1)', text)
         """
         # Unsorted
-        config.AUTORUN = self.getvar("AUTORUN")
+        config.AUTORUN = tkbool(self.getvar("AUTORUN"))
         config.JSON_SHA = self.getvar("JSON_SHA")
-        config.CONVERT_ASSETS = self.getvar("CONVERT_ASSETS")
+        config.CONVERT_ASSETS = tkbool(self.getvar("CONVERT_ASSETS"))
         config.CONFIG_PATH = self.getvar("CONFIG_PATH")
-        config.AUTOLOAD_CONFIG = self.getvar("AUTOLOAD_CONFIG")
+        config.AUTOLOAD_CONFIG = tkbool(self.getvar("AUTOLOAD_CONFIG"))
 
         # General / Paths
         config.OUTPUT_PATH = self.getvar("OUTPUT_PATH")
@@ -293,15 +298,15 @@ class App(tk.Tk):
         config.PROJECT_URL = self.getvar("PROJECT_URL")
 
         # Assets / Extraction
-        config.VERIFY_ASSETS = self.getvar("VERIFY_ASSETS")
-        config.FRESHEN_ASSETS = self.getvar("FRESHEN_ASSETS")
-        config.RECONVERT_SOUNDS = self.getvar("RECONVERT_SOUNDS")
-        config.RECONVERT_IMAGES = self.getvar("RECONVERT_IMAGES")
+        config.VERIFY_ASSETS = tkbool(self.getvar("VERIFY_ASSETS"))
+        config.FRESHEN_ASSETS = tkbool(self.getvar("FRESHEN_ASSETS"))
+        config.RECONVERT_SOUNDS = tkbool(self.getvar("RECONVERT_SOUNDS"))
+        config.RECONVERT_IMAGES = tkbool(self.getvar("RECONVERT_IMAGES"))
 
         # Assets / Workers
         config.DOWNLOAD_THREADS = self.getvar("DOWNLOAD_THREADS")
-        config.CONVERT_THREADS = self.getvar("CONVERT_THREADS")
-        config.CONVERT_TIMEOUT = self.getvar("CONVERT_TIMEOUT")
+        config.CONVERT_THREADS = tkbool(self.getvar("CONVERT_THREADS"))
+        config.CONVERT_TIMEOUT = tkbool(self.getvar("CONVERT_TIMEOUT"))
 
         # Assets / SVGs
         config.SVG_COMMAND = self.getvar("SVG_COMMAND")
@@ -309,28 +314,28 @@ class App(tk.Tk):
         # config.SVG_DPI = self.getvar("SVG_DPI")
 
         # Assets / MP3s
-        config.CONVERT_MP3 = self.getvar("CONVERT_MP3")
+        config.CONVERT_MP3 = tkbool(self.getvar("CONVERT_MP3"))
         config.MP3_COMMAND = self.getvar("MP3_COMMAND")
         config.VLC_PATH = self.getvar("VLC_PATH")
 
         # Optimizations / Basic
-        config.LEGACY_LISTS = self.getvar("LEGACY_LISTS")
-        config.VAR_TYPES = self.getvar("VAR_TYPES")
-        config.ARG_TYPES = self.getvar("ARG_TYPES")
-        config.LIST_TYPES = self.getvar("LIST_TYPES")
-        config.SOLO_BROADCASTS = self.getvar("SOLO_BROADCASTS")
-        config.WARP_ALL = self.getvar("WARP_ALL")
+        config.LEGACY_LISTS = tkbool(self.getvar("LEGACY_LISTS"))
+        config.VAR_TYPES = tkbool(self.getvar("VAR_TYPES"))
+        config.ARG_TYPES = tkbool(self.getvar("ARG_TYPES"))
+        config.LIST_TYPES = tkbool(self.getvar("LIST_TYPES"))
+        config.SOLO_BROADCASTS = tkbool(self.getvar("SOLO_BROADCASTS"))
+        config.WARP_ALL = tkbool(self.getvar("WARP_ALL"))
 
         # Optimizations / Advanced
-        config.DISABLE_ANY_CAST = self.getvar("DISABLE_ANY_CAST")
-        config.AGGRESSIVE_NUM_CAST = self.getvar("AGGRESSIVE_NUM_CAST")
-        config.CHANGED_NUM_CAST = self.getvar("CHANGED_NUM_CAST")
-        config.DISABLE_STR_CAST = self.getvar("DISABLE_STR_CAST")
-        config.DISABLE_INT_CAST = self.getvar("DISABLE_INT_CAST")
+        config.DISABLE_ANY_CAST = tkbool(self.getvar("DISABLE_ANY_CAST"))
+        config.AGGRESSIVE_NUM_CAST = tkbool(self.getvar("AGGRESSIVE_NUM_CAST"))
+        config.CHANGED_NUM_CAST = tkbool(self.getvar("CHANGED_NUM_CAST"))
+        config.DISABLE_STR_CAST = tkbool(self.getvar("DISABLE_STR_CAST"))
+        config.DISABLE_INT_CAST = tkbool(self.getvar("DISABLE_INT_CAST"))
 
         # Project / Timings
         config.TARGET_FPS = self.getvar("TARGET_FPS")
-        config.TURBO_MODE = self.getvar("TURBO_MODE")
+        config.TURBO_MODE = tkbool(self.getvar("TURBO_MODE"))
         config.WORK_TIME_INV = self.getvar("WORK_TIME_INV")
         config.WARP_TIME = self.getvar("WARP_TIME")
 
@@ -339,13 +344,13 @@ class App(tk.Tk):
         config.STAGE_HEIGHT = self.getvar("STAGE_HEIGHT")
         config.DISPLAY_WIDTH = self.getvar("DISPLAY_WIDTH")
         config.DISPLAY_HEIGHT = self.getvar("DISPLAY_HEIGHT")
-        config.ALLOW_RESIZE = self.getvar("ALLOW_RESIZE")
-        config.SCALED_DISPLAY = self.getvar("SCALED_DISPLAY")
+        config.ALLOW_RESIZE = tkbool(self.getvar("ALLOW_RESIZE"))
+        config.SCALED_DISPLAY = tkbool(self.getvar("SCALED_DISPLAY"))
         config.FS_SCALE = self.getvar("FS_SCALE")
         config.FLIP_THRESHOLD_INV = self.getvar("FLIP_THRESHOLD_INV")
 
         # Project / Title
-        config.DYNAMIC_TITLE = self.getvar("DYNAMIC_TITLE")
+        config.DYNAMIC_TITLE = tkbool(self.getvar("DYNAMIC_TITLE"))
         config.TITLE = self.getvar("TITLE")
 
         # Project / Audio
@@ -357,17 +362,26 @@ class App(tk.Tk):
         config.MAX_LIST = self.getvar("MAX_LIST")
 
         # Project / Hotkeys
-        config.TURBO_HOTKEY = self.getvar("TURBO_HOTKEY")
-        config.FULLSCREEN_HOTKEY = self.getvar("FULLSCREEN_HOTKEY")
-        config.DEBUG_HOTKEYS = self.getvar("DEBUG_HOTKEYS")
+        config.TURBO_HOTKEY = tkbool(self.getvar("TURBO_HOTKEY"))
+        config.FULLSCREEN_HOTKEY = tkbool(self.getvar("FULLSCREEN_HOTKEY"))
+        config.DEBUG_HOTKEYS = tkbool(self.getvar("DEBUG_HOTKEYS"))
 
         # Project / Miscellaneous
-        config.DRAW_FPS = self.getvar("DRAW_FPS")
+        config.DRAW_FPS = tkbool(self.getvar("DRAW_FPS"))
         config.USERNAME = self.getvar("USERNAME")
         config.RANDOM_SEED = self.getvar("RANDOM_SEED")
 
         # Debug / Debug
         config.LOG_LEVEL = self.getvar("LOG_LEVEL")
-        config.DEBUG_JSON = self.getvar("DEBUG_JSON")
-        config.FORMAT_JSON = self.getvar("FORMAT_JSON")
-        config.OVERWRITE_ENGINE = self.getvar("OVERWRITE_ENGINE")
+        config.DEBUG_JSON = tkbool(self.getvar("DEBUG_JSON"))
+        config.FORMAT_JSON = tkbool(self.getvar("FORMAT_JSON"))
+        config.OVERWRITE_ENGINE = tkbool(self.getvar("OVERWRITE_ENGINE"))
+
+
+def tkbool(value):
+    """
+    False for '0' and falsey values, otherwise true
+
+    tk checkboxes use '1' and '0' for True and False
+    """
+    return False if value == '0' else bool(value)
