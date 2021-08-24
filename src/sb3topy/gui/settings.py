@@ -104,10 +104,27 @@ Debug
         format json
         overwrite engine
 
+Export:
+    Ask for file
+    If is autoload, prompt to turn on
+    Save
+    Update buttons
+
+Save:
+    If exists and is not last loaded, prompt
+    Update last loaded
+    Update buttons
+
+Load:
+    Load
+    Set last loaded
+
 """
 
 import tkinter as tk
-from tkinter import ttk
+from os import path
+from tkinter import filedialog, messagebox, ttk
+
 from .. import config
 
 
@@ -120,11 +137,11 @@ class SettingsFrame(ttk.Frame):
 
         notebook = ttk.Notebook(self)
 
-        self.general = GeneralSettings(self, notebook, padding="3 5 5 5")
-        self.assets = AssetSettings(self, notebook, padding="3 5 5 5")
-        self.opts = OptimizationSettings(self, notebook, padding="3 5 5 5")
-        self.project = ProjectFrame(self, notebook, padding="3 5 5 5")
-        self.debug = DebugFrame(self, notebook, padding="3 5 5 5")
+        self.general = GeneralSettings(app, notebook, padding="3 5 5 5")
+        self.assets = AssetSettings(app, notebook, padding="3 5 5 5")
+        self.opts = OptimizationSettings(app, notebook, padding="3 5 5 5")
+        self.project = ProjectFrame(app, notebook, padding="3 5 5 5")
+        self.debug = DebugFrame(app, notebook, padding="3 5 5 5")
 
         notebook.add(self.general, text="General")
         notebook.add(self.project, text="Project")
@@ -156,7 +173,8 @@ class GeneralSettings(ttk.Frame):
 
         paths_frame = ttk.Labelframe(self, text="Paths", padding=5)
         quick_frame = ttk.Labelframe(self, text="Quick Config", padding=5)
-        config_frame = ttk.Frame(self, padding=5)
+        config_frame = ttk.LabelFrame(
+            self, text="Configuration File", padding=5)
 
         self.project_path = tk.StringVar(app, name="PROJECT_PATH")
         self.project_url = tk.StringVar(app, name="PROJECT_URL")
@@ -201,29 +219,45 @@ class GeneralSettings(ttk.Frame):
             quick_frame, text="Save project.json", variable=self.debug_json)
 
         self.config_path = tk.StringVar(app, name="CONFIG_PATH")
-        self.auto_load = tk.BooleanVar(app, name="AUTO_LOAD")
+        self.autoload = tk.BooleanVar(app, name="AUTOLOAD_CONFIG")
+        self.autoload.set(True)
 
-        config_label = ttk.Label(config_frame, text="Config Path:")
-        config_box = ttk.Entry(config_frame, textvariable=self.config_path)
-        browse_button = ttk.Button(
-            config_frame, text="Browse...", command=self.config_browse)
+        # if autoload is None, config_path is not None
+        # TODO Here
+        self.autoload_saved = config.AUTOLOAD_CONFIG
+        if config.AUTOLOAD_CONFIG is None:
+            self.last_saved = config.CONFIG_PATH
+        elif config.AUTOLOAD_CONFIG:
+            self.last_saved = config.AUTOLOAD_PATH
+        else:
+            self.last_saved = ""
+
+        config_label = ttk.Label(config_frame, text="Path:")
+        config_box = ttk.Entry(config_frame, textvariable=self.config_path,
+                               validate="focusout", validatecommand=self.config_changed)
         export_button = ttk.Button(
             config_frame, text="Export...", command=self.config_export)
-        save_button = ttk.Button(
+        self.save_button = ttk.Button(
             config_frame, text="Save", command=self.config_save)
-        load_button = ttk.Button(
+        self.load_button = ttk.Button(
             config_frame, text="Load", command=self.config_load)
-        load_check = ttk.Checkbutton(
+        self.load_check = ttk.Checkbutton(
             config_frame, text="Load on Start",
-            variable=self.auto_load)
-        # TODO Defaults button, config save/load/... functions
+            variable=self.autoload, command=self.update_buttons)
+        # TODO Restore defaults button
+
+        self.config_path.trace_add("write", self.update_buttons)
+        self.update_buttons()
 
         path_label.grid(column=0, row=0, sticky='W')
-        path_box.grid(column=1, row=0, sticky='EW', padx=3, pady=3)
+        path_box.grid(column=1, row=0, sticky='EW',
+                      padx=3, pady=3, columnspan=2)
         url_label.grid(column=0, row=1, sticky='W')
-        url_box.grid(column=1, row=1, sticky='EW', padx=3, pady=3)
+        url_box.grid(column=1, row=1, sticky='EW',
+                     padx=3, pady=3, columnspan=2)
         output_label.grid(column=0, row=2, sticky='W')
-        output_box.grid(column=1, row=2, sticky='EW', padx=3, pady=3)
+        output_box.grid(column=1, row=2, sticky='EW',
+                        padx=3, pady=3, columnspan=2)
 
         fps_label.grid(column=0, row=0, sticky='W')
         fps_spin.grid(column=1, row=0, sticky='W', padx=3, pady=3)
@@ -236,13 +270,12 @@ class GeneralSettings(ttk.Frame):
         json_check.grid(column=0, row=4, columnspan=2, sticky='W')
 
         config_label.grid(column=0, row=0, sticky="W")
-        config_box.grid(column=1, row=0, sticky="EW",
-                        padx=3, pady=3, columnspan=2)
-        browse_button.grid(column=3, row=0, sticky="W", pady=3)
+        self.load_check.grid(column=1, row=0, sticky="W", padx=6, columnspan=3)
+        config_box.grid(column=0, row=1, sticky="EW",
+                        padx=3, pady=0, columnspan=2)
         export_button.grid(column=3, row=1, sticky="W")
-        load_button.grid(column=1, row=1, sticky="W")
-        save_button.grid(column=0, row=1, sticky="W")
-        load_check.grid(column=2, row=1, sticky="W", columnspan=2)
+        self.save_button.grid(column=4, row=1, sticky="W")
+        self.load_button.grid(column=5, row=1, sticky="W")
 
         paths_frame.grid(column=0, row=0, sticky="NSEW")
         quick_frame.grid(column=0, row=1, sticky="NSEW")
@@ -250,7 +283,7 @@ class GeneralSettings(ttk.Frame):
 
         paths_frame.columnconfigure(1, weight=1)
         quick_frame.columnconfigure(2, weight=1)
-        config_frame.columnconfigure(2, weight=1)
+        config_frame.columnconfigure(1, weight=1)
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(2, weight=1)
@@ -293,17 +326,130 @@ class GeneralSettings(ttk.Frame):
         self.list_limit.set(self.app.getvar("MAX_LIST"))
         self.clone_limit.set(self.app.getvar("MAX_CLONES"))
 
-    def config_browse(self):
-        """Browse to change the config path"""
+    def config_changed(self):
+        """Called when focus leaves the config path entry"""
+        if not self.config_path.get():
+            self.config_path.set(config.AUTOLOAD_PATH)
 
     def config_export(self):
         """Browse to export config"""
+        # Prompt for a file
+        config_path = filedialog.asksaveasfilename(
+            filetypes=[("JSON Files", "*.json"),
+                       ("All Files", "*.*")])
+
+        if samefile_safe(config_path, config.AUTOLOAD_PATH):
+            # Prompt to enable autoload
+            if not self.autoload.get():
+                self.autoload.set(messagebox.askyesno(
+                    "sb3topy", (
+                        "Would you like to load these settings next "
+                        "time sb3topy opens?")
+                ))
+
+            # Update the saved autoload value
+            self.autoload_saved = self.autoload.get()
+
+        if config_path:
+            # Update the config path
+            self.config_path.set(config_path)
+
+            # Save the config data
+            self.app.write_config()
+            config.save_config(config_path)
+
+            # Update button states
+            self.update_buttons()
 
     def config_save(self):
         """Save to the config path"""
+        # Get the config path
+        config_path = self.config_path.get()
+
+        # Prompt for overwriting files
+        if samefile_safe(config_path, self.last_saved) is False:
+            basename = path.basename(config_path)
+            result = messagebox.askyesno(
+                "sb3topy",
+                f"{basename} already exists.\nDo you want to replace it?",
+                icon="warning")
+            if not result:
+                return
+
+        # Update the saved autoload value
+        if samefile_safe(config_path, config.AUTOLOAD_PATH):
+            self.autoload_saved = self.autoload.get()
+
+        # Update the last loaded value
+        self.last_saved = config_path
+
+        # Save the config data
+        self.app.write_config()
+        config.save_config(config_path)
+
+        # Update button states
+        self.update_buttons()
 
     def config_load(self):
-        """Load to the config path"""
+        """Load from the config path"""
+        config_path = self.config_path.get()
+
+        # Load config
+        config.load_config(config_path)
+        self.app.read_config()
+
+        # Update last saved
+        self.last_saved = config_path
+        self.update_buttons()
+
+    def update_buttons(self, *_):
+        """Called to update the state of the load button and check"""
+        config_path = self.config_path.get()
+
+        # Disable load if it isn't a file
+        if path.isfile(config_path):
+            self.load_button.state(["!disabled"])
+        else:
+            self.load_button.state(["disabled"])
+
+        # Disable autoload if it isn't the autoload config
+        if samefile_safe(config_path, config.AUTOLOAD_PATH):
+            # Enable the check
+            self.load_check.state(["!disabled"])
+
+            # Update the unsaved marker
+            if self.autoload.get() == self.autoload_saved:
+                self.load_check["text"] = "Load on Start"
+            else:
+                self.load_check["text"] = "Load on Start*"
+
+        else:
+            # Disable the check
+            self.load_check.state(["disabled"])
+
+            # Change the check to the saved state
+            self.load_check["text"] = "Load on Start"
+            self.autoload.set(self.autoload_saved)
+
+        # Disable save if it isn't a valid directory
+        if path.isdir(path.dirname(config_path)):
+            self.save_button.state(["!disabled"])
+        else:
+            self.save_button.state(["disabled"])
+        return True
+
+
+def samefile_safe(path1, path2):
+    """
+    Checks if two files are the same, catching errors. If an error
+    occurs, eg. because one file doesn't exist, None will be returned.
+
+    May not work correctly with symlinks.
+    """
+    try:
+        return path.samefile(path1, path2)
+    except OSError:
+        return None
 
 
 class AssetSettings(ttk.Frame):

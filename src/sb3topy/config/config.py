@@ -18,17 +18,17 @@ from .consts import __dict__ as _consts
 from .defaults import __dict__ as _defaults
 from .project import __dict__ as _project
 
-all_defaults = {}
+__all__ = ('restore_defaults', 'save_config', 'load_config',
+           'parse_args', 'get_config', 'set_config', 'AUTOLOAD_PATH')
 
+
+all_defaults = {}
 for _key, _value in _defaults.items():
     if not _key[0] == '_':
         all_defaults[_key] = _value
 for _key, _value in _project.items():
     if not _key[0] == '_':
         all_defaults[_key] = _value
-
-__all__ = ('restore_defaults', 'save_config', 'load_config',
-           'parse_args', 'get_config', 'set_config')
 
 
 def get_config(skip_unmodified=False):
@@ -51,15 +51,15 @@ def get_config(skip_unmodified=False):
     }
 
 
-def set_config(new_config):
+def set_config(new_config, skip_none=False):
     """
     Sets modifiable config values from a dict.
 
-    If the value of a setting is None, it will be skipped.
+    If the value of a setting is None, it may be skipped.
     """
     for name, value in new_config.items():
         if name in all_defaults:
-            if value is not None:
+            if not skip_none or value is not None:
                 _config[name] = value
         elif name in _consts:
             logging.warning(
@@ -96,6 +96,10 @@ def load_config(load_path, load_defaults=True):
     """
     Loads the configuration from a json file, optionally restoring
     defaults before doing so.
+
+    Config files may contain an AUTOLOAD value. If autoloaded is True
+    and the config file's AUTOLOAD value is false, the file will not be
+    loaded.
     """
     # Restore defaults
     if load_defaults:
@@ -105,8 +109,34 @@ def load_config(load_path, load_defaults=True):
     with open(load_path, 'r') as config_file:
         new_config = json.load(config_file)
 
-    # Read the settings
+    # Read the configuration
     set_config(new_config)
+
+
+def _autoload_config(load_path):
+    """
+    Used when autoloading a config file. Reads the file with caution,
+    and if it has the value set to False, doesn't load the config.
+    """
+    # Verify the path is valid
+    if not path.isfile(load_path):
+        _config['AUTOLOAD_CONFIG'] = False
+        return
+
+    # Open and try to decode the file
+    with open(load_path, 'r') as config_file:
+        try:
+            new_config = json.load(config_file)
+        except json.JSONDecodeError:
+            logging.error("Failed to autoload config '%s'", load_path)
+            _config['AUTOLOAD_CONFIG'] = False
+            return
+
+    # Read the configuration
+    if new_config.get("AUTOLOAD_CONFIG", True):
+        set_config(new_config)
+    else:
+        _config['AUTOLOAD_CONFIG'] = False
 
 
 def parse_args(args=None):
@@ -125,34 +155,42 @@ def parse_args(args=None):
     parser.add_argument("OUTPUT_PATH", nargs='?',
                         help="specifies an output directory")
     parser.add_argument("-c", dest="CONFIG_PATH", metavar="file",
-                        help="path to a configuration json")
+                        nargs='?', default=None, const=False,
+                        help="path to a config json, disables autoload")
     # parser.add_argument("-d", dest="DOWNLOAD_PROJECT", action="store_true",
     #                     help="marks the project path as a URL")
-    parser.add_argument("--no-gui", dest="USE_GUI", action="store_false",
-                        help="disables the gui even when PROJECT is not specified")
+    parser.add_argument("--gui", dest="USE_GUI", action="store_true",
+                        help="starts the graphical user interface")
     parser.add_argument("-r", dest="AUTORUN", action="store_true",
                         help="automatically runs the project when done")
 
     # Parse arguments
     args = parser.parse_args(args)
 
-    # If a project is specified, disable GUI
-    if args.PROJECT_PATH:
-        args.USE_GUI = False
-
     # Load a config file
+    autoload = args.CONFIG_PATH is None
     if args.CONFIG_PATH:
+        args.CONFIG_PATH = path.abspath(args.CONFIG_PATH)
         load_config(args.CONFIG_PATH)
+    else:
+        args.CONFIG_PATH = AUTOLOAD_PATH
+
+    # Load the default user config file
+    if args.USE_GUI and autoload and AUTOLOAD_PATH:
+        _autoload_config(AUTOLOAD_PATH)
+    else:
+        _config['AUTOLOAD_CONFIG'] = None
 
     # Read config data
-    set_config(vars(args))
-
-
-# Load config file from the directory of this module
-load_config(path.join(path.dirname(__file__), "config.json"))
+    set_config(vars(args), True)
 
 
 def set_all(value=1):
     """Used for debugging the gui, sets every setting to value"""
     for _key in all_defaults:
         _config[_key] = value
+
+
+# Load config file from the directory of this module
+load_config(path.join(path.dirname(__file__), "config.json"))
+AUTOLOAD_PATH = path.normpath(path.expanduser(_config['CONFIG_PATH']))

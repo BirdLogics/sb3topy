@@ -20,6 +20,9 @@ General Settings:
     CONFIG_PATH: The config path specified by the command line -c
         argument.
 
+    AUTOLOAD_CONFIG: Whether the config file should be autoloaded by
+        the GUI if the default CONFIG_PATH points to it.
+
     USE_GUI: Whether the GUI should be run rather than running the
         converter directly.
 
@@ -167,6 +170,7 @@ PROJECT_PATH = ""
 PROJECT_URL = ""
 
 CONFIG_PATH = ""
+AUTOLOAD_CONFIG = True
 
 USE_GUI = False
 

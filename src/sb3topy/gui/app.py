@@ -31,6 +31,7 @@ class App(tk.Tk):
         super().__init__()
         self.title("sb3topy")
 
+
         # Create config variables
         self.init_config()
         self.read_config()
@@ -55,9 +56,6 @@ class App(tk.Tk):
         self.rowconfigure(0, minsize=300, weight=1)
 
         self.mode.set(config.DEFAULT_GUI_TAB)
-
-        self.geometry("720x480")
-        self.resizable(0, 0)
 
         # config.config.set_all(1)
         # self.read_config()
@@ -86,6 +84,8 @@ class App(tk.Tk):
         tk.BooleanVar(self, name="AUTORUN")
         tk.Variable(self, name="JSON_SHA")
         tk.BooleanVar(self, name="CONVERT_ASSETS")
+        tk.StringVar(self, name="CONFIG_PATH")
+        tk.BooleanVar(self, name="AUTOLOAD_CONFIG")
 
         # General / Paths
         tk.StringVar(self, name="OUTPUT_PATH")
@@ -186,6 +186,8 @@ class App(tk.Tk):
         self.setvar("AUTORUN", config.AUTORUN)
         self.setvar("JSON_SHA", config.JSON_SHA)
         self.setvar("CONVERT_ASSETS", config.CONVERT_ASSETS)
+        self.setvar("CONFIG_PATH", config.CONFIG_PATH)
+        self.setvar("AUTOLOAD_CONFIG", config.AUTOLOAD_CONFIG)
 
         # General / Paths
         self.setvar("OUTPUT_PATH", config.OUTPUT_PATH)
@@ -282,6 +284,8 @@ class App(tk.Tk):
         config.AUTORUN = self.getvar("AUTORUN")
         config.JSON_SHA = self.getvar("JSON_SHA")
         config.CONVERT_ASSETS = self.getvar("CONVERT_ASSETS")
+        config.CONFIG_PATH = self.getvar("CONFIG_PATH")
+        config.AUTOLOAD_CONFIG = self.getvar("AUTOLOAD_CONFIG")
 
         # General / Paths
         config.OUTPUT_PATH = self.getvar("OUTPUT_PATH")
@@ -346,7 +350,7 @@ class App(tk.Tk):
 
         # Project / Audio
         config.AUDIO_CHANNELS = self.getvar("AUDIO_CHANNELS")
-        config.MASTER_VOLUME = self.getvar("MASTER_VOLUME") / 100
+        config.MASTER_VOLUME = int(self.getvar("MASTER_VOLUME")) / 100
 
         # Project / Limits
         config.MAX_CLONES = self.getvar("MAX_CLONES")

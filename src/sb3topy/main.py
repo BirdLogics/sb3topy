@@ -23,17 +23,17 @@ def main():
     # Load configuration from the command line
     config.parse_args()
 
-    # Run the gui if it is enabled
-    if config.USE_GUI:
-        gui.run_app()
-        return
-
     # Setup the logger
     logging.basicConfig(
         format="[%(levelname)s] %(message)s", level=config.LOG_LEVEL)
 
+    # Run the gui if it is enabled
+    if config.USE_GUI:
+        gui.run_app()
+
     # Run the conversion
-    run()
+    else:
+        run()
 
 
 def run():
