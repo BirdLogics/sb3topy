@@ -92,7 +92,7 @@ SWITCHES = {
     # TODO sensing_of switch
     'sensing_of': switch("sensing_{PROPERTY}_of"),
 
-    'sensing_current': switch("sensing_current_{CURRENT_MENU}"),
+    'sensing_current': switch("sensing_current_{CURRENTMENU}"),
 
     'operator_mathop': switch("operator_mathop_{OPERATOR}"),
 
