@@ -38,6 +38,7 @@ class Util:
         self.display = runtime.display
         self.events = runtime.events
         self.runtime = runtime
+        self.answer = ""
 
     def send_event(self, event, restart=False):
         """Send an event"""
@@ -59,6 +60,10 @@ class Util:
         """Ends execution of the main loop"""
         print("Stop")
         self.runtime.running = False
+
+    def ask(self, prompt):
+        """Asks for input on the console"""
+        self.answer = input(prompt)
 
 
 class Timer:

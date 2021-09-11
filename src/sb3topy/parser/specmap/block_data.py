@@ -585,12 +585,12 @@ BLOCKS = {
     # TODO sensing_askandwait
     'sensing_askandwait': block(
         'stack', 'str QUESTION',
-        "answer = input({QUESTION})"
+        "util.ask({QUESTION})"
     ),
 
     'sensing_answer': block(
         'str', '',
-        'answer'
+        'util.answer'
     ),
 
     'sensing_keypressed': block(
