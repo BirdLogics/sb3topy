@@ -169,7 +169,9 @@ def proc_call(block, target):
 @fswitch('argument_reporter_string_number')
 def proc_arg(block, target):
     """Switch for a procedure argument reporter"""
-    arg_type = target.prototype.get_type(block['fields']['VALUE'][0])
+    arg_type = None
+    if target.prototype is not None:
+        arg_type = target.prototype.get_type(block['fields']['VALUE'][0])
 
     # The argument wasn't found, default to 0
     if arg_type is None:
@@ -177,6 +179,19 @@ def proc_arg(block, target):
 
     # Return the code with the correct return_type
     return Block(arg_type, {'VALUE': 'proc_arg'}, '{VALUE}', {})
+
+
+@fswitch('argument_reporter_boolean')
+def proc_arg_bool(block, target):
+    """Switch for bool procedure argument reporters"""
+    # Optionally replace turbowarp is compiled tags
+    arg_name = block['fields']['VALUE'][0]
+    if config.IS_COMPILED and arg_name == "is compiled?" and (
+            target.prototype is None or
+            arg_name not in target.prototype.args):
+        return Block('bool', {}, 'True', {})
+
+    return proc_arg(block, target)
 
 
 @fswitch('data_variable')

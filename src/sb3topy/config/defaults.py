@@ -42,6 +42,9 @@ General Settings:
         prevent a vulnerability from being exploited in one of the
         example projects. Not checked for extracted projects.
 
+    IS_COMPILED: Whether to replace <is compiled?> procedure arguments
+        with True, to emulate TurboWarp's behavior.
+
 Asset Settings:
     FRESHEN_ASSETS: Overwrite existing assets when downloading or
         extracting the project rather than skipping them.
@@ -186,6 +189,8 @@ PARSE_PROJECT = True
 COPY_ENGINE = True
 
 JSON_SHA = None
+
+IS_COMPILED = False
 
 # Asset Settings
 FRESHEN_ASSETS = False
