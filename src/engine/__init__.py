@@ -6,11 +6,12 @@ __init__.py
 
 
 from . import block_events as events
-from .assets import *
 from .blockutil import *
+from .costumes import *
 from .lists import *
 from .pen import *
 from .runtime import *
+from .sounds import *
 from .target import *
 from .util import *
 from .variables import *
