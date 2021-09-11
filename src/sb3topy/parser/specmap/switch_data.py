@@ -139,6 +139,12 @@ def proc_call(block, target):
     prototype = target.prototypes.from_proccode(
         block['mutation']['proccode'])
 
+    # If the block doesn't exist, ignore it
+    if prototype is None:
+        logging.warning("Procedure called without definition '%s'",
+                        block['mutation']['proccode'])
+        return BLOCKS["default"]
+
     # Replace input names with cleaned arg names
     block['inputs'] = {prototype.arg_from_id(
         argid): value for argid, value in block['inputs'].items()}

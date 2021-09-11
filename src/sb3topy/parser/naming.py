@@ -323,9 +323,12 @@ class Prototype:
         """
 
         for id_, value in block['inputs'].items():
-            input_type = specmap.get_input_type(target, value)
-
-            self.arg_nodes[self.args_id[id_]].add_type(input_type)
+            # Ignore unknown inputs not in the prototype
+            arg_name = self.args_id.get(id_)
+            if arg_name is not None:
+                # Add the type of the input to the node
+                input_type = specmap.get_input_type(target, value)
+                self.arg_nodes[arg_name].add_type(input_type)
 
     def get_type(self, arg_name):
         """Gets the guessed type of an argument"""
@@ -371,14 +374,15 @@ class Prototypes:
         """Gets a prototype by blockid"""
         return self.prototypes_id[blockid]
 
-    def from_proccode(self, proccode) -> Prototype:
+    def from_proccode(self, proccode):
         """Gets a prototype by proccode"""
-        return self.prototypes[proccode]
+        return self.prototypes.get(proccode)
 
     def mark_called(self, target, block):
         """Runs type guessing for a procedure call"""
         prototype = self.from_proccode(block['mutation']['proccode'])
-        prototype.mark_called(target, block)
+        if prototype:
+            prototype.mark_called(target, block)
 
     def get_arg_node(self, target, block):
         """
