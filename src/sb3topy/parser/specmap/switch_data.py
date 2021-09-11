@@ -352,7 +352,7 @@ def broadcast_sendwait_solo(block, target):
         broadcast = specmap.get_broadcast(block, target)
         target_name = target.broadcasts.get(broadcast)
         if target_name is not None and target_name not in target.cloned_targets:
-            block['fields']['TARGET'] = (target_name,)
+            block['inputs']['TARGET'] = (9, target_name)
             block['fields']['IDENT'] = ('broadcast_{BROADCAST_INPUT}',)
 
             return BLOCKS['event_broadcastandwait_solo']

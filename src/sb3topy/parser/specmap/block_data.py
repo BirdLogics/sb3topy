@@ -490,7 +490,7 @@ BLOCKS = {
     ),
 
     'event_broadcastandwait_solo': block(
-        'stack', 'field TARGET, ex_hat_ident IDENT',
+        'stack', 'str TARGET, ex_hat_ident IDENT',
         "await util.sprites[{TARGET}].{IDENT}(util)"
     ),
 
