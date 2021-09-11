@@ -332,7 +332,13 @@ class Prototype:
 
     def get_type(self, arg_name):
         """Gets the guessed type of an argument"""
-        return self.arg_nodes[self.args[arg_name]].known_type
+        argid = self.args.get(arg_name)
+        if argid is not None:
+            return self.arg_nodes[argid].known_type
+
+        logging.warning("Prototype '%s' missing argument '%s",
+                        self.name, arg_name)
+        return None
 
 
 class Prototypes:
@@ -409,6 +415,10 @@ class Prototypes:
 
         # Get the hat block parent above the block
         hat_block = target.get_parent_hat(block)
+
+        # If hat_block is None, this block isn't actually used
+        if hat_block is None:
+            return 'any'
 
         # If the hat is a procedure, get the arg node from it
         if hat_block['opcode'] == "procedures_definition":

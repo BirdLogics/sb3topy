@@ -169,10 +169,14 @@ def proc_call(block, target):
 @fswitch('argument_reporter_string_number')
 def proc_arg(block, target):
     """Switch for a procedure argument reporter"""
-    return Block(
-        target.prototype.get_type(block['fields']['VALUE'][0]),
-        {'VALUE': 'proc_arg'}, '{VALUE}', {}
-    )
+    arg_type = target.prototype.get_type(block['fields']['VALUE'][0])
+
+    # The argument wasn't found, default to 0
+    if arg_type is None:
+        return Block("int", {}, "0", {})
+
+    # Return the code with the correct return_type
+    return Block(arg_type, {'VALUE': 'proc_arg'}, '{VALUE}', {})
 
 
 @fswitch('data_variable')
