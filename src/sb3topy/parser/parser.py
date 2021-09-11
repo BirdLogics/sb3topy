@@ -215,7 +215,7 @@ class Parser:
         """
 
         # Get the unparsed value and type from args
-        start_type, value = args.get(name, ('none', None))
+        start_type, value = args.get(name, ('none', "None"))
 
         # An unparsed block
         if start_type == 'blockid':
