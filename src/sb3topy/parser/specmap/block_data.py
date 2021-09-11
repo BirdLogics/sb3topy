@@ -229,7 +229,7 @@ BLOCKS = {
 
     'looks_nextbackdrop': block(
         'stack', '', (
-            "util.sprites.stage.costume.next()"
+            "util.sprites.stage.costume.next()\n"
             "util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)"
         )
     ),

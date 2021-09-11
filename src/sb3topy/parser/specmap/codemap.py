@@ -27,7 +27,7 @@ def file_header():
         "import math\n"
         "import time\n\n"
         "import engine\n"
-        "from engine import Target, sprite, warp\n"
+        "from engine import config, Target, sprite, warp\n"
         "from engine.lists import *\n"
         "from engine.block_events import *\n"
         "from engine.blockutil import *"
