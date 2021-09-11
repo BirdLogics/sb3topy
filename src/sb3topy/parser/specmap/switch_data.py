@@ -165,10 +165,47 @@ def proc_arg(block, target):
     """Switch for a procedure argument reporter"""
     return Block(
         target.prototype.get_type(block['fields']['VALUE'][0]),
-        {'VALUE': 'proc_arg'}, '{VALUE}', {})
+        {'VALUE': 'proc_arg'}, '{VALUE}', {}
+    )
+
+
+@fswitch('data_variable')
+def var_get(block, target):
+    """Type switch for a variable reporter"""
+    return Block(
+        target.vars.get_type('var', block['fields']['VARIABLE'][0]),
+        {'VARIABLE': 'variable'}, '{VARIABLE}', {}
+    )
+
+
+@fswitch('data_setvariableto')
+def var_set(block, target):
+    """Type switch for a set variable statement"""
+    return Block(
+        'stack',
+        {'VARIABLE': 'variable',
+         'VALUE': target.vars.get_type('var', block['fields']['VARIABLE'][0])},
+        '{VARIABLE} = {VALUE}', {}
+    )
+
+
+@fswitch('data_changevariableby')
+def var_change(block, target):
+    """Type switch for a change variable by statement"""
+    var_type = target.vars.get_type('var', block['fields']['VARIABLE'][0])
+
+    if var_type in ('int', 'float'):
+        return Block(
+            'stack', {'VARIABLE': 'variable', 'VALUE': var_type},
+            '{VARIABLE} += {VALUE}', {}
+        )
+
+    return None
 
 
 # Switches for legacy list indices (first, last, random)
+
+
 @fswitch('data_deleteoflist')
 def list_delete(block, _):
     """Switch for list delete item"""

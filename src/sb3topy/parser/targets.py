@@ -2,6 +2,8 @@
 targets.py
 
 Handles targets
+
+TODO Consider adding a cache to get_parent_hat
 """
 
 import logging
@@ -95,7 +97,7 @@ class Target:
     def __init__(self, target, name):
         self.target = target
         self.clean_name = name
-        self.blocks = target['blocks']
+        self.blocks: Dict[str, dict] = target['blocks']
         self.hats = []
 
         self.vars = Variables(name, target['isStage'])
@@ -129,7 +131,8 @@ class Target:
 
                 # Count the number of broadcast recievers
                 if block['opcode'] == 'event_whenbroadcastreceived':
-                    self.add_broadcast(block['fields']['BROADCAST_OPTION'][0].lower())
+                    self.add_broadcast(
+                        block['fields']['BROADCAST_OPTION'][0].lower())
 
             # Save when targets are cloned
             if block['opcode'] == 'control_create_clone_of':
@@ -179,7 +182,7 @@ class Target:
             elif opcode in ('data_addtolist', 'data_deleteoflist',
                             'data_deletealloflist', 'data_insertatlist',
                             'data_replaceitemoflist'):
-                self.vars.mark_modified(block)
+                self.vars.mark_modified(self, block)
 
             # Note usages which may benefit from a dict
             elif opcode in ('data_itemnumoflist', 'data_listcontainsitem'):
@@ -198,3 +201,15 @@ class Target:
             self.broadcasts[broadcast] = None
         else:
             self.broadcasts[broadcast] = self.target['name']
+
+    def get_parent_hat(self, block: dict):
+        """
+        Returns the hat block the passed block is a child of or None if
+        the block is part of a stack without a hat.
+        """
+        while block:
+            if specmap.is_hat(block):
+                break
+            block = self.blocks.get(block['parent'])
+
+        return block

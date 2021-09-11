@@ -129,8 +129,8 @@ class Variables:
             self.create_local("var", name, digraph, value)
 
         # Read lists
-        for name, _ in target['lists'].values():
-            self.create_local('list', name, digraph)
+        for name, values in target['lists'].values():
+            self.create_local('list', name, digraph, values)
 
     def get_reference(self, prefix, name):
         """
@@ -231,14 +231,29 @@ class Variables:
             # Once fixed, the below should be changed back to warning
             logging.debug("Duplicate local var '%s'", name)
 
-            self.local_vars.dict[name].node.add_type(
-                specmap.get_literal_type(initial_value))
+            # Get the type node for the variable
+            node = self.local_vars.dict[name].node
+
+            # Add initial value types to the type node
+            if initial_value is not None:
+                if prefix == 'var':
+                    node.add_type(specmap.get_literal_type(initial_value))
+                elif prefix == 'list':
+                    for value in initial_value:
+                        node.add_type(specmap.get_literal_type(value))
 
             return self.local_vars.dict[name]
 
-        # Create a node for the variable
+        # Create a type node for the variable
         node = digraph.add_node((prefix, self.target_name, name))
-        node.add_type(specmap.get_literal_type(initial_value))
+
+        # Add initial value types to the type node
+        if initial_value is not None:
+            if prefix == 'var':
+                node.add_type(specmap.get_literal_type(initial_value))
+            elif prefix == 'list':
+                for value in initial_value:
+                    node.add_type(specmap.get_literal_type(value))
 
         # Check if a universal identifier already exists
         if name in self.universal_vars.dict:
@@ -317,9 +332,16 @@ class Variables:
         """Parses a data_changevariableby block for type guessing """
         self.get_var('var', block['fields']['VARIABLE'][0]).mark_changed()
 
-    def mark_modified(self, block):
+    def mark_modified(self, target, block):
         """Marks a list as modified by block"""
-        self.get_var('list', block['fields']['LIST'][0]).mark_modified()
+        var = self.get_var('list', block['fields']['LIST'][0])
+        var.mark_modified()
+
+        if block['opcode'] in ('data_addtolist', 'data_insertatlist',
+                               'data_replaceitemoflist'):
+            input_type = specmap.get_input_type(
+                target, block['inputs']['ITEM'])
+            var.mark_set(input_type)
 
     def mark_indexed(self, block):
         """Marks a list as indexed by block"""

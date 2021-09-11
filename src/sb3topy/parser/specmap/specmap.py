@@ -14,6 +14,7 @@ from ... import config
 from .. import sanitizer
 from .block_data import BLOCKS, HATS, LOOPS, Block
 from .switch_data import SWITCHES
+from . import type_switches
 
 
 class BlockMap(Block):
@@ -86,27 +87,36 @@ def get_literal_type(value):
     if str(sanitizer.cast_number(value)) == str(value) and \
             len(str(value).partition('.')[2]) < config.SIG_DIGITS:
         return 'float'
-    if str(value).lower() in ('true', 'false'):
-        return 'bool'
-    # if str(value) == "":
-    #     return None
+    if str(value) == "":
+        return 'int'
     return 'str'
 
 
 def get_input_type(target, value):
     """Parses a block input to determine the type"""
-    # TODO Specmap type_switches.py
-    # Handle possible block input
-    if value[0] == 1:
-        if isinstance(value[1], list):
-            # Wrapped value
-            value = value[1]
-        else:
-            # Wrapped block
-            value = [2, value[1]]
-    elif value[0] == 3:
-        # Block covering value
-        value = [2, value[1]]
+    # 1 Wrapped value
+    if value[0] == 1 and isinstance(value[1], list):
+        value = value[1]
+
+    # Handle a block input
+    # 1 wrapper with block, 2 block, 3 block over value
+    if value[0] in (1, 2, 3):
+        value = value[1]
+
+        # Empty block
+        if value is None:
+            return 'none'
+
+        # Verify not a variable
+        if isinstance(value, str):
+            block = target.blocks[value]
+            # Shadow block (dropdown)
+            if block['shadow']:
+                # Return the value of the field
+                return 'literal', value[0]
+
+            # Just a block
+            return get_block_type(target, block)
 
     # 4-8 Number, 9-10 String, # 11 Broadcast
     if 4 <= value[0] <= 10:
@@ -114,15 +124,38 @@ def get_input_type(target, value):
 
     # 12 Variable
     if value[0] == 12:
-        var = target.variables.get_var('var', value[1])
-        return ('var', var.target_name, value[1])
+        var = target.vars.get_var('var', value[1])
+        return target.digraph.get_node(var.node.id_tuple)
 
     # 13 List reporter
     if value[0] == 13:
-        # TODO List reporter typing
+        # TODO StaticList reporter typing?
         return 'str'
 
     return 'any'
+
+
+def get_block_type(target, block):
+    """Gets the return type of a block"""
+    type_ = None
+
+    # Attempt to get the type from a switch
+    switchf = type_switches.SWITCHES.get(block['opcode'])
+    if switchf is not None:
+        type_ = switchf(target, block)
+
+    # Default to the blockmap's return_type
+    if type_ is None:
+        blockmap = BLOCKS.get(block['opcode'])
+        if blockmap is not None:
+            type_ = blockmap.return_type
+
+    if type_ is not None:
+        return type_
+
+    # Missing blockmap or something, give a warning
+    logging.warning("Unkown type for block '%s'", block['opcode'])
+    return "any"
 
 
 def parse_input(blocks, value):
@@ -186,7 +219,8 @@ def get_broadcast(block, target):
     is in the input.
     """
 
-    type_, value = parse_input(target.blocks, block['inputs']['BROADCAST_INPUT'])
+    type_, value = parse_input(
+        target.blocks, block['inputs']['BROADCAST_INPUT'])
 
     if type_ == 'literal':
         return value.lower()

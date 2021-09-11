@@ -160,6 +160,12 @@ DEBUG_SETTINGS:
     DEFAULT_GUI_TAB: The default tab to switch to in the GUI. It can be
         useful to automatically switch to examples when testing. May be
         'convert', 'examples', 'output', or 'settings'
+
+    TARGET_CLUSTERS: Whether to group nodes belonging to each target
+        when rendering the type graph
+
+    PROC_CLUSTERS: Whether to group nodes belonging to a procedure when
+        rendering the type graph
 """
 
 
@@ -210,8 +216,8 @@ VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
 # Optimization Settings
 LEGACY_LISTS = False
 
-VAR_TYPES = False
-ARG_TYPES = False
+VAR_TYPES = True
+ARG_TYPES = True
 LIST_TYPES = True
 
 SOLO_BROADCASTS = True
@@ -220,7 +226,7 @@ SOLO_BROADCASTS = True
 DISABLE_ANY_CAST = True
 AGGRESSIVE_NUM_CAST = False
 CHANGED_NUM_CAST = False
-DISABLE_STR_CAST = True
+DISABLE_STR_CAST = False  # TODO Set to True
 DISABLE_INT_CAST = True
 
 SIG_DIGITS = 17
@@ -238,6 +244,11 @@ FORMAT_JSON = True
 OVERWRITE_ENGINE = True
 DEFAULT_GUI_TAB = "convert"
 EXAMPLES_PATH = None
+
+GRAPH_ENGINE = 'dot'
+RENDER_GRAPH = False
+TARGET_CLUSTERS = False
+PROC_CLUSTERS = False
 
 # Miscellaneous
 WARP_ALL = False

@@ -189,13 +189,21 @@ def parse_variables(target: Target):
     """Creates code to init variables for a target and clones"""
     vars_init = []
 
-    for var in target['variables'].values():
-        name = target.vars.get_local('var', var[0])
-        vars_init.append(
-            "self.{name} = {value}".format(
-                name=name,
-                value=sanitizer.quote_number(var[1])
-            ))
+    for value in target['variables'].values():
+        # Get the variable instance
+        var = target.vars.get_var('var', value[0])
+
+        # Get the clean name
+        name = var.clean_name
+
+        # Cast the value
+        type_ = var.get_type()
+        if type_ == 'any':
+            value = sanitizer.quote_number(value[1])
+        else:
+            value = sanitizer.cast_literal(value[1], type_)
+
+        vars_init.append(f"self.{name} = {value}")
 
     return '\n'.join(vars_init).rstrip()
 

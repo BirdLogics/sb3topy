@@ -20,15 +20,24 @@ TODO Consider using known_type rather than types_set?
 """
 
 import logging
+from typing import Any, Dict, Set
 
 from .. import config
 
+COLORS = {
+    'var': 'orange',
+    'list': 'red',
+    'proc_arg': 'rebeccapurple',
+    'type': 'skyblue',
+    'target': 'green',
+    'target_fill': 'palegreen',
+    'proc_fill': 'mediumpurple'
+}
 
-# TYPE_COLORS = {
-#     'var': 'orange',
-#     'list': 'darkorange',
-#     'proc_arg': 'purple'
-# }
+try:
+    from graphviz import Digraph as gvDigraph
+except ImportError:
+    gvDigraph = None
 
 
 class Node:
@@ -45,8 +54,8 @@ class Node:
 
         parent_nodes: A set of nodes which this node is dependent on.
 
-        unresolved - A set which this node adds and removes itself
-            from depending on the unresolved status
+        unresolved - A shared set which this node adds and removes
+            itself from depending on the unresolved status
     """
 
     def __init__(self, id_tuple, unresolved):
@@ -60,7 +69,7 @@ class Node:
         self.types_set = set()
         # self.get_types = set()
 
-        self.parent_nodes = set()
+        self.parent_nodes: Set[Node] = set()
 
     def __hash__(self):
         return hash(self.id_tuple)
@@ -74,6 +83,7 @@ class Node:
         if isinstance(set_type, Node):
             self.parent_nodes.add(set_type)
         else:
+            assert isinstance(set_type, str)
             self.types_set.add(set_type)
 
     def resolve(self, chain, loops):
@@ -96,42 +106,56 @@ class Node:
         Returns a set containing all the types this node is known to
         possibly produce. If there was a loop, the loop node contains the
         rest of the types the node can produce.
+
+        Issue, nodes are never removed from loops.
         """
+
+        if self not in self.unresolved:
+            return self.known_type
+
+        logging.debug("Resolving node %s", self.id_tuple)
 
         # Add self to chain to detect loops
         chain.add(self)
 
         # Get a set of all types this node can be
-        for parent in self.parent_nodes:
+        for parent in frozenset(self.parent_nodes):
             # Don't resolve a loop
             if parent in chain:
                 loops.add(parent)
 
             # Resolve the parent
             else:
+                if parent in loops:
+                    logging.warning("Type node parent in loops but not chain")
+
                 # Loops don't matter for each parent's branch
                 branch_loops = set()
 
                 # Resolve the parent
-                self.types_set.update(parent.resolve(chain, branch_loops))
+                parent.resolve(chain, branch_loops)
+                self.types_set.update(parent.types_set)
 
                 # Remove the parent if it has resolved
                 if parent not in self.unresolved:
                     self.parent_nodes.remove(parent)
+                    self.types_set.add(parent.known_type)
 
                 # Loops in the parent do matter for this branch
                 loops.update(branch_loops)
 
         # Cannot resolve unless either loops is
         # empty or self is the only node in loops
-        if not loops or len(loops) == 1 and self in loops:
+        if not loops or (len(loops) == 1 and self in loops):
             self.force_resolve()
+
+        # If this is part of a smaller loop but a bigger one
+        # is still unresolved, resolve the bigger one first
+        elif self in loops:
+            loops.remove(self)
 
         # Remove self from chain
         chain.remove(self)
-
-        # Return types_set even if unresolved
-        return self.types_set
 
     def force_resolve(self):
         """
@@ -214,11 +238,11 @@ class DiGraph:
     """
 
     def __init__(self):
-        self.nodes = {}
+        self.nodes: Dict[Any, Node] = {}
         self.unresolved = set()
 
     def add_node(self, id_tuple):
-        """Creates a node from id data"""
+        """Creates a node from an id tuple"""
         # Verify the node hasn't been created
         if id_tuple not in self.nodes:
             self.nodes[id_tuple] = Node(id_tuple, self.unresolved)
@@ -228,23 +252,205 @@ class DiGraph:
 
         return self.nodes[id_tuple]
 
+    def get_node(self, id_tuple):
+        """Gets a node from an id tuple"""
+        node = self.nodes.get(id_tuple)
+
+        if node is not None:
+            return node
+
+        logging.warning("Unkown type node %s", id_tuple)
+        return self.add_node(id_tuple)
+
     def resolve(self):
         """Resolves all nodes"""
+
+        if config.RENDER_GRAPH:
+            render = Render(self)
+
+        logging.info("Resolving type graph...")
+
         while self.unresolved:
+            logging.debug("Type digraph resolution step")
             # Get and resolve an unresolved node
             next(iter(self.unresolved)).resolve(set(), set())
 
-    # @classmethod
-    # def render(cls):
-    #     """Draws a rendering of the directed graph"""
-    #     from graphviz import Digraph
+        if config.RENDER_GRAPH:
+            render.render()
 
-    #     dot = Digraph()
-    #     for node in cls.nodes.values():
-    #         dot.node(str(node.id_tuple), node.id_tuple[-1],
-    #                  color=NODE_COLORS[node.id_tuple[0]])
-    #         for parent in node.parent_nodes:
-    #             dot.edge(str(parent.id_tuple), str(node.id_tuple))
-    #             print(str(parent.id_tuple), str(node.id_tuple))
 
-    #     dot.render(view=True)
+class Render:
+    """
+    Handles rendering a DiGraph with graphviz
+
+    Attributes:
+        digraph: The DiGraph instance being rendered
+        nodes: A dict containing Nodes and their parents
+        clusters: Contains clusters of nodes.
+
+    clusters structure:
+    {
+        # Stage Nodes
+        None: {
+            None: [loose Nodes].
+            'procedure name': [arg Nodes]
+        },
+
+        # Target Nodes
+        'target name': {
+            None: [loose Nodes],
+            'procedure name': [arg Nodes]
+        }
+    }
+    """
+
+    def __init__(self, digraph: DiGraph):
+        logging.debug("Pre-rendering type graph.")
+
+        self.digraph = digraph
+
+        self.nodes = {node: frozenset(node.parent_nodes)
+                      for node in digraph.nodes.values()}
+        self.frozen_types = {node: frozenset(node.types_set)
+                             for node in digraph.nodes.values()}
+
+        self.unique_id = 0
+        self.node_ids: Dict[Node, str] = {}
+
+        self.clusters: Dict[str, Dict[str, list]] = {}
+        self._init_clusters()
+
+    def _init_clusters(self):
+        """Adds nodes in self.nodes to the clusters dict"""
+        for node in self.nodes:
+            target_name = node.id_tuple[1]
+            proc_name = node.id_tuple[2] if node.id_tuple[0] == 'proc_arg' else None
+
+            if target_name == 'Stage':
+                cluster = self.clusters.setdefault(None, {})
+
+            else:
+                cluster = self.clusters.setdefault(target_name, {})
+
+            cluster = cluster.setdefault(proc_name, [])
+
+            cluster.append(node)
+
+    def render(self):
+        """Render the digraph"""
+
+        logging.info("Rendering type graph...")
+
+        if gvDigraph is None:
+            logging.warning(
+                "Cannot render type graph; graphviz not installed.")
+
+        graph = gvDigraph(engine=config.GRAPH_ENGINE)
+        # graph.attr(overlap="false")
+
+        for name, cluster in self.clusters.items():
+            if name is None:
+                self.render_stage(graph, cluster)
+            else:
+                self.render_target(graph, name, cluster)
+
+        self.render_edges(graph)
+
+        # graph = graph.unflatten(stagger=3)
+        graph.render(view=False, directory=config.OUTPUT_PATH,
+                     filename="type_graph")
+
+    def render_stage(self, graph: gvDigraph, cluster):
+        """Adds loose stage nodes to the graph"""
+        for pname, subcluster in cluster.items():
+            if pname is None:
+                for node in subcluster:
+                    self.add_node(graph, node)
+            else:
+                self.render_proc(graph, pname, subcluster)
+
+    def render_target(self, graph: gvDigraph, name, cluster):
+        """Renders a target cluster"""
+
+        prefix = "cluster_" if config.TARGET_CLUSTERS else ""
+
+        self.unique_id += 1
+        with graph.subgraph(name=prefix+str(self.unique_id)) as tgraph:
+            tgraph.attr(style="filled,solid", color=COLORS['target'],
+                        fillcolor=COLORS['target_fill'])
+
+            for pname, subcluster in cluster.items():
+                if pname is None:
+                    for node in subcluster:
+                        self.add_node(tgraph, node)
+                else:
+                    self.render_proc(tgraph, pname, subcluster)
+
+            tgraph.attr(label=name)
+
+    def render_proc(self, graph: gvDigraph, name, cluster):
+        """Renders a procedure cluster"""
+
+        prefix = "cluster_" if config.PROC_CLUSTERS else ""
+
+        self.unique_id += 1
+        with graph.subgraph(name=prefix+str(self.unique_id)) as pgraph:
+            pgraph.attr(style='solid,filled', color=COLORS['proc_arg'],
+                        fillcolor=COLORS['proc_fill'])
+
+            for node in cluster:
+                self.add_node(pgraph, node)
+
+            pgraph.attr(label=name)
+
+    def add_node(self, graph: gvDigraph, node: Node):
+        """Adds a node to graph, doesn't add edges"""
+        color = COLORS[node.id_tuple[0]]
+        fontcolor = 'white' if color == 'rebeccapurple' else 'black'
+        label = node.id_tuple[-1]
+
+        # Add the main node
+        self.unique_id += 1
+        node_id = f"node_{self.unique_id}"
+        self.node_ids[node] = node_id
+
+        self.unique_id += 1
+        with graph.subgraph(name=f"cluster_{self.unique_id}") as ngraph:
+            ngraph.attr(style="dotted", color=color)
+            ngraph.node(
+                node_id,
+                f"{label} [{node.known_type}]",
+                style="filled", color=color,
+                fontcolor=fontcolor
+            )
+
+            # Add literal type nodes
+            for type_ in self.frozen_types[node]:
+                self.unique_id += 1
+                ngraph.node(
+                    f"type_{self.unique_id}",
+                    str(type_),
+                    style="filled", color=COLORS['type']
+                )
+                ngraph.edge(
+                    f"type_{self.unique_id}",
+                    node_id,
+                )
+
+    def render_edges(self, graph: gvDigraph):
+        """Renders edges onto graph"""
+        for node, parents in self.nodes.items():
+            node_id = self.node_ids[node]
+
+            # {node.id_tuple[-1]} [{node.known_type}]"
+            # node_label = f"{node.id_tuple[-1]}"
+
+            for parent in parents:
+                # {parent.id_tuple[-1]} [{parent.known_type}]"
+                parent_label = f"[{parent.known_type}]"
+
+                parent_id = self.node_ids[parent]
+                graph.edge(
+                    parent_id, node_id,
+                    # labeltooltip=f"{parent_label} to {node_label}",
+                    headlabel=parent_label)  # , taillabel=node_label)

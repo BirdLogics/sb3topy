@@ -13,6 +13,7 @@ import itertools
 import json
 import logging
 from time import monotonic_ns
+from typing import Dict
 
 from .. import config
 from . import sanitizer, specmap
@@ -291,6 +292,8 @@ class Prototype:
         self.arg_nodes = {name: target.digraph.add_node(
             ('proc_arg', target['name'], proccode, name)
         ) for name in clean_names_id.values()}
+        self.arg_nodes_unclean = {
+            unclean: self.arg_nodes[clean] for unclean, clean in self.args.items()}
 
     def get_arg(self, name):
         """Gets an argument identifier based on the name"""
@@ -345,8 +348,8 @@ class Prototypes:
 
     def __init__(self, events: Events):
         self.events = events
-        self.prototypes = {}
-        self.prototypes_id = {}
+        self.prototypes: Dict[str, Prototype] = {}
+        self.prototypes_id: Dict[str, Prototype] = {}
 
     def add_prototype(self, target, mutation, blockid):
         """Names, saves, and returns a prototype"""
@@ -376,3 +379,46 @@ class Prototypes:
         """Runs type guessing for a procedure call"""
         prototype = self.from_proccode(block['mutation']['proccode'])
         prototype.mark_called(target, block)
+
+    def get_arg_node(self, target, block):
+        """
+        Gets a type node given the name of a proc arg. If no node is
+        found, returns 'any'
+
+        If mulitple prototypes have the same arg name, also figures
+        out which custom block the proc arg is used in.
+        """
+
+        name = block['fields']['VALUE'][0]
+
+        # Get all prototypes which have the arg by blockid
+        protos = {blockid: prototype for blockid,
+                  prototype in self.prototypes_id.items() if name in prototype.arg_nodes_unclean}
+
+        # Verify at least one prototype was found
+        if not protos:
+            logging.warning("Unknown proc arg '%s'", name)
+
+        # If only one was found, assume the arg belongs to it
+        if len(protos) == 1:
+            return protos.popitem()[1].arg_nodes_unclean[name]
+
+        # Get the hat block parent above the block
+        hat_block = target.get_parent_hat(block)
+
+        # If the hat is a procedure, get the arg node from it
+        if hat_block['opcode'] == "procedures_definition":
+            # Get the prototype blockid
+            blockid = hat_block['inputs']['custom_block'][1]
+            if blockid in protos:
+                return protos[blockid].arg_nodes_unclean[name]
+
+            # The prototype doesn't contain the arg
+            logging.warning(
+                "Unknown proc arg '%s' for prototype '%s'",
+                name, self.prototypes_id[blockid].name)
+            return 'any'
+
+        logging.warning("Proc arg '%s' used outside of a custom block",
+                        name)
+        return 'any'

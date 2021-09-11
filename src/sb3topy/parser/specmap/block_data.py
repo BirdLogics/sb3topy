@@ -1,7 +1,21 @@
 """
 block_data.py
 
-Contains a dictionary with code and data for most blocks
+Contains the base block data for most blocks. Used as a fallback if a
+type switch is not found for a given opcode.
+
+Globals:
+    Block: Used to store the base data for a block. Contains a return
+        type for the blok, a list of arg (type, name) tuples, the
+        unformatted code, and indents for each {} format tag.
+
+    BLOCKS: A dictionary with the base Block data for most opcodes.
+
+    HATS: A set containing opcodes which should be treated as hats.
+
+    LOOPS: A set containing opcodes which should be treated as loops.
+        Loop blocks should yield at the end, but the yield can be
+        omitted in warped blocks as an optimization.
 """
 
 import re
