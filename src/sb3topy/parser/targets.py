@@ -10,6 +10,7 @@ import logging
 from typing import Dict
 
 from . import naming, specmap
+from .prototypes import Prototypes
 from .typing import DiGraph
 from .variables import Variables
 
@@ -103,7 +104,7 @@ class Target:
         self.vars = Variables(name, target['isStage'])
 
         self.events = naming.Events()
-        self.prototypes = naming.Prototypes(self.events)
+        self.prototypes = Prototypes(self.events)
 
         self.prototype = None
 
