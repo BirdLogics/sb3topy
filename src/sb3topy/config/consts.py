@@ -28,7 +28,8 @@ BLANK_SVG_HASHES = (
     # TODO Verify these are actually blank (pokemon4.sb3)
     '14e46ec3e2ba471c2adfe8f119052307.svg',
     '09f60d713153e3d836152b1db500afd1.svg',
-    '5adf038af4cd6319154b5601237092fa.svg'
+    '5adf038af4cd6319154b5601237092fa.svg',
+    '9af27a7ad39ec41b7cbfda3622d08a1a.svg'
 )
 FALLBACK_IMAGE = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
