@@ -10,7 +10,7 @@ TODO Cache lowercase list items?
 
 __all__ = [
     'tonum', 'toint', 'letter_of', 'pick_rand',
-    'gt', 'lt', 'eq', 'div'
+    'gt', 'lt', 'eq', 'div', 'sqrt'
 ]
 
 import math
@@ -86,3 +86,11 @@ def div(val1, val2):
         return tonum(val1) / tonum(val2)
     except ZeroDivisionError:
         return float('infinity')
+
+
+def sqrt(val):
+    """Gets the square root handling negative values"""
+    try:
+        return math.sqrt(val)
+    except ValueError:
+        return float('nan')

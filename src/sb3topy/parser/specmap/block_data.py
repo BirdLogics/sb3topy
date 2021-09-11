@@ -843,7 +843,7 @@ BLOCKS = {
 
     'operator_mathop_sqrt': block(
         'int', 'float NUM',
-        "math.sqrt({NUM})"
+        "sqrt({NUM})"
     ),
 
     'operator_mathop_sin': block(
