@@ -71,7 +71,7 @@ class Pen:
     def down(self):
         """Puts the pen down"""
         self.isdown = True
-        self.move()
+        self.move(self.target.xpos, self.target.ypos)
 
     def up(self):  # pylint: disable=invalid-name
         """Puts the pen up"""
@@ -87,15 +87,15 @@ class Pen:
 
         # pg.draw.rect(Pen.image, (0, 200, 100), rect, 1)
 
-    def move(self):
+    def move(self, xpos, ypos):
         """Moves and draws with the pen"""
         if self.isdown:
             # Get the pen offset
             offset = 0.5 if self.size in (1, 3) else 0
 
             # Get new position
-            end_pos = (self.target._xpos + STAGE_SIZE[0]//2,
-                       STAGE_SIZE[1]//2 - self.target._ypos)
+            end_pos = (xpos + STAGE_SIZE[0]//2,
+                       STAGE_SIZE[1]//2 - ypos)
 
             size = max(1, round(self.size * self._scale))
 
@@ -127,8 +127,8 @@ class Pen:
             # pg.draw.rect(Pen.image, (0, 200, 100), rect, 1)
             self.position = end_pos
         else:
-            self.position = (self.target._xpos + STAGE_SIZE[0]//2,
-                             STAGE_SIZE[1]//2 - self.target._ypos)
+            self.position = (xpos + STAGE_SIZE[0]//2,
+                             STAGE_SIZE[1]//2 - ypos)
 
     def set_size(self, value):
         """Sets and clamps the pen size"""

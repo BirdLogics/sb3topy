@@ -143,13 +143,13 @@ class Target:
 
     @xpos.setter
     def xpos(self, xpos):
-        self._xpos = xpos
+        self._xpos = max(-9e4, min(9e4, xpos))
 
         # Set dirty, move pen
         self.dirty = True
         if self.sprite.visible:
             Costumes.redraw_requested = True
-        self.pen.move()
+        self.pen.move(self._xpos, self._ypos)
 
     @property
     def ypos(self):
@@ -158,13 +158,13 @@ class Target:
 
     @ypos.setter
     def ypos(self, ypos):
-        self._ypos = ypos
+        self._ypos = max(-9e4, min(9e4, ypos))
 
         # Set dirty, move pen
         self.dirty = True
         if self.sprite.visible:
             Costumes.redraw_requested = True
-        self.pen.move()
+        self.pen.move(self._xpos, self._ypos)
 
     @property
     def direction(self):
@@ -192,7 +192,7 @@ class Target:
         self.dirty = True
         if self.sprite.visible:
             Costumes.redraw_requested = True
-        self.pen.move()
+        self.pen.move(self._xpos, self._ypos)
 
     def gotoxy(self, xpos, ypos):
         """Set xpos and ypos simultaneously"""
@@ -203,7 +203,7 @@ class Target:
         self.dirty = True
         if self.sprite.visible:
             Costumes.redraw_requested = True
-        self.pen.move()
+        self.pen.move(self._xpos, self._ypos)
 
     def goto(self, util, other):
         """Goto the position of another sprite"""
@@ -217,7 +217,7 @@ class Target:
         self.dirty = True
         if self.sprite.visible:
             Costumes.redraw_requested = True
-        self.pen.move()
+        self.pen.move(self._xpos, self._ypos)
 
     def point_towards(self, util, other):
         """Point towards another sprite"""
@@ -255,7 +255,7 @@ class Target:
             self.dirty = True
             if self.sprite.visible:
                 Costumes.redraw_requested = True
-            self.pen.move()
+            self.pen.move(self._xpos, self._ypos)
 
             await self.yield_()
         self.xpos = endx
