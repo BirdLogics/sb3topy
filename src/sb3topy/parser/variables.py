@@ -125,7 +125,7 @@ class Variables:
         self.local_vars.set.update(self.universal_vars.set)
 
         # Read variables
-        for name, value in target['variables'].values():
+        for name, value, *_ in target['variables'].values():
             self.create_local("var", name, digraph, value)
 
         # Read lists
