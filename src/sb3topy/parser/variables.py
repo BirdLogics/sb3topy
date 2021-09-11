@@ -14,6 +14,69 @@ from . import sanitizer, specmap, typing
 from .naming import Identifiers
 
 
+class Variable:
+    """
+    Represents a variable or list
+
+    Attributes:
+        clean_name: The clean identifier for the variable
+
+        node: The digraph node used to get the type of the variable
+
+        is_changed: Whether the change var by block is used on the
+            variable
+
+        is_modified: Whether the list is modified in any way
+
+        is_indexed: Whether the item # of list or contains block is
+            used on the list
+    """
+
+    def __init__(self, clean_name, node):
+        self.clean_name = clean_name
+
+        self.node: typing.Node = node
+
+        self.is_changed = False
+        self.is_modified = False
+        self.is_indexed = False
+
+    def mark_set(self, to_type):
+        """Mark the variable as being set to a value of to_type"""
+        self.node.add_type(to_type)
+
+    def mark_changed(self):
+        """Mark the varable as modified by the change by block"""
+        self.is_changed = True
+        self.node.add_type('int')
+
+    def mark_modified(self):
+        """Marks a list as modified by a block (not static/a constant)"""
+        self.is_modified = True
+
+    def mark_indexed(self):
+        """Marks a list a indexed by a item # of or contains block"""
+        self.is_indexed = True
+
+    def get_type(self):
+        """Gets the type of a variable"""
+        # Force the type to be numeric if changed
+        if self.is_changed and config.CHANGED_NUM_CAST:
+            # Decide between int and float
+            if self.node.known_type == 'int':
+                return 'int'
+            return 'float'
+
+        # Otherwise, use the detected type
+        return self.node.known_type
+
+    def get_list_type(self):
+        """Gets the class which should be used for a list"""
+        if config.LIST_TYPES and not self.is_modified:
+            return "StaticList"
+        return "BaseList"
+
+
 class Variables:
     """
     Handles variable and list naming for a target.
@@ -133,7 +196,7 @@ class Variables:
         # Create a new local variable
         return self.create_local(prefix, name, typing.DiGraph()).clean_name
 
-    def get_var(self, prefix, name):
+    def get_var(self, prefix, name) -> Variable:
         """
         Gets a Variable object, either global or local
         """
@@ -261,66 +324,3 @@ class Variables:
     def mark_indexed(self, block):
         """Marks a list as indexed by block"""
         self.get_var('list', block['fields']['LIST'][0]).mark_indexed()
-
-
-class Variable:
-    """
-    Represents a variable or list
-
-    Attributes:
-        clean_name: The clean identifier for the variable
-
-        node: The digraph node used to get the type of the variable
-
-        is_changed: Whether the change var by block is used on the
-            variable
-
-        is_modified: Whether the list is modified in any way
-
-        is_indexed: Whether the item # of list or contains block is
-            used on the list
-    """
-
-    def __init__(self, clean_name, node):
-        self.clean_name = clean_name
-
-        self.node: typing.Node = node
-
-        self.is_changed = False
-        self.is_modified = False
-        self.is_indexed = False
-
-    def mark_set(self, to_type):
-        """Mark the variable as being set to a value of to_type"""
-        self.node.add_type(to_type)
-
-    def mark_changed(self):
-        """Mark the varable as modified by the change by block"""
-        self.is_changed = True
-        self.node.add_type('int')
-
-    def mark_modified(self):
-        """Marks a list as modified by a block (not static/a constant)"""
-        self.is_modified = True
-
-    def mark_indexed(self):
-        """Marks a list a indexed by a item # of or contains block"""
-        self.is_indexed = True
-
-    def get_type(self):
-        """Gets the type of a variable"""
-        # Force the type to be numeric if changed
-        if self.is_changed and config.CHANGED_NUM_CAST:
-            # Decide between int and float
-            if self.node.known_type == 'int':
-                return 'int'
-            return 'float'
-
-        # Otherwise, use the detected type
-        return self.node.known_type
-
-    def get_list_type(self):
-        """Gets the class which should be used for a list"""
-        if config.LIST_TYPES and not self.is_modified:
-            return "StaticList"
-        return "BaseList"
