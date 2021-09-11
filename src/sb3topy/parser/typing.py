@@ -259,7 +259,7 @@ class DiGraph:
         if node is not None:
             return node
 
-        logging.warning("Unkown type node %s", id_tuple)
+        logging.warning("Unknown type node %s", id_tuple)
         return self.add_node(id_tuple)
 
     def resolve(self):
@@ -344,6 +344,7 @@ class Render:
         if gvDigraph is None:
             logging.warning(
                 "Cannot render type graph; graphviz not installed.")
+            return
 
         graph = gvDigraph(engine=config.GRAPH_ENGINE)
         # graph.attr(overlap="false")

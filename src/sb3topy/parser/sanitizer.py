@@ -142,7 +142,7 @@ def cast_literal(value, to_type):
         return str(quote_number(value))
 
     # Default behavior
-    logging.warning("Unkown literal type '%s'", to_type)
+    logging.warning("Unknown literal type '%s'", to_type)
     if value in (True, False, None):
         return str(value)
     return str(quote_number(value))

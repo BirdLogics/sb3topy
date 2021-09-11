@@ -294,5 +294,5 @@ class Parser:
             return self.target.prototype.get_arg(value)
 
         # Default to quoting
-        logging.warning("Unkown field type '%s'", end_type)
+        logging.warning("Unknown field type '%s'", end_type)
         return sanitizer.quote_field(value)
