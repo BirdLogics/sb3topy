@@ -365,8 +365,8 @@ class Costumes:
         scale = self._size/100 / \
             self.costume['scale'] * display.scale
         image = pg.transform.smoothscale(
-            image, (max(4, int(image.get_width() * scale)),
-                    max(4, int(image.get_height() * scale)))
+            image, (min(9000, max(4, int(image.get_width() * scale))),
+                    min(9000, max(4, int(image.get_height() * scale))))
         )
 
         # Rotate the image
