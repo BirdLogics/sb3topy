@@ -366,7 +366,7 @@ class Target:
                     task.cancel()
             self._tasks[name] = []
         if this_name is None:
-            print("Failed to find name for ", this_task)
+            print("Failed to find running task for stop other.")
         self._tasks[this_name] = [this_task]
 
     def update(self, display, create_mask=False):
