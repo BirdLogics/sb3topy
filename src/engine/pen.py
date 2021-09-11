@@ -173,7 +173,7 @@ class Pen:
         elif prop == "brightness":
             self.hsva = (hue, sat, max(0, min(100, value)), alp)
         elif prop == "transparency":
-            self.hsva = (hue, sat, val, value % 100)
+            self.hsva = (hue, sat, val, max(0, min(100, 100 - value)))
         else:
             print("Invalid color property ", prop)
         self.color.hsva = self.hsva
@@ -188,7 +188,7 @@ class Pen:
         elif prop == "brightness":
             self.hsva = (hue, sat, max(0, min(100, val+value)), alp)
         elif prop == "transparency":
-            self.hsva = (hue, sat, val, max(0, min(100, alp + value)))
+            self.hsva = (hue, sat, val, max(0, min(100, alp - value)))
         else:
             print("Invalid color property ", prop)
         self.color.hsva = self.hsva
