@@ -210,6 +210,15 @@ def var_change(block, target):
             '{VARIABLE} += {VALUE}', {}
         )
 
+    if var_type == "str":
+        return Block(
+            'stack', {'VARIABLE': 'variable', 'VALUE': 'float'},
+            "{VARIABLE} = str(tonum({VARIABLE}) + {VALUE})", {}
+        )
+
+    if var_type != "any":
+        logging.warning("Unexpected type '%s' for changevariableby", var_type)
+
     return None
 
 
