@@ -14,4 +14,3 @@ from .runtime import *
 from .sounds import *
 from .target import *
 from .util import *
-from .variables import *

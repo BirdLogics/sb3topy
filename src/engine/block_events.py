@@ -3,7 +3,7 @@ block_events.py
 
 Contains decorators used to bind functions to events
 
-TODO Clean up event nams
+TODO Clean up event names
 """
 from functools import wraps
 

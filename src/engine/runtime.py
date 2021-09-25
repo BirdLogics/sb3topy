@@ -20,7 +20,7 @@ import time
 
 import pygame as pg
 
-from .assets import Costumes
+from .costumes import Costumes
 
 from . import config
 from .events import Events, Inputs

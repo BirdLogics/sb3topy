@@ -1,9 +1,7 @@
 """
 pen.py
 
-Contains the Pen class
-
-TODO Change Pen.move to take from and to coords?
+Contains the Pen class and helper functions
 """
 
 __all__ = ['Pen']

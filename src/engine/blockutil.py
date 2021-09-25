@@ -3,9 +3,6 @@ blockutil.py
 
 Contains functions and classes
 primarily used within project.py
-
-TODO New Operators class?
-TODO Cache lowercase list items?
 """
 
 __all__ = [

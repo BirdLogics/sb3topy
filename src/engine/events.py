@@ -1,8 +1,8 @@
 """
 events.py
 
-Contains a class for managing events,
-and a class for managing user inputs.
+Contains the Events class for managing events and the Inputs class for
+managing user inputs.
 """
 
 import asyncio

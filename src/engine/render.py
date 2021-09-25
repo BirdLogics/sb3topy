@@ -1,7 +1,9 @@
 """
 render.py
 
-Handles drawing to the screen
+Contains the Display class for managing the screen.
+
+Contains the Render class which handles drawing everything.
 """
 import pygame as pg
 

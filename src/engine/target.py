@@ -8,9 +8,8 @@ TODO Random/mouse pos for glide/goto
 TODO Warp deorator?
 """
 
-# pylint: disable=protected-access
 
-__all__ = ['Target', 'on_event', 'warp']
+__all__ = ['Target', 'warp']
 
 import asyncio
 import math
@@ -23,17 +22,10 @@ import pygame as pg
 from pygame.sprite import DirtySprite
 
 from . import config
-from .assets import Costumes, Sounds
+from .costumes import Costumes
 from .lists import BaseList
 from .pen import Pen
-
-
-def on_event(event_name):
-    """Decorator to bind a Target's function to an event"""
-    def decorator(func):
-        func.event = event_name
-        return func
-    return decorator
+from .sounds import Sounds
 
 
 class Target:
