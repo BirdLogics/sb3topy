@@ -9,7 +9,7 @@ __all__ = ['Pen']
 
 import pygame as pg
 
-from .blockutil import tonum
+from .operators import tonum
 from .config import STAGE_SIZE
 
 

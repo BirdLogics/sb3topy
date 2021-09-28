@@ -1,8 +1,8 @@
 """
-blockutil.py
+operators.py
 
-Contains functions and classes
-primarily used within project.py
+Contains functions primarily used by project.py to ensure maximum
+compatibility.
 """
 
 __all__ = [

@@ -9,7 +9,7 @@ The specmap would need to be adjusted to handle it.
 
 import random
 
-from .blockutil import toint
+from .operators import toint
 
 __all__ = ['BaseList', 'StaticList']
 

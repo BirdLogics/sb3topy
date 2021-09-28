@@ -1,14 +1,7 @@
 """
 runtime.py
 
-Contains classes used to manage
-base program functions
-
-runtime - Global class instance used to make code
-    easier to read within project.py. Rather than
-    requiring project.py to pass util/runtime to
-    called functions, eg. util.events.send(util, ...),
-    runtime can be imported and directly acessed.
+Contains classes used to manage base program functions.
 """
 
 __all__ = ['start_program', 'sprite']
@@ -20,14 +13,12 @@ import time
 
 import pygame as pg
 
-from .costumes import Costumes
-
 from . import config
-from .events import Events, Inputs
+from .costumes import Costumes
 from .pen import Pen
 from .render import Display, Render
-from .util import Util
-
+from .user_input import Inputs
+from .util import Events, Util
 
 SPRITES = {}
 

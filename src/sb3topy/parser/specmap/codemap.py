@@ -29,8 +29,8 @@ def file_header():
         "import engine\n"
         "from engine import config, Target, sprite, warp\n"
         "from engine.lists import *\n"
-        "from engine.block_events import *\n"
-        "from engine.blockutil import *"
+        "from engine.events import *\n"
+        "from engine.operators import *"
     )
 
 
