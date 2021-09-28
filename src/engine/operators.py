@@ -45,49 +45,49 @@ def letter_of(text, index):
         return ""
 
 
-def pick_rand(val1, val2):
+def pick_rand(number1, number2):
     """Rand int or float depending on values"""
-    val1, val2 = min(val1, val2), max(val1, val2)
-    if isinstance(val1, float) or isinstance(val2, float):
-        return random.random() * abs(val2-val1) + val1
-    return random.randint(val1, val2)
+    number1, number2 = min(number1, number2), max(number1, number2)
+    if isinstance(number1, float) or isinstance(number2, float):
+        return random.random() * abs(number2-number1) + number1
+    return random.randint(number1, number2)
 
 
-def gt(val1, val2):  # pylint: disable=invalid-name
+def gt(value1, value2):  # pylint: disable=invalid-name
     """Either numerical or string comparison"""
     try:
-        return float(val1) > float(val2)
+        return float(value1) > float(value2)
     except ValueError:
-        return str(val1).lower() > str(val2).lower()
+        return str(value1).lower() > str(value2).lower()
 
 
-def lt(val1, val2):  # pylint: disable=invalid-name
+def lt(value1, value2):  # pylint: disable=invalid-name
     """Either numerical or string comparison"""
     try:
-        return float(val1) < float(val2)
+        return float(value1) < float(value2)
     except ValueError:
-        return str(val1).lower() < str(val2).lower()
+        return str(value1).lower() < str(value2).lower()
 
 
-def eq(val1, val2):  # pylint: disable=invalid-name
+def eq(value1, value2):  # pylint: disable=invalid-name
     """Either numerical or string comparison"""
     try:
-        return float(val1) == float(val2)
+        return float(value1) == float(value2)
     except ValueError:
-        return str(val1).lower() == str(val2).lower()
+        return str(value1).lower() == str(value2).lower()
 
 
-def div(val1, val2):
+def div(value1, value2):
     """Divide handling division by zero"""
     try:
-        return tonum(val1) / tonum(val2)
+        return tonum(value1) / tonum(value2)
     except ZeroDivisionError:
         return float('infinity')
 
 
-def sqrt(val):
+def sqrt(value):
     """Gets the square root handling negative values"""
     try:
-        return math.sqrt(val)
+        return math.sqrt(value)
     except ValueError:
         return float('nan')
