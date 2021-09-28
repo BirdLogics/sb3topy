@@ -112,9 +112,6 @@ class Target:
         # Set dirty
         self.dirty = True
 
-        # Clear effects
-        self.effects = {}
-
         self.warp = Warp(self)
 
         # Initialize clone data
