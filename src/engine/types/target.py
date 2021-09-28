@@ -31,30 +31,38 @@ from .sounds import Sounds
 class Target:
     """Holds common code for targets
 
-    The following attributes should be set by the child:
-        variables - A dict of variables and their default values
-        lists - A dict of lists and their default values
-        costumes - A list of costume dicts
-        sounds - A list of sound dicts
-        costume - The intial costume #. Will be changed into a
+    Attributes:
+    [should be set by the child class]
+
+        variables: A dict of variables and their default values
+
+        lists: A dict of lists and their default values
+
+        costumes: A list of costume dicts
+
+        sounds: A list of sound dicts
+
+        costume: The intial costume #. Will be changed into a
             dict from costumes by Target.__init__
-        hats - A dict of aync functions which should be started
-            upon certain events. Must be initialized in __init__
 
-    In addition to these, the following are managed by Target:
-        sprite - A pygame sprite drawn to the screen
-        dirty - Indicates the sprite's rect is dirty
-        warp - Marks the Target as running "without screen refresh"
-        warp_timer - Keeps track of time to ensure the target
-            doesn't run longer than WARP_TIME
-        costume_dict - Allows easy acess to costumes by name
-        sounds_dict - Allows east acess to sounds by name
-        effects - A dict which tracks costume effects
+        hats: A dict of aync functions which should be started upon
+            certain events. Must be initialized in __init__
 
-        need_redraw - A class method used to determine if
-            any targets need to be redrawn
+    [managed by this class, Target]
+        sprite: A pygame sprite drawn to the screen
 
-    TODO Additional Target properties
+        dirty: Indicates the sprite's rect is dirty
+
+        warp: Marks the Target as running "without screen refresh"
+
+        warp_timer: Keeps track of time to ensure the target doesn't
+            run longer than WARP_TIME
+
+    Class Attributes:
+        need_redraw: Used to determine if any targets need to be
+            redrawn
+
+    TODO Missing Target properties:
         draggable = False
         tempo = 60
         videoTransparency = 50

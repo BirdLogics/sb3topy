@@ -14,6 +14,9 @@ __all__ = ['List', 'StaticList']
 class List:
     """
     Emulates the correct list behavior
+
+    Attributes:
+        list: The internal list
     """
 
     __slots__ = ('list',)
@@ -28,7 +31,10 @@ class List:
         return ""
 
     def get(self, key):
-        """Gets an item, supporting legacy indices (first, last, random)"""
+        """
+        Gets an item, supporting legacy indices
+        (first, last, random)
+        """
         if key == 'first':
             return self.list[0]
         if key == 'last':
@@ -43,7 +49,10 @@ class List:
             self.list[key] = value
 
     def set(self, key, item):
-        """Sets an item, supporting legacy indices (first, last, random)"""
+        """
+        Sets an item, supporting legacy indices
+        (first, last, random)
+        """
         if key == 'first':
             self.__setitem__(1, item)
         elif key == 'last':
@@ -64,7 +73,10 @@ class List:
             self.list.insert(key, value)
 
     def insert2(self, key, item):
-        """Inserts an item, supporting legacy indices (first, last random)"""
+        """
+        Inserts an item, supporting legacy indices
+        (first, last random)
+        """
         if key == 'first':
             self.insert(1, item)
         elif key == 'last':
@@ -81,7 +93,10 @@ class List:
             del self.list[key]
 
     def delete2(self, key):
-        """Deletes an item, supporting legacy indices (first, last, random, all)"""
+        """
+        Deletes an item, supporting legacy indices
+        (first, last, random, all)
+        """
         if key == 'all':
             self.delete_all()
         elif key == 'first':
@@ -134,6 +149,12 @@ class List:
 class StaticList(List):
     """
     A list that doesn't change
+
+    Attributes:
+        list: Inherited from List, the internal list
+
+        dict: Used to test if an item is contained in the list and to
+            determine the index of items in the list.
     """
 
     __slots__ = ('dict',)

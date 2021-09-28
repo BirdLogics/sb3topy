@@ -15,24 +15,30 @@ class Costumes:
     """
     Handles costumes for a target
 
-    costumes - A dict referencing costume by name
-    costumes_list - Used to reference costumes by number
+    Attributes:
+        costumes: A dict referencing costume by name
 
-    name - The name of the current costume, readonly
-    number - The number of the current costume, readonly
+        costumes_list: Used to reference costumes by number
 
-    size - The current costume size
-    rotation_style - The current rotation style
+        name: The name of the current costume, readonly
 
-    target - The parent target, used to set dirty TODO Here
+        number: The number of the current costume, readonly
 
-    effects - A dict of current effects and values
+        size: The current costume size
 
-    dirty - Whether the image needs to be updated
+        rotation_style: The current rotation style
 
-    redraw_requested - Class method, used to indicate
-        a sprite has requested a screen redraw
-    _cache - A shared cache containing loaded images
+        target: The parent target, used to set dirty TODO Here
+
+        effects: A dict of current effects and values
+
+        dirty: Whether the image needs to be updated
+
+    Class Attributes:
+        redraw_requested: Used to indicate a sprite has requested a
+            screen redraw
+
+        _cache - A shared cache containing loaded images
     """
 
     redraw_requested = False
@@ -237,16 +243,19 @@ class Costumes:
         return cost
 
     def get_mask(self):
-        """Get a sprite mask using the last gotten image without effects"""
+        """
+        Get a sprite mask using the last gotten image without effects
+        """
         return pg.mask.from_surface(self.last_image)
 
 
 def hue_effect(src_image, value):
     """
-    Changes the hue of an image for the color effect
-    Value should be between 0 and 360. Coverts the image
-    to an 8-bit surface and adjusts the color palette.
-    Transparency is copied first to preserve it.
+    Changes the hue of an image for the color effect.
+
+    The value should be between 0 and 360. Coverts the image to an
+    8-bit surface and adjusts the color palette. Transparency is
+    first copied to preserve it.
     """
 
     # Get a copy of the alpha channel

@@ -15,12 +15,16 @@ class Display:
     """
     Handles the display
 
-    size - The current screen size (w, h)
-    scale - The current scale of a sigle pixel of the Stage
-    fullscreen - Whether the screen is in fullscreen
+    Attributes:
+        size: The current screen size (w, h)
 
-    rect - Represents the stage position and size on the screen
-    screen - The screen surface from pygame.display.set_mode
+        scale: The current scale of a sigle pixel of the Stage
+
+        fullscreen: Whether the screen is in fullscreen
+
+        rect: Represents the stage position and size on the screen
+
+        screen: The screen surface from pygame.display.set_mode
     """
 
     def __init__(self):
@@ -99,12 +103,14 @@ class Render:
     """
     Handles drawing the screen
 
-    group - pygame LayeredDirty sprite group
-    stage - The stage Sprite
+    Attributes:
+        group: pygame LayeredDirty sprite group
 
-    rects - A list of dirty rects to update
+        stage: The stage Sprite
 
-    font - Used for debug text
+        rects: A list of dirty rects to update
+
+        font: Used for debug text
     """
 
     def __init__(self, sprites):

@@ -13,9 +13,12 @@ class Inputs:
     """
     Handles keyboard and mouse inputs.
 
-    mouse_x: Mouse x position
-    mouse_y: Mouse y position
-    mouse_down: Mouse down?
+    Attributes:
+        mouse_x: Mouse x position
+
+        mouse_y: Mouse y position
+
+        mouse_down: Mouse down?
     """
 
     def __init__(self):

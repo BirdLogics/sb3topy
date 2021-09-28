@@ -12,17 +12,21 @@ import time
 
 class Util:
     """
-    Wrapper between runtime and project.py
-    Contains useful objects and functions to
-    interface with project.py where needed.
+    Wrapper between runtime and project.py. Contains useful objects and
+    functions to interface with project.py where needed.
 
-    timer - Handles the Timer
-    inputs - Handles keyboard/mouse input
-    sprites - Provides sprite lookup and stage
+    Attributes:
+        timer: Handles the Timer
 
-    display - Used to get display info
-    events - Used to send events to sprites
-    runtime - The current Runtime instance
+        inputs: Handles keyboard/mouse input
+
+        sprites: Provides sprite lookup and stage
+
+        display: Used to get display info
+
+        events: Used to send events to sprites
+
+        runtime: The current Runtime instance
     """
 
     def __init__(self, runtime):
@@ -79,7 +83,13 @@ class Timer:
 
 
 class Events:
-    """Contains useful functions for sending events"""
+    """
+    Contains useful functions for sending events
+
+    Attributes:
+        events: A dict containing a task representing the gathered
+            tasks called by an event. See _send. {event_name: task}
+    """
 
     def __init__(self):
         self.events = {}

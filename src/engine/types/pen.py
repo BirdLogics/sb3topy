@@ -2,6 +2,8 @@
 pen.py
 
 Contains the Pen class and helper functions
+
+TODO Consider using properties for the Pen?
 """
 
 __all__ = ['Pen']
@@ -17,27 +19,35 @@ class Pen:
     """
     Handles the pen for a sprite
 
-    image - Shared image of the pen
-    dirty - Shared list of dirty rects, screen coords
-    util - Shared for internal use, must be set
+    Attributes:
+        target: The sprite of this Pen intance
 
-    target - The sprite of this Pen intance
-    isdown - Whether the pen is down
-    size - The current pen size
+        isdown: Whether the pen is down
 
-    color - The rgb pygame.Color instance
-    hsva - Saved for greater accuracy
-    shade - Legacy shade value
+        size: The current pen size
 
-    position - Position since last moved
+        color: The rgb pygame.Color instance
 
-    _alpha_img - Used internally for transparent blitting
+        hsva: Saved for greater accuracy
 
-    _scale - The screen scale
-    _rect - The stage rect
+        shade: Legacy shade value
+
+        position: Position since last moved
+
+        _alpha_img:  Used internally for transparent blitting
+
+        _scale: The screen scale
+
+        _rect: The stage rect
+
+    Class Attributes:
+        image: Shared image of the pen
+
+        dirty: Shared list of dirty rects, screen coords
+
+        util: Shared for internal use, must be set
     """
 
-    # Shared image for all sprites
     image: pg.Surface = None
     dirty = []
 

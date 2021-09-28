@@ -2,6 +2,8 @@
 sounds.py
 
 Contains the Sounds class.
+
+TODO Consider using properties for the Sounds class.
 """
 
 __all__ = ['Sounds']
@@ -16,18 +18,24 @@ class Sounds:
     """
     Handles sounds for a target
 
-    sounds - A dict referencing sounds (pg.mixer.Sound) by name
-    sounds_list - Used to reference sounds by number
-    volume - The current volume. If set directly, currently playing
-        channels will not update. Use set_volume to update them.
-    effects - A dict containing current sound effects
+    Attributes:
+        sounds: A dict referencing sounds (pg.mixer.Sound) by name
 
-    _channels - A dict with sound channels as keys and waiting
-        tasks as values. The channels are kept so the volume can be
-        adjusted and the tasks are there to be cancelled.
+        sounds_list: Used to reference sounds by number
 
-    _cache - A shared dict containing md5ext / Sound pairs
-    _all_sounds - Contains all sound tasks ready for cancellation
+        volume: The current volume. If set directly, currently playing
+            channels will not update. Use set_volume to update them.
+
+        effects: A dict containing current sound effects
+
+        _channels: A dict with sound channels as keys and waiting tasks
+            as values. The channels are kept so the volume can be
+            adjusted and the tasks are there to be cancelled.
+
+    Class Attributes
+        _cache: A shared dict containing md5ext / Sound pairs
+
+        _all_sounds: Contains all sound tasks ready for cancellation
     """
 
     _cache = {}

@@ -24,8 +24,10 @@ class Runtime:
     """
     Container for everything needed to run the project
 
-    clock - pygame.time.Clock
-    running - Controls the main loop
+    Attributes:
+        clock: pygame.time.Clock
+
+        running: Controls the main loop
     """
 
     running = False
@@ -57,8 +59,8 @@ class Runtime:
 
     def quit(self):
         """
-        Quit pygame and exit fullscreen
-        to ensure normal display resolution
+        Quit pygame and exit fullscreen to ensure the original display
+        resolution is restored to the user's computer.
         """
         if self.display.fullscreen:
             self.display.toggle_fullscreen()
@@ -157,10 +159,12 @@ class Sprites:
     """
     Handles the sprite list
 
-    targets - A dict of targets and their names, no clones.
-    sprites - Pygame sprite group, all sprites but stage
-    stage - The stage
+    Attributes:
+        targets: A dict of targets and their names, no clones.
 
+        sprites: Pygame sprite group, all sprites but stage
+
+        stage: The stage Target
     """
 
     def __init__(self, targets):
