@@ -9,8 +9,8 @@ __all__ = ['Pen']
 
 import pygame as pg
 
-from .operators import tonum
-from .config import STAGE_SIZE
+from ..operators import tonum
+from ..config import STAGE_SIZE
 
 
 class Pen:

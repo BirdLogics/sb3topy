@@ -4,7 +4,6 @@ runtime.py
 Contains classes used to manage base program functions.
 """
 
-__all__ = ['start_program', 'sprite']
 
 import asyncio
 import logging
@@ -14,13 +13,11 @@ import time
 import pygame as pg
 
 from . import config
-from .costumes import Costumes
-from .pen import Pen
+from .events import SPRITES
 from .render import Display, Render
+from .types import Costumes, Pen
 from .user_input import Inputs
 from .util import Events, Util
-
-SPRITES = {}
 
 
 class Runtime:
@@ -210,12 +207,3 @@ def start_program():
     finally:
         if runtime:
             runtime.quit()
-
-
-def sprite(name):
-    """Makes a class run as a sprite"""
-    def decorator(cls):
-        cls.name = name
-        SPRITES[name] = cls
-        return cls
-    return decorator

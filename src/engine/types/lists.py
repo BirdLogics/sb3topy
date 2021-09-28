@@ -6,7 +6,7 @@ Handles custom list data structures
 
 import random
 
-from .operators import toint
+from ..operators import toint
 
 __all__ = ['List', 'StaticList']
 

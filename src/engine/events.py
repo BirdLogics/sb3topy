@@ -10,8 +10,19 @@ from functools import wraps
 __all__ = [
     'on_greenflag', 'on_pressed', 'on_clicked',
     'on_backdrop', 'on_greater', 'on_broadcast',
-    'on_clone_start'
+    'on_clone_start', 'sprite'
 ]
+
+SPRITES = {}
+
+
+def sprite(name):
+    """Registers a class as a sprite which should be run"""
+    def decorator(cls):
+        cls.name = name
+        SPRITES[name] = cls
+        return cls
+    return decorator
 
 
 def on_greenflag(func):

@@ -8,7 +8,7 @@ Contains the Render class which handles drawing everything.
 import pygame as pg
 
 from . import config
-from .pen import Pen
+from .types import Pen
 
 
 class Display:

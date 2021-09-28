@@ -26,7 +26,10 @@ def file_header():
     return (
         "import math\n"
         "import time\n\n"
-        "from engine import *\n"
+        "import engine\n"
+        "from engine.events import *\n"
+        "from engine.operators import *\n"
+        "from engine.types import *"
     )
 
 
@@ -35,7 +38,7 @@ def file_footer():
     # Create an if __name__ == '__main__' statement
     return (
         "if __name__ == '__main__':\n"
-        "    start_program()"
+        "    engine.start_program()"
     )
 
 

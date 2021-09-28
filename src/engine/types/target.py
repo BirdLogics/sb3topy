@@ -21,7 +21,7 @@ from itertools import zip_longest
 import pygame as pg
 from pygame.sprite import DirtySprite
 
-from . import config
+from .. import config
 from .costumes import Costumes
 from .lists import List
 from .pen import Pen
