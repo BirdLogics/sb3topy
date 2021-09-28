@@ -440,7 +440,7 @@ BLOCKS = {
 
     # Event blocks
     'event_whenflagclicked': hat_block(
-        '', "@on_greenflag"
+        '', "@on_green_flag"
     ),
 
     'event_whenkeypressed': hat_block(

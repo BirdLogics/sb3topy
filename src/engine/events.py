@@ -8,7 +8,7 @@ TODO Clean up event names
 from functools import wraps
 
 __all__ = [
-    'on_greenflag', 'on_pressed', 'on_clicked',
+    'on_green_flag', 'on_pressed', 'on_clicked',
     'on_backdrop', 'on_greater', 'on_broadcast',
     'on_clone_start', 'sprite'
 ]
@@ -25,7 +25,7 @@ def sprite(name):
     return decorator
 
 
-def on_greenflag(func):
+def on_green_flag(func):
     """Binds a function to the green flag event"""
     func.event = 'green_flag'
     return func
