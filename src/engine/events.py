@@ -7,6 +7,8 @@ TODO Clean up event names
 """
 from functools import wraps
 
+from .types import Target
+
 __all__ = [
     'on_green_flag', 'on_pressed', 'on_clicked',
     'on_backdrop', 'on_greater', 'on_broadcast',
@@ -19,6 +21,9 @@ SPRITES = {}
 def sprite(name):
     """Registers a class as a sprite which should be run"""
     def decorator(cls):
+        if not isinstance(cls, Target):
+            raise ValueError("@sprite expects a subclass of Target.")
+
         cls.name = name
         SPRITES[name] = cls
         return cls
