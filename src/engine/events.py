@@ -1,11 +1,17 @@
 """
-events.py
+block_events.py
 
 Contains decorators used to bind functions to events
 
 TODO Clean up event names
 """
 from functools import wraps
+
+__all__ = [
+    'on_greenflag', 'on_pressed', 'on_clicked',
+    'on_backdrop', 'on_greater', 'on_broadcast',
+    'on_clone_start'
+]
 
 
 def on_greenflag(func):

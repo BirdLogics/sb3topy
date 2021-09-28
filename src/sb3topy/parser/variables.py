@@ -74,7 +74,7 @@ class Variable:
         """Gets the class which should be used for a list"""
         if config.LIST_TYPES and not self.is_modified:
             return "StaticList"
-        return "BaseList"
+        return "List"
 
 
 class Variables:

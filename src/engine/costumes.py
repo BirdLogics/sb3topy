@@ -8,6 +8,8 @@ import pygame as pg
 
 from .config import STAGE_SIZE
 
+__all__ = ['Costumes']
+
 
 class Costumes:
     """

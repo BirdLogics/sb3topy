@@ -1,20 +1,17 @@
 """
 lists.py
 
-Handles data structures related to lists
-
-A new list type based on List should be created.
-The specmap would need to be adjusted to handle it.
+Handles custom list data structures
 """
 
 import random
 
 from .operators import toint
 
-__all__ = ['BaseList', 'StaticList']
+__all__ = ['List', 'StaticList']
 
 
-class BaseList:
+class List:
     """
     Emulates the correct list behavior
     """
@@ -134,7 +131,7 @@ class BaseList:
         return self.__class__(self.list.copy())
 
 
-class StaticList(BaseList):
+class StaticList(List):
     """
     A list that doesn't change
     """

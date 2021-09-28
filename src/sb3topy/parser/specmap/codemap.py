@@ -26,11 +26,7 @@ def file_header():
     return (
         "import math\n"
         "import time\n\n"
-        "import engine\n"
-        "from engine import config, Target, sprite, warp\n"
-        "from engine.lists import *\n"
-        "from engine.events import *\n"
-        "from engine.operators import *"
+        "from engine import *\n"
     )
 
 
@@ -39,7 +35,7 @@ def file_footer():
     # Create an if __name__ == '__main__' statement
     return (
         "if __name__ == '__main__':\n"
-        "    engine.start_program()"
+        "    start_program()"
     )
 
 
@@ -50,7 +46,7 @@ def create_init(target, assets):
         "self._ypos = {ypos}\n"
         "self._direction = {direction}\n"
         "self.shown = {visible}\n"
-        "self.pen = engine.Pen(self)"
+        "self.pen = Pen(self)"
     ).format(
         xpos=target.get('x', 0),
         ypos=target.get('y', 0),
@@ -138,7 +134,7 @@ def parse_costumes(target, assets):
         indent(',\n'.join(costumes), "    ") + "\n]"
 
     return (
-        "self.costume = engine.Costumes(\n"
+        "self.costume = Costumes(\n"
         "   {costume}, {size}, {rotation}, {costumes})"
     ).format(
         costume=int(target['currentCostume']),
@@ -177,7 +173,7 @@ def parse_sounds(target: Target):
     sounds = "[\n" + indent(',\n'.join(sounds), "    ") + "\n]"
 
     return (
-        "self.sounds = engine.Sounds(\n"
+        "self.sounds = Sounds(\n"
         "    {volume}, {sounds})"
     ).format(
         volume=int(target['volume']),
