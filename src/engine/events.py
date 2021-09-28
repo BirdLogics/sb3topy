@@ -21,7 +21,7 @@ SPRITES = {}
 def sprite(name):
     """Registers a class as a sprite which should be run"""
     def decorator(cls):
-        if not isinstance(cls, Target):
+        if not issubclass(cls, Target):
             raise ValueError("@sprite expects a subclass of Target.")
 
         cls.name = name
