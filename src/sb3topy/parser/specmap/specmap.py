@@ -12,9 +12,8 @@ import textwrap
 
 from ... import config
 from .. import sanitizer
+from . import block_switches, type_switches
 from .block_data import BLOCKS, HATS, LOOPS, Block
-from .switch_data import SWITCHES
-from . import type_switches
 
 
 class BlockMap(Block):
@@ -63,7 +62,7 @@ def get_blockmap(block, target):
     blockmap = None
 
     # Attempt to get the blockmap from a switch
-    switch = SWITCHES.get(block['opcode'])
+    switch = block_switches.SWITCHES.get(block['opcode'])
     if switch is not None:
         blockmap = switch(block, target)
 

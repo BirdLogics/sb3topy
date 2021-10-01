@@ -12,6 +12,7 @@ import logging
 from ... import config
 from . import specmap
 from .block_data import BLOCKS, Block
+from . import specmap
 
 
 def switch(switch_: str):
@@ -95,7 +96,6 @@ SWITCHES = {
     'sensing_current': switch("sensing_current_{CURRENTMENU}"),
 
     'operator_mathop': switch("operator_mathop_{OPERATOR}"),
-
 }
 
 
