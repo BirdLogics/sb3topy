@@ -13,7 +13,7 @@ import logging
 from logging.handlers import QueueHandler
 from multiprocessing import Process, Queue
 
-from . import config, gui, packer, parser, unpacker
+from . import config, packer, parser, unpacker
 
 
 def main(args=None):
@@ -29,6 +29,10 @@ def main(args=None):
 
     # Run the gui if it is enabled
     if config.USE_GUI:
+        # Lazy import of gui. If tkinter is not installed or the GUI is
+        # otherwise broken, the terminal interface should still work.
+        from . import gui  # pylint: disable=import-outside-toplevel
+
         gui.run_app()
 
     # Run the conversion
