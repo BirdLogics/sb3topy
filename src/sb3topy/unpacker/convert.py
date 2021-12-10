@@ -106,30 +106,31 @@ class Convert:
             return md5ext, new_md5ext
 
         # Get the conversion command
-        cmd = shlex.split(config.MP3_COMMAND.format(
+        cmd_str = config.MP3_COMMAND.format(
             INPUT=shlex.quote(asset_path),
-            OUTPUT=shlex.quote(save_path),
-            VLC_PATH=config.VLC_PATH
-        ))
+            OUTPUT=shlex.quote(save_path)
+        )
 
         # Attempt to run the command
         try:
             logging.debug("Converting mp3 '%s' to wav", md5ext)
-            result = subprocess.run(cmd, check=True, capture_output=True,
+            result = subprocess.run(shlex.split(cmd_str), check=True, capture_output=True,
                                     text=True, timeout=config.CONVERT_TIMEOUT)
+
         except subprocess.CalledProcessError as error:
             logging.error("Failed to convert mp3 '%s':\n%s\n%s\n",
-                          md5ext, shlex.join(cmd), error.stderr.rstrip())
+                          md5ext, cmd_str, error.stderr.rstrip())
             return md5ext, None
+
         except subprocess.TimeoutExpired:
             logging.error(
                 "Failed to convert mp3 '%s': Timeout expired.", md5ext)
             return md5ext, None
 
-        # Verify the file exists
+        # Verify the converted file exists
         if not path.isfile(save_path):
             logging.error("Failed to convert svg '%s':\n%s\n%s\n",
-                          md5ext, shlex.join(cmd), result.stderr.rstrip())
+                          md5ext, cmd_str, result.stderr.rstrip())
             return md5ext, None
 
         return md5ext, new_md5ext
@@ -157,22 +158,24 @@ class Convert:
             return md5ext, new_md5ext
 
         # Get the conversion command
-        cmd = shlex.split(config.SVG_COMMAND.format(
+        cmd_str = config.SVG_COMMAND.format(
             INPUT=shlex.quote(asset_path),
             OUTPUT=shlex.quote(save_path),
             DPI=config.BASE_DPI*config.SVG_SCALE,
             SCALE=config.SVG_SCALE
-        ))
+        )
 
         # Attempt to run the command
         try:
             logging.debug("Converting svg '%s' to png", md5ext)
-            result = subprocess.run(cmd, check=True, capture_output=True,
+            result = subprocess.run(shlex.split(cmd_str), check=True, capture_output=True,
                                     text=True, timeout=config.CONVERT_TIMEOUT)
+
         except subprocess.CalledProcessError as error:
             logging.error("Failed to convert svg '%s':\n%s\n%s\n",
-                          md5ext, shlex.join(cmd), error.stderr.rstrip())
+                          md5ext, cmd_str, error.stderr.rstrip())
             return md5ext, None
+
         except subprocess.TimeoutExpired:
             logging.error(
                 "Failed to convert svg '%s': Timeout expired.", md5ext)
@@ -181,7 +184,7 @@ class Convert:
         # Verify the file exists
         if not path.isfile(save_path):
             logging.error("Failed to save svg '%s':\n%s\n%s\n",
-                          md5ext, shlex.join(cmd), result.stderr.rstrip())
+                          md5ext, cmd_str, result.stderr.rstrip())
             return md5ext, None
 
         return md5ext, new_md5ext
