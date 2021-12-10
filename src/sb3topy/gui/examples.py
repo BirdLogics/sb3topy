@@ -14,7 +14,10 @@ import webbrowser
 from os import path
 from tkinter import ttk
 
-import requests
+try:
+    import requests
+except ImportError:
+    requests = None
 
 from .. import config
 
@@ -46,6 +49,11 @@ class Example:
 
     def get_image(self):
         """Gets a PhotoImage of the example thumbnail"""
+        if requests is None:
+            logging.warning(
+                "Failed to load thumbnail; requests not installed.")
+            return None
+
         if self.thumb_image is None:
             resp = requests.get(self.thumb_link)
             self.thumb_image = tk.PhotoImage(data=resp.content)
@@ -187,7 +195,7 @@ class ExamplesFrame(ttk.Frame):
         """Called when the download link is changed"""
         if self.download_link.get() != self.example.download_link:
             self.thumbnail['image'] = ""
-            self.json_sha.set(False) # TODO New bool config for json_sha
+            self.json_sha.set(False)  # TODO New bool config for json_sha
 
     def listbox_changed(self, _):
         """Called when the listbox selection is changed by the user"""

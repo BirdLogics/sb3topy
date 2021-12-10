@@ -10,7 +10,10 @@ from hashlib import md5, sha256
 from multiprocessing.pool import ThreadPool
 from os import path
 
-import requests
+try:
+    import requests
+except ImportError:
+    requests = None
 
 from .. import config
 from ..project import Project
@@ -72,6 +75,12 @@ class Download:
 
     def download_json(self):
         """Downloads and returns the project.json"""
+
+        if requests is None:
+            logging.error(
+                "Failed to download project json; requests not installed.")
+            return None
+
         url = f"{config.PROJECT_HOST}/{self.project_id}"
 
         # Download the project.json
