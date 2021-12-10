@@ -187,6 +187,7 @@ class ExamplesFrame(ttk.Frame):
         """Called when the download link is changed"""
         if self.download_link.get() != self.example.download_link:
             self.thumbnail['image'] = ""
+            self.json_sha.set(False) # TODO New bool config for json_sha
 
     def listbox_changed(self, _):
         """Called when the listbox selection is changed by the user"""
