@@ -16,12 +16,12 @@ from multiprocessing import Process, Queue
 from . import config, gui, packer, parser, unpacker
 
 
-def main():
+def main(args=None):
     """
     Reads configuration from the command line and runs the converter
     """
     # Load configuration from the command line
-    config.parse_args()
+    config.parse_args(args)
 
     # Setup the logger
     logging.basicConfig(
