@@ -116,7 +116,6 @@ class App(tk.Tk):
         # Assets / MP3s
         tk.BooleanVar(self, name="CONVERT_MP3")
         tk.StringVar(self, name="MP3_COMMAND")
-        tk.StringVar(self, name="VLC_PATH")
 
         # Optimizations / Basic
         tk.BooleanVar(self, name="LEGACY_LISTS")
@@ -218,7 +217,6 @@ class App(tk.Tk):
         # Assets / MP3s
         self.setvar("CONVERT_MP3", config.CONVERT_MP3)
         self.setvar("MP3_COMMAND", config.MP3_COMMAND)
-        self.setvar("VLC_PATH", config.VLC_PATH)
 
         # Optimizations / Basic
         self.setvar("LEGACY_LISTS", config.LEGACY_LISTS)
@@ -316,7 +314,6 @@ class App(tk.Tk):
         # Assets / MP3s
         config.CONVERT_MP3 = tkbool(self.getvar("CONVERT_MP3"))
         config.MP3_COMMAND = self.getvar("MP3_COMMAND")
-        config.VLC_PATH = self.getvar("VLC_PATH")
 
         # Optimizations / Basic
         config.LEGACY_LISTS = tkbool(self.getvar("LEGACY_LISTS"))

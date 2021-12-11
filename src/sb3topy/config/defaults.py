@@ -83,12 +83,10 @@ Asset Settings:
     MP3_COMMAND: The command used to convert an mp3 file to a wav file.
         The input and output path will be passed through {INPUT} and
         {OUTPUT} format parameters.
-    VLC_PATH: Passed to MP3_COMMAND as {VLC_PATH}.
-    TODO Remove VLC_PATH
 
 Optimizations Settings:
     LEGACY_LISTS: Use list classes wth maximum compatibility for legacy
-        indices (first, last, random, all). Only necesary if a block
+        indices (first, last, random, all). Only necessary if a block
         containing a legacy index is used instead of directly putting
         first/last/random/all in the list block.
 
@@ -101,9 +99,10 @@ Optimizations Settings:
     LIST_TYPES: Enables lists to be detected a Static, or unchanging.
     TODO LIST_TYPES is a bad name
 
-    SOLO_BROADCASTS: Treats broadcasts with only a single reciever in sprites
-        which aren't cloned sort of like cross sprite custom blocks. May cause
-        issues with projects which use a block in the create clone of block.
+    SOLO_BROADCASTS: Treats broadcasts with only a single receiver in
+        sprites which aren't cloned sort of like cross sprite custom
+        blocks. May cause issues with projects which use a block in the
+        create clone of block.
 
     DISABLE_ANY_CAST: Causes the type guesser to ignore items with the
         'any' type when guessing the type of an object. If the object
@@ -113,9 +112,9 @@ Optimizations Settings:
     AGGRESSIVE_NUM_CAST: If an object is ever set to a number, assume
         the object is of a numeric type.
 
-    CHANGED_NUM_CAST: If a variable is ever changed using the "data_change
-       variableby" block, assume the variable is of a numeric type.
-       NOTE: This is NOT disabled by VAR_TYPES.
+    CHANGED_NUM_CAST: If a variable is ever changed using the
+        "data_changevariableby" block, assume the variable is of a
+        numeric type. NOTE: This is NOT disabled by VAR_TYPES.
 
     DISABLE_STR_CAST: If an object is set to both a string and a
         number assume the object is of the any type rather than the str
@@ -213,10 +212,10 @@ SVG_SCALE = 2
 
 # MP3 Conversion
 MP3_COMMAND = (
-    '{VLC_PATH} -I dummy --sout "#transcode{{acodec=s16l,channels=2}}:'
+    r'"C:\Program Files\VideoLAN\VLC\vlc.exe" '
+    '-I dummy --sout "#transcode{{acodec=s16l,channels=2}}:'
     'std{{access=file,mux=wav,dst={OUTPUT}}}" {INPUT} vlc://quit'
 )
-VLC_PATH = r'"C:\Program Files\VideoLAN\VLC\vlc.exe"'
 
 # Optimization Settings
 LEGACY_LISTS = False

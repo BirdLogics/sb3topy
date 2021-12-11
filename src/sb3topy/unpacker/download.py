@@ -15,21 +15,22 @@ try:
 except ImportError:
     requests = None
 
-from .. import config
-from ..project import Project
+from .. import config, project
 
 __all__ = ['download_project', 'Download']
 
 
-def download_project(project_url, output_dir=None):
+def download_project(manifest: project.Manifest, project_url):
     """
-    Downloads a project's assets into a folder. The project.json
-    is not saved, but it is returned as part of a Project object.
+    Downloads a project's json and assets, and returns a Project using
+    the json. The assets are downloaded into the folder provided by
+    by `manifest`, but the project.json is not saved.
 
-    project_url: Either a full project_url, or just a project id.
-    output_dir: An optional folder to save the downloaded data to.
-        If a folder is not provided, one will be created by Project.
+    All assets are added to the manifest. If an asset was not
+    successfully extracted, the stored dict value will be `None`.
+    Otherwise, the md5ext value will be stored.
     """
+
     match = re.search(r"\d+", project_url)
     if match is None:
         logging.error("Invalid project url '%s'", project_url)
@@ -38,20 +39,27 @@ def download_project(project_url, output_dir=None):
     logging.info("Downloading project...")
     logging.debug("Downloading project '%s'", match[0])
 
-    return Download(match[0], output_dir).project
+    return Download(manifest, match[0]).project
 
 
 class Download:
     """
     Downloads a project given a project id
 
+    Helper class to download and create a Project given a project id
+    and a Manifest to provide the output directory. Successfully
+    downloaded assets are added to the manifest.
+
     Attributes:
+        project: The Project instance containing the project.json data.
+
+        output_dir: The output folder provided by the manifest.
+
         project_id: The project id of the project to download
-        project: The Project instance containing the project.json,
-            output directory, and asset md5ext set.
     """
 
-    def __init__(self, project_id, output_dir=None):
+    def __init__(self, manifest: project.Manifest, project_id, output_dir=None):
+        self.output_dir = manifest.output_dir
         self.project_id = project_id
 
         # Download the project json
@@ -63,19 +71,20 @@ class Download:
             return
 
         # Create the Project instance
-        self.project = Project(project_json, output_dir)
+        self.project = project.Project(project_json)
 
         # Download the assets
         pool = ThreadPool(config.DOWNLOAD_THREADS)
-        results = pool.imap_unordered(
-            self.download_asset, self.project.assets)
-        for _ in results:
-            pass
+        manifest.costumes.update(pool.imap_unordered(
+            self.download_asset, self.project.get_costumes()))
+        manifest.sounds.update(pool.imap_unordered(
+            self.download_asset, self.project.get_sounds()))
+
         pool.close()
 
     def download_json(self):
         """Downloads and returns the project.json"""
-
+        # Verify requests is installed
         if requests is None:
             logging.error(
                 "Failed to download project json; requests not installed.")
@@ -87,9 +96,9 @@ class Download:
         try:
             resp = requests.get(url)
             resp.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            logging.error(
-                "Failed to download project json from '%s':\n%s", url, exc)
+        except requests.exceptions.RequestException:
+            logging.exception(
+                "Failed to download project json from '%s':", url)
             return None
 
         # Verify the json SHA256 matches
@@ -113,17 +122,20 @@ class Download:
         Downloads an asset and saves it to the output folder
         based on a md5ext. The md5ext must be validated.
 
+        Returns (md5ext, md5ext) if the asset was successfully
+        downloaded, otherwise (md5ext, None).
+
         Intended for use in a Pool.
         """
         # Get download and save paths from md5ext
         url = f"{config.ASSET_HOST}/internalapi/asset/{md5ext}/get/"
-        save_path = path.join(self.project.output_dir, "assets", md5ext)
+        save_path = path.join(self.output_dir, "assets", md5ext)
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
             logging.debug(
                 "Skipping download of asset '%s' (already exists)", md5ext)
-            return True
+            return md5ext, md5ext
 
         logging.debug("Downloading asset '%s'", md5)
 
@@ -131,21 +143,21 @@ class Download:
         try:
             resp = requests.get(url)
             resp.raise_for_status()
-        except requests.exceptions.RequestException as exc:
-            logging.error(
-                "Failed to download asset from '%s':\n%s", url, exc)
-            return False
+        except requests.exceptions.RequestException:
+            logging.exception(
+                "Failed to download asset from '%s':", url)
+            return md5ext, None
 
         # Verify the asset's md5 hash
         if config.VERIFY_ASSETS:
             md5_hash = md5(resp.content).hexdigest()
             if not md5_hash + '.' + md5ext.partition('.')[2] == md5ext:
                 logging.error(
-                    "Downloaded asset '%s' has an invalid md5: '%s'", md5ext, md5_hash)
-                return False
+                    "Downloaded asset '%s' has the wrong md5: '%s'", md5ext, md5_hash)
+                return md5ext, None
 
         # Save the asset
         with open(save_path, 'wb') as asset_file:
             asset_file.write(resp.content)
 
-        return True
+        return md5ext, md5ext

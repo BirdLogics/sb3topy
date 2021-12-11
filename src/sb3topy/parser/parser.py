@@ -14,10 +14,10 @@ from .variables import Variables
 __all__ = ('parse_project', 'Parser')
 
 
-def parse_project(project):
+def parse_project(project, manifest):
     """Parses project and returns the Python code"""
     logging.info("Compiling project into Python...")
-    return Parser(project).parse()
+    return Parser(project, manifest).parse()
 
 
 class Parser:
@@ -32,8 +32,9 @@ class Parser:
             project.json.
     """
 
-    def __init__(self, project):
+    def __init__(self, project, manifest):
         self.targets = targets.Targets()
+        self.manifest = manifest
         self.project = project
 
     def parse(self):
@@ -68,7 +69,7 @@ class Parser:
         Creates classes for each Variable and runs type
         guessing for variables and procedure arguments.
 
-        Also names solo broadcast recievers.
+        Also names solo broadcast receivers.
         """
 
         for target in self.targets:
@@ -78,7 +79,7 @@ class Parser:
         if config.VAR_TYPES:
             self.targets.digraph.resolve()
 
-        # Name solo broadcast recievers
+        # Name solo broadcast receivers
         broadcasts = targets.Target.broadcasts
         for broadcast, target_name in broadcasts.items():
             if target_name is not None:
@@ -108,7 +109,7 @@ class Parser:
         header_code = codemap.create_header(target) + "\n\n"
 
         # Parse variables, lists, costumes, and sounds
-        init_code = codemap.create_init(target, self.project.assets) + "\n\n"
+        init_code = codemap.create_init(target, self.manifest) + "\n\n"
 
         # Parse all blocks into code
         block_code = self.parse_blocks()
@@ -155,7 +156,7 @@ class Parser:
             #               blockid, block['opcode'])
 
             # Get the block's conversion map
-            # Also sets the target's procedure if necesary
+            # Also sets the target's procedure if necessary
             blockmap = specmap.get_blockmap(block, self.target)
 
             # Get fields
@@ -258,7 +259,7 @@ class Parser:
         be converted into a universal identifier.
 
         If end_type is 'hat_ident', the value will
-        be converted into a functon identifier.
+        be converted into a function identifier.
 
         Otherwise, the value will be quoted and a warning shown.
         """

@@ -8,11 +8,10 @@ import logging
 import re
 from textwrap import indent
 
-from .. import sanitizer
-from ..targets import Target
+from .. import sanitizer, targets
 
 
-def create_header(target: Target):
+def create_header(target: targets.Target):
     """Creates code between "class ...:" and "def __init__" """
 
     comment = '"""Sprite ' + \
@@ -42,7 +41,7 @@ def file_footer():
     )
 
 
-def create_init(target, assets):
+def create_init(target, manifest):
     """Creates Python __init__ code for a target dict"""
     info = (
         "self._xpos = {xpos}\n"
@@ -57,8 +56,8 @@ def create_init(target, assets):
         visible=target.get('visible', True)
     ) + "\n\n"
 
-    costumes = parse_costumes(target, assets) + "\n\n"
-    sounds = parse_sounds(target) + "\n\n"
+    costumes = parse_costumes(target, manifest.costumes) + "\n\n"
+    sounds = parse_sounds(target, manifest.sounds) + "\n\n"
 
     vars_init = parse_variables(target) + "\n\n"
     lists_init = parse_lists(target) + "\n"
@@ -147,7 +146,7 @@ def parse_costumes(target, assets):
     )
 
 
-def parse_sounds(target: Target):
+def parse_sounds(target: targets.Target, assets):
     """Creates code to init sounds for a target"""
     sounds = []
 
@@ -155,12 +154,12 @@ def parse_sounds(target: Target):
     for sound in target['sounds']:
         name = sanitizer.quote_string(sound['name'])
 
-        # Validate the sound path
-        if not sanitizer.valid_md5ext(sound['md5ext']):
-            logging.error(
-                "Invalid sound format or path '%s'", sound['md5ext'])
+        # Get the validated and modified md5ext from assets
+        if sound['md5ext'] not in assets:
+            logging.error("Missing sound asset '%s'", sound['md5ext'])
             sounds.append("{'name': " + name + "}")
             continue
+        md5ext = assets[sound['md5ext']] or sound['md5ext']
 
         sounds.append((
             "{{\n"
@@ -169,7 +168,7 @@ def parse_sounds(target: Target):
             "}}"
         ).format(
             name=name,
-            path=sanitizer.quote_string(sound['md5ext'])
+            path=sanitizer.quote_string(md5ext)
         ))
 
     # Create the sounds list string
@@ -184,7 +183,7 @@ def parse_sounds(target: Target):
     )
 
 
-def parse_variables(target: Target):
+def parse_variables(target: targets.Target):
     """Creates code to init variables for a target and clones"""
     vars_init = []
 
@@ -207,7 +206,7 @@ def parse_variables(target: Target):
     return '\n'.join(vars_init).rstrip()
 
 
-def parse_lists(target: Target):
+def parse_lists(target: targets.Target):
     """Creates code to init lists for a target and clones"""
     list_init = []
 

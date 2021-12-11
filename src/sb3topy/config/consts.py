@@ -19,7 +19,7 @@ CONSTANTS:
     FALLBACK_IMAGE: The binary data of a blank png image.
 """
 
-IMAGE_TYPES = ('png', 'svg', 'jpg')
+IMAGE_TYPES = ('png', 'svg', 'jpg', 'jpeg', 'bmp')
 SOUND_TYPES = ('wav', 'mp3')
 
 BLANK_SVG_HASHES = (

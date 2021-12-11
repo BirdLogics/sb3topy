@@ -42,7 +42,6 @@ Assets:
 
     MP3s
         mp3 command
-        vlc path
         enable conversion
 
 Optimizations:
@@ -501,13 +500,10 @@ class AssetSettings(ttk.Frame):
                                      textvariable=self.svg_scale)
 
         self.mp3_command = tk.StringVar(app, name="MP3_COMMAND")
-        self.vlc_path = tk.StringVar(app, name="VLC_PATH")
         self.convert_mp3 = tk.BooleanVar(app, name="CONVERT_MP3")
 
         mp3_comm_label = ttk.Label(mp3_frame, text="Convert Command:")
         mp3_comm_box = ttk.Entry(mp3_frame, textvariable=self.mp3_command)
-        vlc_label = ttk.Label(mp3_frame, text="VLC Path:")
-        vlc_box = ttk.Entry(mp3_frame, textvariable=self.vlc_path)
         convert_mp3_check = ttk.Checkbutton(mp3_frame, text="Convert MP3s",
                                             variable=self.convert_mp3)
 
@@ -529,8 +525,6 @@ class AssetSettings(ttk.Frame):
 
         mp3_comm_label.grid(column=0, row=0, sticky="W")
         mp3_comm_box.grid(column=1, row=0, sticky="EW", padx=3, pady=3)
-        vlc_label.grid(column=0, row=1, sticky="W")
-        vlc_box.grid(column=1, row=1, sticky="EW", padx=3, pady=3)
         convert_mp3_check.grid(column=0, row=2, columnspan=2,
                                sticky="W", padx=3, pady=3)
 

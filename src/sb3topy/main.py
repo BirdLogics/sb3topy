@@ -13,7 +13,7 @@ import logging
 from logging.handlers import QueueHandler
 from multiprocessing import Process, Queue
 
-from . import config, packer, parser, unpacker
+from . import config, packer, parser, project, unpacker
 
 
 def main(args=None):
@@ -45,48 +45,49 @@ def run():
     Converts the project using the settings saved in config
     """
 
+    # Initialize the manifest
+    manifest = project.Manifest(config.OUTPUT_PATH)
+
     # Download the project from the internet
     if config.PROJECT_URL:
-        project = unpacker.download_project(
-            config.PROJECT_URL, config.OUTPUT_PATH)
+        sb3 = unpacker.download_project(manifest, config.PROJECT_URL)
 
     # Extract the project from an sb3
     elif config.PROJECT_PATH:
-        project = unpacker.extract_project(
-            config.PROJECT_PATH, config.OUTPUT_PATH)
+        sb3 = unpacker.extract_project(manifest, config.PROJECT_PATH)
 
     else:
         logging.error("A project url/path was not provided.")
-        project = None
+        sb3 = None
 
     # Verify the project was unpacked
-    if not project:
+    if sb3 is None or not sb3.is_sb3():
         return False
 
     # Save a debug json
     if config.DEBUG_JSON:
-        project.save_json(config.FORMAT_JSON)
+        project.save_json(sb3, manifest, config.FORMAT_JSON)
 
     # Convert project assets
     if config.CONVERT_ASSETS:
-        unpacker.convert_assets(project)
+        unpacker.convert_assets(manifest)
 
     # Copy engine files
     if config.COPY_ENGINE:
-        packer.copy_engine(project)
+        packer.copy_engine(manifest)
 
     if config.PARSE_PROJECT:
         # Parse the project
-        code = parser.parse_project(project)
+        code = parser.parse_project(sb3, manifest)
 
         # Save the project's code
-        packer.save_code(project, code)
+        packer.save_code(manifest, code)
 
         logging.info("Finished converting project. Saved in '%s'",
-                     project.output_dir)
+                     manifest.output_dir)
 
     if config.AUTORUN:
-        packer.run_project(project.output_dir)
+        packer.run_project(manifest.output_dir)
 
     logging.info("Done!")
 

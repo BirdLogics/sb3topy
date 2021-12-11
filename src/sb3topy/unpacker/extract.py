@@ -10,23 +10,25 @@ import zipfile
 from hashlib import md5
 from os import path
 
-from .. import config
-from ..project import Project
+from .. import config, project
 
 __all__ = ['extract_project', 'Extract']
 
 
-def extract_project(project_path, output_dir=None):
+def extract_project(manifest: project.Manifest, project_path):
     """
-    Extracts a project's assets assets into a folder. The project.json
-    is not saved, but is returned as part of the Project object.
+    Extracts a project's json and assets, and returns a Project using
+    the json. The assets are extracted into the folder provided by
+    by `manifest`, but the project.json is not saved.
 
-    project_path: The path to the project sb3 file.
-    output_dir: An optional folder to save the downloaded data to.
-        If a folder is not provided, one will be created by Project.
+    All assets are added to the manifest. If an asset was not
+    successfully extracted, the stored dict value will be `None`.
+    Otherwise, the md5ext value will be stored.
     """
+
     logging.info("Extracting project...")
     logging.debug("Extracting project from '%s'", project_path)
+
     project_zip = None
     try:
         project_zip = zipfile.ZipFile(project_path, 'r')
@@ -36,7 +38,7 @@ def extract_project(project_path, output_dir=None):
                 "Could not find 'project.json' in '%s'", project_path)
             return None
 
-        return Extract(project_zip, output_dir).project
+        return Extract(manifest, project_zip).project
 
     except FileNotFoundError:
         logging.error("Invalid project path '%s'", project_path)
@@ -53,21 +55,33 @@ def extract_project(project_path, output_dir=None):
 
 class Extract:
     """
-    Extracts a project given a ZipFile of the project sb3
+    Helper class to create a Project given a ZipFile of a project sb3
+    and a Manifest to provide the output directory. Successfully
+    extracted assets are added to the manifest.
+
+    Attributes:
+        project: The Project instance containing the project.json data.
+
+        output_dir: The output folder provided by the manifest.
+
+        project_zip: The input sb3 ZipFile.
     """
 
-    def __init__(self, project_zip: zipfile.ZipFile, output_dir=None):
+    def __init__(self, manifest: project.Manifest, project_zip: zipfile.ZipFile):
+        self.output_dir = manifest.output_dir
         self.project_zip = project_zip
 
         # Extract the project json
         project_json = self.extract_json()
 
         # Create the Project instance
-        self.project = Project(project_json, output_dir)
+        self.project = project.Project(project_json)
 
         # Extract assets from the project
-        for md5ext in self.project.assets:
-            self.extract_asset(md5ext)
+        for md5ext in self.project.get_costumes():
+            manifest.costumes[md5ext] = self.extract_asset(md5ext)
+        for md5ext in self.project.get_sounds():
+            manifest.sounds[md5ext] = self.extract_asset(md5ext)
 
     def extract_json(self):
         """Extracts and returns the project.json"""
@@ -80,13 +94,13 @@ class Extract:
         based on a md5ext. The md5ext must be validated.
         """
         # Get the save path from the md5ext
-        save_path = path.join(self.project.output_dir, "assets", md5ext)
+        save_path = path.join(self.output_dir, "assets", md5ext)
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
             logging.debug(
                 "Skipping extraction of asset '%s' (already exists)", md5ext)
-            return True
+            return md5ext
 
         logging.debug("Extracting asset '%s'", md5ext)
 
@@ -98,11 +112,11 @@ class Extract:
             md5_hash = md5(asset).hexdigest()
             if not md5_hash + '.' + md5ext.partition('.')[2] == md5ext:
                 logging.error(
-                    "Extracted asset '%s' has an invalid md5: '%s'", md5ext, md5_hash)
-                return False
+                    "Extracted asset '%s' has the wrong md5: '%s'", md5ext, md5_hash)
+                return None
 
         # Save the asset
         with open(save_path, 'wb') as asset_file:
             asset_file.write(asset)
 
-        return True
+        return md5ext
