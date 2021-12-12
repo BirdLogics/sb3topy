@@ -500,12 +500,12 @@ class AssetSettings(ttk.Frame):
                                      textvariable=self.svg_scale)
 
         self.mp3_command = tk.StringVar(app, name="MP3_COMMAND")
-        self.convert_mp3 = tk.BooleanVar(app, name="CONVERT_MP3")
+        self.convert_sounds = tk.BooleanVar(app, name="CONVERT_SOUNDS")
 
         mp3_comm_label = ttk.Label(mp3_frame, text="Convert Command:")
         mp3_comm_box = ttk.Entry(mp3_frame, textvariable=self.mp3_command)
-        convert_mp3_check = ttk.Checkbutton(mp3_frame, text="Convert MP3s",
-                                            variable=self.convert_mp3)
+        convert_mp3_check = ttk.Checkbutton(mp3_frame, text="Convert sounds",
+                                            variable=self.convert_sounds)
 
         verify_check.grid(column=0, row=0, sticky="W")
         re_images_check.grid(column=0, row=1, sticky="W")

@@ -51,11 +51,13 @@ Asset Settings:
     VERIFY_ASSETS: Validate downloaded or extracted assets before
         saving them.
 
-    CONVERT_MP3: Allows disabling of mp3 conversion. When using
+    CONVERT_SOUNDS: Allows disabling of mp3 conversion. When using
         Pygame 2+, mp3 conversion is not required, but it is still
         recommended.
+    CONVERT_COSTUMES: Allows disabling of svg conversion. All svgs
+        must be converted for the project to run.
     CONVERT_ASSETS: Allows disabling of asset conversion. The project
-        will not be able to if any svgs are in the project.
+        will not be able to run if any svgs are in the project.
 
     RECONVERT_SOUNDS: Convert and overwrite previously converted
         sounds. Useful if sounds were corrupted during conversion.
@@ -195,7 +197,8 @@ IS_COMPILED = False
 FRESHEN_ASSETS = False
 VERIFY_ASSETS = True
 
-CONVERT_MP3 = False
+CONVERT_SOUNDS = False
+CONVERT_COSTUMES = True
 CONVERT_ASSETS = True
 RECONVERT_SOUNDS = False
 RECONVERT_IMAGES = False

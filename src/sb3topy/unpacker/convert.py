@@ -18,6 +18,7 @@ limited and can crash with certain formats on some systems.
 
 import logging
 import shlex
+import shutil
 import subprocess
 from multiprocessing import pool
 from os import path
@@ -44,11 +45,42 @@ class Convert:
         # Create a pool of workers
         workers = pool.ThreadPool(config.CONVERT_THREADS)
 
-        # Convert all costumes and sounds
-        manifest.costumes.update(workers.imap_unordered(
-            self.convert_costume, manifest.costumes.items()))
-        manifest.sounds.update(workers.imap_unordered(
-            self.convert_sound, manifest.sounds.items()))
+        # Convert all costumes
+        if config.CONVERT_COSTUMES:
+            # Verify the command is available
+            command = shlex.split(config.SVG_COMMAND)
+            if shutil.which(command[0]) is None:
+                logging.error((
+                    "SVG conversion is enabled but '%s' "
+                    "does not appear to be installed."),
+                    command[0]
+                )
+
+            # Convert the sounds
+            else:
+                manifest.costumes.update(workers.imap_unordered(
+                    self.convert_costume, manifest.costumes.items()))
+        else:
+            logging.warning((
+                "Costume conversion is disabled. "
+                "Any svgs in the project will prevent it from running."
+            ))
+
+        # Convert all sounds
+        if config.CONVERT_SOUNDS:
+            # Verify the command is available
+            command = shlex.split(config.MP3_COMMAND)
+            if shutil.which(command[0]) is None:
+                logging.error((
+                    "MP3 conversion is enabled but '%s' "
+                    "does not appear to be installed."),
+                    command[0]
+                )
+
+            # Convert the sounds
+            else:
+                manifest.sounds.update(workers.imap_unordered(
+                    self.convert_sound, manifest.sounds.items()))
 
         # Close the pool of workers
         workers.close()

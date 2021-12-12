@@ -114,7 +114,7 @@ class App(tk.Tk):
         # tk.IntVar(self, name="SVG_DPI")
 
         # Assets / MP3s
-        tk.BooleanVar(self, name="CONVERT_MP3")
+        tk.BooleanVar(self, name="CONVERT_SOUNDS")
         tk.StringVar(self, name="MP3_COMMAND")
 
         # Optimizations / Basic
@@ -215,7 +215,7 @@ class App(tk.Tk):
         # self.setvar("SVG_DPI", config.SVG_DPI)
 
         # Assets / MP3s
-        self.setvar("CONVERT_MP3", config.CONVERT_MP3)
+        self.setvar("CONVERT_SOUNDS", config.CONVERT_SOUNDS)
         self.setvar("MP3_COMMAND", config.MP3_COMMAND)
 
         # Optimizations / Basic
@@ -312,7 +312,7 @@ class App(tk.Tk):
         # config.SVG_DPI = self.getvar("SVG_DPI")
 
         # Assets / MP3s
-        config.CONVERT_MP3 = tkbool(self.getvar("CONVERT_MP3"))
+        config.CONVERT_SOUNDS = tkbool(self.getvar("CONVERT_SOUNDS"))
         config.MP3_COMMAND = self.getvar("MP3_COMMAND")
 
         # Optimizations / Basic
