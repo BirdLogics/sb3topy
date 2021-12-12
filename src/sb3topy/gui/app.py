@@ -34,7 +34,7 @@ class App(tk.Tk):
         # Adjust the window size
         scale = round(self.winfo_fpixels('1i')) / 96
         self.geometry(f"{round(720*scale)}x{round(480*scale)}")
-        self.resizable(0, 0)
+        # self.resizable(0, 0)
         self.scale = scale
 
         # Create config variables
