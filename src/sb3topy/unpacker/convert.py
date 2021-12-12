@@ -48,7 +48,13 @@ class Convert:
         self.output_dir = manifest.output_dir
 
         # Create a pool of workers
-        workers = pool.ThreadPool(config.CONVERT_THREADS)
+        if config.USE_CAIROSVG and config.CONVERT_THREADS > 1:
+            workers = pool.ThreadPool(1)
+            logging.debug(
+                "Created 1 worker thread for conversion with cairosvg.")
+        else:
+            workers = pool.ThreadPool(config.CONVERT_THREADS)
+            logging.debug("Created %i worker threads for asset conversion.")
 
         # Convert all costumes
         if config.CONVERT_COSTUMES:
