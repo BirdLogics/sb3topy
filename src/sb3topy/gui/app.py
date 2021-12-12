@@ -305,8 +305,8 @@ class App(tk.Tk):
 
         # Assets / Workers
         config.DOWNLOAD_THREADS = self.getvar("DOWNLOAD_THREADS")
-        config.CONVERT_THREADS = tkbool(self.getvar("CONVERT_THREADS"))
-        config.CONVERT_TIMEOUT = tkbool(self.getvar("CONVERT_TIMEOUT"))
+        config.CONVERT_THREADS = self.getvar("CONVERT_THREADS")
+        config.CONVERT_TIMEOUT = self.getvar("CONVERT_TIMEOUT")
 
         # Assets / SVGs
         config.USE_CAIROSVG = self.getvar("USE_CAIROSVG")
@@ -367,7 +367,6 @@ class App(tk.Tk):
         config.DEBUG_HOTKEYS = tkbool(self.getvar("DEBUG_HOTKEYS"))
 
         # Project / Miscellaneous
-        config.DRAW_FPS = tkbool(self.getvar("DRAW_FPS"))
         config.USERNAME = self.getvar("USERNAME")
         config.RANDOM_SEED = self.getvar("RANDOM_SEED")
 
