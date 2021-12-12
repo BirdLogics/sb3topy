@@ -160,6 +160,7 @@ class SettingsFrame(ttk.Frame):
         """Called when the tab is switched"""
         self.general.switch()
         self.project.switch()
+        self.assets.cairo_toggle()
         self.debug.switch()
 
 
@@ -490,11 +491,15 @@ class AssetSettings(ttk.Frame):
         timeout_spin = ttk.Spinbox(
             worker_frame, textvariable=self.convert_timeout)
 
+        self.use_cairosvg = tk.BooleanVar(app, name="USE_CAIROSVG")
         self.svg_command = tk.StringVar(app, name="SVG_COMMAND")
         self.svg_scale = tk.IntVar(app, name="SVG_SCALE")
 
+        svg_cairo_box = ttk.Checkbutton(
+            svg_frame, text="Use cairosvg (Python package)",
+            variable=self.use_cairosvg, command=self.cairo_toggle)
         svg_comm_label = ttk.Label(svg_frame, text="Convert Command:")
-        svg_comm_box = ttk.Entry(svg_frame, textvariable=self.svg_command)
+        self.svg_comm_box = ttk.Entry(svg_frame, textvariable=self.svg_command)
         svg_scale_label = ttk.Label(svg_frame, text="Converted Scale:")
         svg_scale_spin = ttk.Spinbox(svg_frame, from_=1, to=128, width=7,
                                      textvariable=self.svg_scale)
@@ -518,10 +523,11 @@ class AssetSettings(ttk.Frame):
         timout_label.grid(column=0, row=2, sticky="W")
         timeout_spin.grid(column=1, row=2, sticky="W", padx=3, pady=3)
 
-        svg_comm_label.grid(column=0, row=0, sticky="W")
-        svg_comm_box.grid(column=1, row=0, sticky="EW", padx=3, pady=3)
-        svg_scale_label.grid(column=0, row=1, sticky="W")
-        svg_scale_spin.grid(column=1, row=1, sticky="W", padx=3, pady=3)
+        svg_cairo_box.grid(column=0, row=0, sticky="W")
+        svg_comm_label.grid(column=0, row=1, sticky="W")
+        self.svg_comm_box.grid(column=1, row=1, sticky="EW", padx=3, pady=3)
+        svg_scale_label.grid(column=0, row=2, sticky="W")
+        svg_scale_spin.grid(column=1, row=2, sticky="W", padx=3, pady=3)
 
         mp3_comm_label.grid(column=0, row=0, sticky="W")
         mp3_comm_box.grid(column=1, row=0, sticky="EW", padx=3, pady=3)
@@ -539,6 +545,13 @@ class AssetSettings(ttk.Frame):
         mp3_frame.columnconfigure(1, weight=1)
 
         self.columnconfigure(0, weight=1)
+
+    def cairo_toggle(self):
+        """Called when USE_CAIROSVG is toggled"""
+        if self.use_cairosvg.get():
+            self.svg_comm_box.state(["disabled"])
+        else:
+            self.svg_comm_box.state(["!disabled"])
 
 
 class OptimizationSettings(ttk.Frame):

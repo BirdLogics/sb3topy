@@ -23,6 +23,11 @@ import subprocess
 from multiprocessing import pool
 from os import path
 
+try:
+    import cairosvg
+except ImportError:
+    cairosvg = None
+
 from .. import config, project
 
 __all__ = ('convert_assets', 'Convert')
@@ -49,7 +54,12 @@ class Convert:
         if config.CONVERT_COSTUMES:
             # Verify the command is available
             command = shlex.split(config.SVG_COMMAND)
-            if shutil.which(command[0]) is None:
+            if config.USE_CAIROSVG and cairosvg is None:
+                logging.error((
+                    "USE_CAIROSVG is enabled but the cairosvg "
+                    "package does not appear to be installed."
+                ))
+            elif shutil.which(command[0]) is None:
                 logging.error((
                     "SVG conversion is enabled but '%s' "
                     "does not appear to be installed."),
@@ -68,7 +78,7 @@ class Convert:
 
         # Convert all sounds
         if config.CONVERT_SOUNDS:
-            # Verify the command is available
+            # Verify the conversion method is available
             command = shlex.split(config.MP3_COMMAND)
             if shutil.which(command[0]) is None:
                 logging.error((
@@ -194,37 +204,13 @@ class Convert:
             logging.debug("Using fallback image for blank svg '%s'", md5ext)
             return self.fallback_image(md5ext, ".png")
 
-        # Get the conversion command
-        cmd_str = config.SVG_COMMAND.format(
-            INPUT=shlex.quote(asset_path),
-            OUTPUT=shlex.quote(save_path),
-            DPI=config.BASE_DPI*config.SVG_SCALE,
-            SCALE=config.SVG_SCALE
-        )
+        # Convert the svg with the configured method
+        if config.USE_CAIROSVG:
+            result = convert_svg_cairo(asset_path, save_path, md5ext)
+        else:
+            result = convert_svg_cmd(asset_path, save_path, md5ext)
 
-        # Attempt to run the command
-        try:
-            logging.debug("Converting svg '%s' to png", md5ext)
-            result = subprocess.run(shlex.split(cmd_str), check=True, capture_output=True,
-                                    text=True, timeout=config.CONVERT_TIMEOUT)
-
-        except subprocess.CalledProcessError as error:
-            logging.error("Failed to convert svg '%s':\n%s\n%s\n",
-                          md5ext, cmd_str, error.stderr.rstrip())
-            return None
-
-        except subprocess.TimeoutExpired:
-            logging.error(
-                "Failed to convert svg '%s': Timeout expired.", md5ext)
-            return None
-
-        # Verify the file exists
-        if not path.isfile(save_path):
-            logging.error("Failed to save svg '%s':\n%s\n%s\n",
-                          md5ext, cmd_str, result.stderr.rstrip())
-            return None
-
-        return new_md5ext
+        return new_md5ext if result else None
 
     def fallback_image(self, md5ext, new_ext="-fallback.png"):
         """Saves a fallback image for a md5ext"""
@@ -235,3 +221,62 @@ class Convert:
             image_file.write(config.FALLBACK_IMAGE)
 
         return filename
+
+
+def convert_svg_cairo(asset_path, save_path, md5ext):
+    """
+    Converts the svg to png using the cairosvg module. The md5ext is
+    used for logging purposes.
+    """
+
+    logging.debug("Converting svg '%s' to png", md5ext)
+
+    # Convert the svg
+    try:
+        cairosvg.svg2png(url=asset_path, write_to=save_path,
+                         scale=config.SVG_SCALE)
+    except ValueError:
+        logging.exception("Failed to convert svg '%s' with cairosvg:", md5ext)
+        return False
+
+    return True
+
+
+def convert_svg_cmd(asset_path, save_path, md5ext):
+    """
+    Converts the svg using the configured command. The md5ext is
+    used for logging purposes.
+    """
+
+    logging.debug("Converting svg '%s' to png", md5ext)
+
+    # Get the conversion command
+    cmd_str = config.SVG_COMMAND.format(
+        INPUT=shlex.quote(asset_path),
+        OUTPUT=shlex.quote(save_path),
+        DPI=config.BASE_DPI*config.SVG_SCALE,
+        SCALE=config.SVG_SCALE
+    )
+
+    # Attempt to run the command
+    try:
+        result = subprocess.run(shlex.split(cmd_str), check=True, capture_output=True,
+                                text=True, timeout=config.CONVERT_TIMEOUT)
+
+    except subprocess.CalledProcessError as error:
+        logging.error("Failed to convert svg '%s':\n%s\n%s\n",
+                      md5ext, cmd_str, error.stderr.rstrip())
+        return False
+
+    except subprocess.TimeoutExpired:
+        logging.error(
+            "Failed to convert svg '%s': Timeout expired.", md5ext)
+        return False
+
+    # Verify the file exists
+    if not path.isfile(save_path):
+        logging.error("Failed to save svg '%s':\n%s\n%s\n",
+                      md5ext, cmd_str, result.stderr.rstrip())
+        return False
+
+    return True

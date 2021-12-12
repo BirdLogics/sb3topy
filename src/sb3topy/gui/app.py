@@ -109,6 +109,7 @@ class App(tk.Tk):
         tk.IntVar(self, name="CONVERT_TIMEOUT")
 
         # Assets / SVGs
+        tk.BooleanVar(self, name="USE_CAIROSVG")
         tk.StringVar(self, name="SVG_COMMAND")
         tk.IntVar(self, name="SVG_SCALE")
         # tk.IntVar(self, name="SVG_DPI")
@@ -210,6 +211,7 @@ class App(tk.Tk):
         self.setvar("CONVERT_TIMEOUT", config.CONVERT_TIMEOUT)
 
         # Assets / SVGs
+        self.setvar("USE_CAIROSVG", config.USE_CAIROSVG)
         self.setvar("SVG_COMMAND", config.SVG_COMMAND)
         self.setvar("SVG_SCALE", config.SVG_SCALE)
         # self.setvar("SVG_DPI", config.SVG_DPI)
@@ -307,6 +309,7 @@ class App(tk.Tk):
         config.CONVERT_TIMEOUT = tkbool(self.getvar("CONVERT_TIMEOUT"))
 
         # Assets / SVGs
+        config.USE_CAIROSVG = self.getvar("USE_CAIROSVG")
         config.SVG_COMMAND = self.getvar("SVG_COMMAND")
         config.SVG_SCALE = self.getvar("SVG_SCALE")
         # config.SVG_DPI = self.getvar("SVG_DPI")

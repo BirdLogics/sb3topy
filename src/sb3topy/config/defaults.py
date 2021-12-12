@@ -71,12 +71,12 @@ Asset Settings:
     CONVERT_TIMEOUT: The amount of time to allow an asset to convert.
         Useful to diagnose hanging during asset conversion.
 
+    USE_CAIROSVG: Enables use of the cairosvg Python package. Using the
+        cairosvg package is much faster than calling a command.
     SVG_COMMAND: The command used to convert an svg file to a png file.
         The input and output path will be passed through {INPUT} and
         {OUTPUT} format parameters. {DPI} or {SCALE} should also be
         used to allow adjustable bitmap resolution.
-    INKSCAPE_PATH: Passed to SVG_COMMAND as {INKSCAPE_PATH}
-    TODO Remove INKSCAPE_PATH
 
     BASE_DPI: The DPI of an unscaled SVG image.
 
@@ -207,6 +207,7 @@ CONVERT_THREADS = 8
 CONVERT_TIMEOUT = None
 
 # SVG Conversion
+USE_CAIROSVG = True
 SVG_COMMAND = "cairosvg {INPUT} -o {OUTPUT} -s {SCALE}"
 # SVG_COMMAND = 'inkscape -l -d {DPI} -o {OUTPUT} {INPUT}'
 
