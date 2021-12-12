@@ -485,7 +485,7 @@ class AssetSettings(ttk.Frame):
         dw_workers_spin = ttk.Spinbox(
             worker_frame, textvariable=self.download_workers)
         cv_workers_label = ttk.Label(worker_frame, text="Convert Workers:")
-        cv_workers_spin = ttk.Spinbox(
+        self.cv_workers_spin = ttk.Spinbox(
             worker_frame, textvariable=self.convert_workers)
         timout_label = ttk.Label(worker_frame, text="Timeout (seconds):")
         timeout_spin = ttk.Spinbox(
@@ -519,7 +519,7 @@ class AssetSettings(ttk.Frame):
         dw_workers_label.grid(column=0, row=0, sticky="W")
         dw_workers_spin.grid(column=1, row=0, sticky="W", padx=3, pady=3)
         cv_workers_label.grid(column=0, row=1, sticky="W")
-        cv_workers_spin.grid(column=1, row=1, sticky="W", padx=3, pady=3)
+        self.cv_workers_spin.grid(column=1, row=1, sticky="W", padx=3, pady=3)
         timout_label.grid(column=0, row=2, sticky="W")
         timeout_spin.grid(column=1, row=2, sticky="W", padx=3, pady=3)
 
@@ -550,8 +550,10 @@ class AssetSettings(ttk.Frame):
         """Called when USE_CAIROSVG is toggled"""
         if self.use_cairosvg.get():
             self.svg_comm_box.state(["disabled"])
+            self.cv_workers_spin.state(["disabled"])
         else:
             self.svg_comm_box.state(["!disabled"])
+            self.cv_workers_spin.state(["!disabled"])
 
 
 class OptimizationSettings(ttk.Frame):

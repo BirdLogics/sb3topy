@@ -56,6 +56,10 @@ class Convert:
             workers = pool.ThreadPool(config.CONVERT_THREADS)
             logging.debug("Created %i worker threads for asset conversion.")
 
+        # Treat a timeout of 0 as no timeout
+        if config.CONVERT_TIMEOUT == 0:
+            config.CONVERT_TIMEOUT = None
+
         # Convert all costumes
         if config.CONVERT_COSTUMES:
             # Verify the command is available
