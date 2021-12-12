@@ -8,6 +8,5 @@ Additional arguments cannot be passed via this helper file.
 
 import sb3topy.main
 
-
 if __name__ == '__main__':
     sb3topy.main.main(["--gui"])
