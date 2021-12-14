@@ -27,6 +27,9 @@ try:
     import cairosvg
 except ImportError:
     cairosvg = None
+except OSError:
+    print("cairosvg is not installed correctly.")
+    cairosvg = None
 
 from .. import config, project
 
