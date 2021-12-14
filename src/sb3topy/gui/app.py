@@ -309,7 +309,7 @@ class App(tk.Tk):
         config.CONVERT_TIMEOUT = self.getvar("CONVERT_TIMEOUT")
 
         # Assets / SVGs
-        config.USE_CAIROSVG = self.getvar("USE_CAIROSVG")
+        config.USE_CAIROSVG = tkbool(self.getvar("USE_CAIROSVG"))
         config.SVG_COMMAND = self.getvar("SVG_COMMAND")
         config.SVG_SCALE = self.getvar("SVG_SCALE")
         # config.SVG_DPI = self.getvar("SVG_DPI")
