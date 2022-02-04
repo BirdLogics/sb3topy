@@ -235,6 +235,13 @@
         },
         "code": "self.costume.size = {SIZE}"
     },
+    "looks_gotofrontback": {
+        "type": "stack",
+        "args": {
+            "FRONT_BACK": "field"
+        },
+        "switch": "looks_goto_{FRONT_BACK}"
+    },
     "looks_goto_front": {
         "type": "stack",
         "args": {},
@@ -244,6 +251,13 @@
         "type": "stack",
         "args": {},
         "code": "self.back_layer(util)"
+    },
+    "looks_goforwardbackwardlayers": {
+        "type": "stack",
+        "args": {
+            "FOWARDS_BACKWARDS": "field"
+        },
+        "switch": "looks_go_{FORWARD_BACKWARD}_layers"
     },
     "looks_go_forward_layers": {
         "type": "stack",
@@ -259,6 +273,13 @@
         },
         "code": "self.change_layer(util, -{NUM})"
     },
+    "looks_costumenumbername": {
+        "type": "any",
+        "args": {
+            "NUMER_NAME": "field"
+        },
+        "switch": "looks_costume_{NUMBER_NAME}"
+    },
     "looks_costume_number": {
         "type": "int",
         "args": {},
@@ -268,6 +289,13 @@
         "type": "str",
         "args": {},
         "code": "self.costume.name"
+    },
+    "looks_backdropnumbername": {
+        "type": "any",
+        "args": {
+            "NUMBER_NAME": "field"
+        },
+        "switch": "looks_backdrop_{NUMBER_NAME}"
     },
     "looks_backdrop_number": {
         "type": "int",
@@ -429,72 +457,62 @@
         "code": "self.pen.change_hue({HUE})"
     },
     "event_whenflagclicked": {
-        "type": "stack",
-        "args": {
-            "IDENT": "hat_ident",
-            "SUBSTACK": "stack"
-        },
+        "type": "hat",
+        "args": {},
         "code": [
             "@on_green_flag",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "green_flag"
     },
     "event_whenkeypressed": {
-        "type": "stack",
+        "type": "hat",
         "args": {
-            "IDENT": "hat_ident",
-            "SUBSTACK": "stack",
             "KEY_OPTION": "field"
         },
         "code": [
             "@on_pressed({KEY_OPTION})",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "key_{KEY_OPTION}_pressed"
     },
     "event_whenthisspriteclicked": {
-        "type": "stack",
-        "args": {
-            "IDENT": "hat_ident",
-            "SUBSTACK": "stack"
-        },
+        "type": "hat",
+        "args": {},
         "code": [
             "@on_clicked",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "sprite_clicked"
     },
     "event_whenstageclicked": {
-        "type": "stack",
-        "args": {
-            "IDENT": "hat_ident",
-            "SUBSTACK": "stack"
-        },
+        "type": "hat",
+        "args": {},
         "code": [
             "@on_clicked",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "sprite_clicked"
     },
     "event_whenbackdropswitchesto": {
-        "type": "stack",
+        "type": "hat",
         "args": {
-            "IDENT": "hat_ident",
-            "SUBSTACK": "stack",
             "BACKDROP": "field"
         },
         "code": [
             "@on_backdrop({BACKDROP})",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "on_backdrop_{BACKDROP}"
     },
     "event_whengreaterthan": {
-        "type": "stack",
+        "type": "hat",
         "args": {
-            "IDENT": "hat_ident",
-            "SUBSTACK": "stack",
             "WHENGREATERTHANMENU": "field",
             "VALUE": "float"
         },
@@ -502,13 +520,12 @@
             "@on_greater({WHENGREATERTHANMENU}, {VALUE})",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "on_{WHENGREATERTHANMENU}"
     },
     "event_whenbroadcastreceived": {
-        "type": "stack",
+        "type": "hat",
         "args": {
-            "IDENT": "hat_ident",
-            "SUBSTACK": "stack",
             "BROADCAST_OPTION": "field"
         },
         "code": [
@@ -627,32 +644,33 @@
             "    {SUBSTACK}"
         ]
     },
-    "control_stop_this_script": {
+    "control_stop": {
         "type": "stack",
         "args": {
             "STOP_OPTION": "field"
         },
+        "switch": "control_stop_{STOP_OPTION}"
+    },
+    "control_stop_this_script": {
+        "type": "stack",
+        "args": {},
         "code": "return None"
     },
     "control_stop_other_scripts_in_sprite": {
         "type": "stack",
-        "args": {
-            "STOP_OPTION": "field"
-        },
+        "args": {},
         "code": "self.stop_other()"
     },
     "control_stop_all": {
         "type": "stack",
-        "args": {
-            "STOP_OPTION": "field"
-        },
+        "args": {},
         "code": [
             "util.stop_all()",
             "return None"
         ]
     },
     "control_start_as_clone": {
-        "type": "stack",
+        "type": "hat",
         "args": {
             "IDENT": "hat_ident",
             "SUBSTACK": "stack"
@@ -661,7 +679,8 @@
             "@on_clone_start",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "clone_start"
     },
     "control_create_clone_of": {
         "type": "stack",
@@ -680,7 +699,8 @@
         "args": {
             "TOUCHINGOBJECTMENU": "str"
         },
-        "code": "self.get_touching(util, {TOUCHINGOBJECTMENU})"
+        "code": "self.get_touching(util, {TOUCHINGOBJECTMENU})",
+        "switch": "sensing_touching"
     },
     "sensing_touchingcolor": {
         "type": "bool",
@@ -764,7 +784,8 @@
             "PROPERTY": "property",
             "OBJECT": "str"
         },
-        "code": "util.sprites[{OBJECT}].{PROPERTY}"
+        "code": "util.sprites[{OBJECT}].{PROPERTY}",
+        "switch": "sensing_{PROPERTY}_of"
     },
     "sensing_x_position_of": {
         "type": "float",
@@ -838,38 +859,45 @@
         },
         "code": "util.sprites[{OBJECT}].costume.name"
     },
+    "sensing_current": {
+        "type": "int",
+        "args": {
+            "CURRENTMENU": "field"
+        },
+        "switch": "sensing_current_{CURRENTMENU}"
+    },
     "sensing_current_year": {
-        "type": "",
+        "type": "int",
         "args": {},
         "code": "time.localtime()['tm_year']"
     },
     "sensing_current_month": {
-        "type": "",
+        "type": "int",
         "args": {},
         "code": "time.localtime()['tm_month']"
     },
     "sensing_current_date": {
-        "type": "",
+        "type": "int",
         "args": {},
         "code": "time.localtime()['tm_mday']"
     },
     "sensing_current_day_of_week": {
-        "type": "",
+        "type": "int",
         "args": {},
         "code": "(time.localtime()['tm_wday'] + 2)"
     },
     "sensing_current_hour": {
-        "type": "",
+        "type": "int",
         "args": {},
         "code": "time.localtime()['tm_hour']"
     },
     "sensing_current_minute": {
-        "type": "",
+        "type": "int",
         "args": {},
         "code": "time.localtime()['tm_min']"
     },
     "sensing_current_second": {
-        "type": "",
+        "type": "int",
         "args": {},
         "code": "time.localtime()['tm_sec']"
     },
@@ -1022,7 +1050,8 @@
             "OPERATOR": "str",
             "NUM": "float"
         },
-        "code": "#? operator_mathop_{OPERATOR}"
+        "code": "#? operator_mathop_{OPERATOR}",
+        "switch": "operator_mathop_{OPERATOR}"
     },
     "operator_mathop_abs": {
         "type": "int",

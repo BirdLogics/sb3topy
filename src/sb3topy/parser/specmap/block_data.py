@@ -19,14 +19,43 @@ Globals:
 """
 
 import json
+import logging
 import re
+import textwrap
 from collections import namedtuple
 from os import path
 from typing import Dict
 
+from . import block_switches
+
+__all__ = ["get_blockmap"]
+
 INDENT_PAT = r"(?m)^(\s+)\{(\w+)\}"
 
-Block = namedtuple('Block', ['return_type', 'args', 'code', 'indents'])
+Block = namedtuple('Block', ['return_type', 'args',
+                             'code', 'indents', 'switch', 'basename'])
+
+
+class BlockMap(Block):
+    """A named tuple with a format function"""
+
+    def format(self, kwargs):
+        """Formats the blockmap code and handles indentation"""
+        args = {}
+        for key in self.args:
+            # Get the argument from kwargs
+            arg = kwargs[key]
+            assert isinstance(arg, str), "Improperly parsed block arg"
+
+            # Indent it if necessary
+            indent = self.indents.get(key)
+            if indent:
+                arg = textwrap.indent(arg, indent)
+
+            # Save the parsed argument
+            args[key] = arg
+
+        return self.code.format(**args)
 
 
 HATS = {
@@ -60,7 +89,9 @@ def _read_blocks():
     # Parse the block data
     for opcode, block in block_data.items():
         # Get the code from the data
-        code = block["code"]
+        code = block.get("code")
+        if code is None:
+            continue
         if isinstance(code, list):
             code = '\n'.join(code)
 
@@ -75,10 +106,61 @@ def _read_blocks():
         code = re.sub(INDENT_PAT, "{\\2}", code)
 
         # Save the block
-        blocks[opcode] = Block(block["type"], block["args"], code, indents)
+        blocks[opcode] = Block(block["type"], block["args"], code, indents,
+                               block.get("switch"), block.get("basename"))
 
     return blocks
 
 
 BLOCKS = _read_blocks()
 
+
+def format_switch(switch, args):
+    """Formats a blockswitch"""
+    fields = {
+        key: value.lower().replace(' ', '_')
+        for key, (type_, value) in args.items()
+        if type_ == "field"
+    }
+
+    return switch.format(**fields)
+
+
+def get_blockmap(block, args, target):
+    """
+    Creates the blockmap for the block,
+
+    """
+    blockmap = None
+
+    # Attempt to get the blockmap from a switch
+    # TODO Here, get_switch doesn't exist
+    switch = block_switches.get_switch(block['opcode'])
+    if switch is not None:
+        blockmap = switch(block, target)
+
+    # Attempt to get the blockmap from BLOCKS
+    if blockmap is None:
+        blockmap = BLOCKS.get(block['opcode'])
+
+        # Report an error and return a fallback
+        if blockmap is None:
+            logging.warning("Unknown block with opcode '%s'", block['opcode'])
+            blockmap = BLOCKS['default']
+
+    # Check if the block has a switch
+    if blockmap.switch:
+        opcode = block_switches.format_switch(blockmap.switch, args)
+        blockmap = BLOCKS.get(opcode, blockmap)
+
+    # Verify the blockmap is a valid
+    if blockmap.code is None:
+        logging.warning(
+            "Failed to resolve blockmap for opcode '%s'", block['opcode'])
+        blockmap = BLOCKS['default']
+
+    # Modify the block if it is a hat
+    if blockmap.return_type == "hat":
+        block_switches.hat_switch(block, target, blockmap)
+
+    return BlockMap(*blockmap)

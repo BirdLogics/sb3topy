@@ -68,7 +68,7 @@ class Parser:
         Creates classes for each Variable and runs type
         guessing for variables and procedure arguments.
 
-        Also names solo broadcast recievers.
+        Also names solo broadcast receivers.
         """
 
         for target in self.targets:
@@ -78,7 +78,7 @@ class Parser:
         if config.VAR_TYPES:
             self.targets.digraph.resolve()
 
-        # Name solo broadcast recievers
+        # Name solo broadcast receivers
         broadcasts = targets.Target.broadcasts
         for broadcast, target_name in broadcasts.items():
             if target_name is not None:
@@ -154,10 +154,6 @@ class Parser:
             # logging.debug("Parsing block '%s' with opcode '%s'",
             #               blockid, block['opcode'])
 
-            # Get the block's conversion map
-            # Also sets the target's procedure if necesary
-            blockmap = specmap.get_blockmap(block, self.target)
-
             # Get fields
             args = {}
             for name in block['fields']:
@@ -166,6 +162,12 @@ class Parser:
             # Get inputs
             for name, value in block['inputs'].items():
                 args[name] = specmap.parse_input(self.target.blocks, value)
+
+            # Get the conversion map
+            # May modify block and args to add custom arguments
+            # May set target.prototype
+            # TODO Here, modifies block to add args but args not added to `args`
+            blockmap = specmap.get_blockmap(block, args, self.target)
 
             # Parse each argument using the blockmap
             clean_args = {}
@@ -258,7 +260,7 @@ class Parser:
         be converted into a universal identifier.
 
         If end_type is 'hat_ident', the value will
-        be converted into a functon identifier.
+        be converted into a function identifier.
 
         Otherwise, the value will be quoted and a warning shown.
         """
