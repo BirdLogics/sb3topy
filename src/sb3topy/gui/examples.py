@@ -221,6 +221,7 @@ class ExamplesFrame(ttk.Frame):
 
         self.username.set(example.username)
         self.userlink.set(example.user_link)
+        self.project_desc.set(example.description)
 
         self.project_viewer.set(example.viewer)
         self.project_link.set(example.view_link)
