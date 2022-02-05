@@ -145,6 +145,7 @@ def parse_args(args=None):
     """
     # Initialize the parser
     parser = argparse.ArgumentParser(
+        prog="sb3topy",
         description="Converts sb3 files to Python.",
         epilog="Additional options can be set using a config file."
     )
