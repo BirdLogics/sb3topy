@@ -4,6 +4,8 @@ This is an exhaustive list of all supported and unsupported blocks.
 If a block is missing from this list, or if a block has an incorrect
 behavior which is not documented here, please open an issue.
 
+Extensions which are not yet supported are not on this list.
+
 ## Motion
 
 All motion blocks are fully supported.
