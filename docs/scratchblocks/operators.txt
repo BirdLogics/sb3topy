@@ -1,0 +1,35 @@
+(() + ())
+
+(() - ())
+
+(() * ())
+
+(() / ())
+
+(pick random (1) to (10))
+
+<() > (50)>
+
+<() < (50)>
+
+<() = (50)>
+
+<<> and <>>
+
+<<> or <>>
+
+<not <>>
+
+(join [apple] [bannana])
+
+(letter (1) of [apple])
+
+(length of [apple])
+
+<[apple] contains [a]?>
+
+(() mod ())
+
+(round ())
+
+([abs v] of ())

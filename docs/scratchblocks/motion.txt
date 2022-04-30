@@ -1,0 +1,31 @@
+move (10) steps
+
+turn cw (15) degrees
+
+turn ccw (15) degrees
+
+go to (random position v)
+
+glide (1) secs to (random position v)
+
+glide (1) secs to x: (0) y: (0)
+
+point in direction (90)
+
+point towards (mouse-pointer v)
+
+change x by (10)
+
+set x to (0)
+
+change y by (10)
+
+set y to (0)
+
+set rotation style [left-right v]
+
+(x position)
+
+(y position)
+
+(direction)

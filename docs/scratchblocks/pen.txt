@@ -1,0 +1,21 @@
+erase all
+
+stamp
+
+pen down
+
+pen up
+
+set pen color to (#DDFF88)
+
+change pen (color v) by (10)
+change pen (saturation v) by (10)
+change pen (brightness v) by (10)
+
+set pen (color v) to (10)
+set pen (saturation v) to (10)
+set pen (brightness v) to (10)
+
+change pen size by (1)
+
+set pen size to (1)

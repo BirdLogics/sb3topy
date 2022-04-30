@@ -1,0 +1,33 @@
+show variable [my variable v]
+
+hide variable [my variable v]
+
+show list [my list v]
+
+hide list [my list v]
+
+(my variable)
+
+set [my variable v] to (0)
+
+change [my variable v] by (1)
+
+(my list)
+
+add (thing) to [my list v]
+
+delete (1) of [my list v]
+
+delete all of [my list v]
+
+insert (thing) at (1) of [my list v]
+
+replace item (1) of [my list v] with (thing)
+
+(item (1) of [my list v])
+
+(item # of (thing) in [my list v])
+
+(length of [my list v])
+
+<[my list v] contains (thing)?>

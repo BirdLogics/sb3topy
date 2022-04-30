@@ -1,0 +1,17 @@
+change [pan left/right v] effect by (10)
+
+set [pan left/right v] effect to (100)
+
+play sound [Meow v] until done
+
+start sound [Meow v]
+
+stop all sounds
+
+clear sound effects
+
+change volume by (-10)
+
+set volume to (100) %
+
+(volume)

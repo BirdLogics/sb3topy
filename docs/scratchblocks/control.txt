@@ -1,0 +1,24 @@
+wait (1) seconds
+
+repeat (10)
+end
+
+if <> then
+end
+
+if <> then
+else
+end
+
+wait until <>
+
+repeat until <>
+end
+
+stop [all v]
+
+when I start as a clone
+
+create a clone of (myself v)
+
+delete this clone

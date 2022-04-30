@@ -1,0 +1,35 @@
+<touching color (#00BB55)?>
+
+<color (#AA0055) is touching (#00BB55)?>
+
+ask [What's your name?] and wait
+
+(answer)
+
+set drag mode [draggable v]
+
+(loudness)
+
+<touching (mouse-pointer v) ?
+
+distance to (mouse-pointer v)
+
+<key (space v) pressed?>
+
+<mouse down?>
+
+(mouse x)
+
+(mouse y)
+
+(timer)
+
+reset timer
+
+([backdrop # v] of (Stage v))
+
+(current [year v])
+
+(days since 2000)
+
+(username)

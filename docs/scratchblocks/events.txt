@@ -1,0 +1,17 @@
+when [loudness v] > (10)
+
+when [timer v] > (10)
+
+when flag clicked
+
+when [space v] key pressed
+
+when this sprite clicked
+
+when backdrop switches to [backdrop1 v]
+
+when I receive [message1 v]
+
+broadcast (message1 v)
+
+broadcast (message1 v) and wait

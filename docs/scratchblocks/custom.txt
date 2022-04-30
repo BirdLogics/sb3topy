@@ -1,0 +1,7 @@
+define my block (value) <bool> label
+
+define no screen refresh
+
+(value ::custom)
+
+<bool ::custom>

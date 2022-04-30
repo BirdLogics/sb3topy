@@ -1,0 +1,45 @@
+say [Hello!] for (2) seconds
+
+say [Hello!] for (2) seconds
+
+think [Hmm...] for (2) seconds
+
+think [Hmm...] for (2) seconds
+
+change [color v] effect by (25)
+change [brightness v] effect by (25)
+change [ghost v] effect by (25)
+
+set [color v] effect to (0)
+set [brightness v] effect to (0)
+set [ghost v] effect to (0)
+
+clear graphic effects
+
+switch costume to (costume1 v)
+switch costume to ((1) + (0))
+
+next costume
+
+switch backdrop to (backdrop1 v)
+switch backdrop to ((1) + (0))
+
+next backdrop
+
+change size by (10)
+
+set size to (100) %
+
+show
+
+hide
+
+go to [front v] layer
+
+go [forward v] (1) layers
+
+costume [number v]
+
+backdrop [number v]
+
+size
