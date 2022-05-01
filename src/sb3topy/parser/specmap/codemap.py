@@ -111,7 +111,7 @@ def parse_costumes(target, assets):
             costume['rotationCenterX'] *= scale
             costume['rotationCenterY'] *= scale
         else:
-            scale = int(costume['bitmapResolution'])
+            scale = int(costume.get('bitmapResolution', 2))
 
         # Create the costume dict
         costumes.append((

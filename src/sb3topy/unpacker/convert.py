@@ -14,6 +14,8 @@ should work as well.
 It is not necessary to convert mp3s to wav when using Pygame 2+, but it
 may a good idea since, according to the Pygame docs, mp3 support is
 limited and can crash with certain formats on some systems.
+
+TODO Better fallback support.
 """
 
 import logging
