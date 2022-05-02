@@ -3,14 +3,14 @@ switch_data.py
 
 Contains functions to handle more complex blocks
 
-TODO Define hats with a single switch instead of also in block_data
+TODO Define hats with a single switch instead of also in data
 TODO Apply solo broadcast optimization to 'event_broadcast'?
 """
 
 import logging
 
 from ... import config
-from . import block_data, blockmap
+from . import data, blockmap
 
 SWITCHES = {}
 
@@ -81,7 +81,7 @@ def proc_call(block, target):
     if prototype is None:
         logging.warning("Procedure called without definition '%s'",
                         block['mutation']['proccode'])
-        return block_data.BLOCKS["default"]
+        return data.BLOCKS["default"]
 
     # Replace input names with cleaned arg names
     block['inputs'] = {prototype.arg_from_id(
@@ -187,13 +187,13 @@ def list_delete(block, _):
     # If the index is a block and not a literal,
     # use legacy list mode depending on config
     if not (isinstance(value, list) and value[0] == 7):
-        return block_data.BLOCKS['data_deleteoflist_legacy'] if config.LEGACY_LISTS else None
+        return data.BLOCKS['data_deleteoflist_legacy'] if config.LEGACY_LISTS else None
 
     # Check if the if the index is special
     if value[1] == 'all':
-        return block_data.BLOCKS['data_deletealloflist']
+        return data.BLOCKS['data_deletealloflist']
     if value[1] in ('first', 'last', 'random'):
-        return block_data.BLOCKS['data_deleteoflist_legacy']
+        return data.BLOCKS['data_deleteoflist_legacy']
     return None
 
 
@@ -206,13 +206,13 @@ def list_insert(block, _):
     # If the index is a block and not a literal,
     # use legacy list mode depending on config
     if not (isinstance(value, list) and value[0] == 7):
-        return block_data.BLOCKS['data_insertatlist_legacy'] if config.LEGACY_LISTS else None
+        return data.BLOCKS['data_insertatlist_legacy'] if config.LEGACY_LISTS else None
 
     # Check if the if the index is special
     if value[1] == 'last':
-        return block_data.BLOCKS['data_addtolist']
+        return data.BLOCKS['data_addtolist']
     if value[1] in ('first', 'random'):
-        return block_data.BLOCKS['data_insertatlist_legacy']
+        return data.BLOCKS['data_insertatlist_legacy']
     return None
 
 
@@ -225,11 +225,11 @@ def list_replace(block, _):
     # If the index is a block and not a literal,
     # use legacy list mode depending on config
     if not (isinstance(value, list) and value[0] == 7):
-        return block_data.BLOCKS['data_replaceitemoflist_legacy'] if config.LEGACY_LISTS else None
+        return data.BLOCKS['data_replaceitemoflist_legacy'] if config.LEGACY_LISTS else None
 
     # Check if the if the index is special
     if value[1] in ('first', 'last', 'random'):
-        return block_data.BLOCKS['data_replaceitemoflist_legacy']
+        return data.BLOCKS['data_replaceitemoflist_legacy']
     return None
 
 
@@ -242,11 +242,11 @@ def list_item(block, _):
     # If the index is a block and not a literal,
     # use legacy list mode depending on config
     if not (isinstance(value, list) and value[0] == 7):
-        return block_data.BLOCKS['data_itemoflist_legacy'] if config.LEGACY_LISTS else None
+        return data.BLOCKS['data_itemoflist_legacy'] if config.LEGACY_LISTS else None
 
     # Check if the if the index is special
     if value[1] in ('first', 'last', 'random'):
-        return block_data.BLOCKS['data_itemoflist_legacy']
+        return data.BLOCKS['data_itemoflist_legacy']
     return None
 
 
@@ -273,7 +273,7 @@ def list_item(block, _):
 #                 "Solo broadcast '%s' in target '%s'",
 #                 broadcast, target_name)
 #             block['fields']['TARGET'] = (target_name,)
-#             return block_data.BLOCKS['event_whenbroadcastreceived_solo']
+#             return data.BLOCKS['event_whenbroadcastreceived_solo']
 
 #     return None
 
@@ -293,6 +293,6 @@ def list_item(block, _):
 #             block['inputs']['TARGET'] = (9, target_name)
 #             block['fields']['IDENT'] = ('broadcast_{BROADCAST_INPUT}',)
 
-#             return block_data.BLOCKS['event_broadcastandwait_solo']
+#             return data.BLOCKS['event_broadcastandwait_solo']
 
 #     return None

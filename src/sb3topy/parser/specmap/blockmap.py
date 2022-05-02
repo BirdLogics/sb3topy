@@ -10,7 +10,7 @@ import textwrap
 from typing import Dict, List, NamedTuple, Union
 
 from . import block_switches
-from . import block_data
+from . import data
 
 __all__ = ["BlockMap", "get_blockmap"]
 
@@ -130,18 +130,18 @@ def get_blockmap(block, target):
     """
     # Step 1, get the base block map.
     # Attempt to get the blockmap from BLOCKS
-    blockmap = block_data.BLOCKS.get(block['opcode'])
+    blockmap = data.BLOCKS.get(block['opcode'])
 
     # Report an error and use a fallback
     if blockmap is None:
         logging.warning("Unknown block with opcode '%s'", block['opcode'])
-        blockmap = block_data.BLOCKS['default']
+        blockmap = data.BLOCKS['default']
 
     # Step 2, apply any basic switches.
     if blockmap.switch:
         # Format the switch using the fields
         opcode = blockmap.format_switch(block)
-        blockmap = block_data.BLOCKS.get(opcode, blockmap)
+        blockmap = data.BLOCKS.get(opcode, blockmap)
 
     # Step 3, apply mutations.
     # Modify the block if it is a hat
@@ -157,6 +157,6 @@ def get_blockmap(block, target):
     if blockmap.code is None:
         logging.warning(
             "Failed to resolve blockmap for opcode '%s'", block['opcode'])
-        blockmap = block_data.BLOCKS['default']
+        blockmap = data.BLOCKS['default']
 
     return BlockMap(*blockmap)

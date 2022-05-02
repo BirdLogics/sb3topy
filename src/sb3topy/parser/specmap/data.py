@@ -1,5 +1,5 @@
 """
-blocks.py
+data.py
 
 Handles the base block data used by all blocks.
 
@@ -12,7 +12,7 @@ Globals:
         Loop blocks should yield at the end, but the yield can be
         omitted in warped blocks as an optimization.
 
-TODO Verify all blocks in block_data.json have args matching code
+TODO Verify all blocks in data.json have args matching code
 TODO Automatically generate LOOPS and HATS from the json
 """
 
@@ -25,20 +25,20 @@ from . import blockmap
 
 __all__ = ["HATS", "LOOPS", "BLOCKS"]
 
-DATA_PATH = path.join(path.dirname(__file__), "block_data.json")
+DATA_PATH = path.join(path.dirname(__file__), "data.json")
 
 
 def _read_blocks():
-    """Reads blocks from block_data.json"""
+    """Reads blocks from data.json"""
 
     # Read the json block data
     with open(DATA_PATH, 'r', encoding="utf-8") as data_file:
-        block_data = json.load(data_file)
+        data = json.load(data_file)
 
     # Parse the block data
     blocks: Dict[str, blockmap.BlockMap] = {
         opcode: blockmap.BlockMap.from_dict(opcode, block)
-        for opcode, block in block_data.items()
+        for opcode, block in data.items()
     }
 
     return blocks

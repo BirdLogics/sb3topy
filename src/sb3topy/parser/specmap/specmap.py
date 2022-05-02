@@ -11,12 +11,12 @@ import logging
 
 from ... import config
 from .. import sanitizer
-from . import block_data, type_switches
+from . import data, type_switches
 
 
 def is_hat(block):
     """Determines if an opcode belongs a hat block"""
-    return block['opcode'] in block_data.HATS
+    return block['opcode'] in data.HATS
 
 
 def is_procedure(block):
@@ -30,7 +30,7 @@ def is_loop(block):
 
     A yield needs to be added to the end of loops' code
     """
-    return block['opcode'] in block_data.LOOPS
+    return block['opcode'] in data.LOOPS
 
 
 def get_literal_type(value):
@@ -100,7 +100,7 @@ def get_block_type(target, block):
 
     # Default to the blockmap's return_type
     if type_ is None:
-        blockmap = block_data.BLOCKS.get(block['opcode'])
+        blockmap = data.BLOCKS.get(block['opcode'])
         if blockmap is not None:
             type_ = blockmap.return_type
 
