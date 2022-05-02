@@ -541,7 +541,7 @@
     "event_whenbroadcastreceived": {
         "type": "hat",
         "args": {
-            "IDENT": "ex_hat_ident",
+            "IDENT": "hat_ident",
             "SUBSTACK": "stack",
             "BROADCAST_OPTION": "field"
         },
@@ -549,7 +549,8 @@
             "@on_broadcast({BROADCAST_OPTION})",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "broadcast_{BROADCAST_OPTION}"
     },
     "event_broadcast": {
         "type": "stack",
@@ -566,7 +567,7 @@
         "code": "await util.send_broadcast_wait({BROADCAST_INPUT})"
     },
     "event_whenbroadcastreceived_solo": {
-        "type": "stack",
+        "type": "hat",
         "args": {
             "TARGET": "field",
             "IDENT": "ex_hat_ident",
@@ -577,7 +578,8 @@
             "@on_broadcast({BROADCAST_OPTION})",
             "async def {IDENT}(self, util):",
             "    {SUBSTACK}"
-        ]
+        ],
+        "basename": "broadcast_{BROADCAST_OPTION}"
     },
     "event_broadcastandwait_solo": {
         "type": "stack",

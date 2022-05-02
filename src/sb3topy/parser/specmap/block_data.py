@@ -16,6 +16,8 @@ Globals:
     LOOPS: A set containing opcodes which should be treated as loops.
         Loop blocks should yield at the end, but the yield can be
         omitted in warped blocks as an optimization.
+
+TODO Validate block_data.json to prevent obscure errors
 """
 
 import json
