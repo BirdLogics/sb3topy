@@ -20,7 +20,7 @@ def get_switch(opcode):
     return SWITCHES.get(opcode)
 
 
-def hat_switch(block, target, blockmap):
+def hat_mutation(block, target, blockmap):
     """
     Modifies a hat block so the next block becomes an SUBSTACK input.
     """

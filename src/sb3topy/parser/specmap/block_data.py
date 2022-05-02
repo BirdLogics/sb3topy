@@ -128,39 +128,37 @@ def format_switch(switch, args):
 
 def get_blockmap(block, args, target):
     """
-    Creates the blockmap for the block,
-
+    Creates the blockmap for the block.
     """
-    blockmap = None
-
-    # Attempt to get the blockmap from a switch
-    # TODO Here, get_switch doesn't exist
-    switch = block_switches.get_switch(block['opcode'])
-    if switch is not None:
-        blockmap = switch(block, target)
-
+    # Step 1, get the base block map.
     # Attempt to get the blockmap from BLOCKS
+    blockmap = BLOCKS.get(block['opcode'])
+
+    # Report an error and use a fallback
     if blockmap is None:
-        blockmap = BLOCKS.get(block['opcode'])
+        logging.warning("Unknown block with opcode '%s'", block['opcode'])
+        blockmap = BLOCKS['default']
 
-        # Report an error and return a fallback
-        if blockmap is None:
-            logging.warning("Unknown block with opcode '%s'", block['opcode'])
-            blockmap = BLOCKS['default']
-
-    # Check if the block has a switch
+    # Step 2, apply any basic switches.
     if blockmap.switch:
-        opcode = block_switches.format_switch(blockmap.switch, args)
+        opcode = format_switch(blockmap.switch, args)
         blockmap = BLOCKS.get(opcode, blockmap)
 
+    # Step 3, apply mutations.
+    # Modify the block if it is a hat
+    if blockmap.return_type == "hat":
+        block_switches.hat_mutation(block, target, blockmap)
+
+    # Find another mutation
+    switch = block_switches.get_switch(block['opcode'])
+    if switch is not None:
+        blockmap = switch(block, target) or blockmap
+
+    # Step 4, validate the blockmap and return it
     # Verify the blockmap is a valid
     if blockmap.code is None:
         logging.warning(
             "Failed to resolve blockmap for opcode '%s'", block['opcode'])
         blockmap = BLOCKS['default']
-
-    # Modify the block if it is a hat
-    if blockmap.return_type == "hat":
-        block_switches.hat_switch(block, target, blockmap)
 
     return BlockMap(*blockmap)
