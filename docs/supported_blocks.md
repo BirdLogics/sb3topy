@@ -6,6 +6,8 @@ behavior which is not documented here, please open an issue.
 
 Extensions which are not yet supported are not on this list.
 
+Thanks to [scratchblocks](https://scratchblocks.github.io/) for generating these images.
+
 ## Motion
 
 All motion blocks are fully supported.
