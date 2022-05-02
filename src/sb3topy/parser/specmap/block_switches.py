@@ -67,7 +67,7 @@ def proc_def(block, target):
     target.prototype = prototype
 
     # Create the block
-    return block_data.Block('stack', {'SUBSTACK': 'stack'}, code, {'SUBSTACK': '    '})
+    return block_data.Block('stack', {'SUBSTACK': 'stack'}, code, {'SUBSTACK': '    '}, "", "")
 
 
 @fswitch('procedures_call')
@@ -101,7 +101,7 @@ def proc_call(block, target):
     code = f"await self.{prototype.name}(util, {args_code})"
 
     # Create the block
-    return block_data.Block('stack', args, code, {})
+    return block_data.Block('stack', args, code, {}, "", "")
 
 
 @fswitch('argument_reporter_string_number')
@@ -113,10 +113,10 @@ def proc_arg(block, target):
 
     # The argument wasn't found, default to 0
     if arg_type is None:
-        return block_data.Block("int", {}, "0", {})
+        return block_data.Block("int", {}, "0", {}, "", "")
 
     # Return the code with the correct return_type
-    return block_data.Block(arg_type, {'VALUE': 'proc_arg'}, '{VALUE}', {})
+    return block_data.Block(arg_type, {'VALUE': 'proc_arg'}, '{VALUE}', {}, "", "")
 
 
 @fswitch('argument_reporter_boolean')
@@ -127,7 +127,7 @@ def proc_arg_bool(block, target):
     if config.IS_COMPILED and arg_name == "is compiled?" and (
             target.prototype is None or
             arg_name not in target.prototype.args):
-        return block_data.Block('bool', {}, 'True', {})
+        return block_data.Block('bool', {}, 'True', {}, "", "")
 
     return proc_arg(block, target)
 
@@ -137,7 +137,7 @@ def var_get(block, target):
     """Type switch for a variable reporter"""
     return block_data.Block(
         target.vars.get_type('var', block['fields']['VARIABLE'][0]),
-        {'VARIABLE': 'variable'}, '{VARIABLE}', {}
+        {'VARIABLE': 'variable'}, '{VARIABLE}', {}, "", ""
     )
 
 
@@ -148,7 +148,7 @@ def var_set(block, target):
         'stack',
         {'VARIABLE': 'variable',
          'VALUE': target.vars.get_type('var', block['fields']['VARIABLE'][0])},
-        '{VARIABLE} = {VALUE}', {}
+        '{VARIABLE} = {VALUE}', {}, "", ""
     )
 
 
@@ -160,13 +160,13 @@ def var_change(block, target):
     if var_type in ('int', 'float'):
         return block_data.Block(
             'stack', {'VARIABLE': 'variable', 'VALUE': var_type},
-            '{VARIABLE} += {VALUE}', {}
+            '{VARIABLE} += {VALUE}', {}, "", ""
         )
 
     if var_type == "str":
         return block_data.Block(
             'stack', {'VARIABLE': 'variable', 'VALUE': 'float'},
-            "{VARIABLE} = str(tonum({VARIABLE}) + {VALUE})", {}
+            "{VARIABLE} = str(tonum({VARIABLE}) + {VALUE})", {}, "", ""
         )
 
     if var_type != "any":
