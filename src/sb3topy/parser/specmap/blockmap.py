@@ -9,8 +9,7 @@ import re
 import textwrap
 from typing import Dict, List, NamedTuple, Union
 
-from . import block_switches
-from . import data
+from . import data, mutations
 
 __all__ = ["BlockMap", "get_blockmap"]
 
@@ -146,12 +145,12 @@ def get_blockmap(block, target):
     # Step 3, apply mutations.
     # Modify the block if it is a hat
     if blockmap.return_type == "hat":
-        block_switches.hat_mutation(block, target, blockmap)
+        mutations.hat_mutation(block, target, blockmap)
 
     # Find another mutation
-    switch = block_switches.get_switch(block['opcode'])
-    if switch is not None:
-        blockmap = switch(block, target) or blockmap
+    mutation = mutations.get_mutation(block['opcode'])
+    if mutation is not None:
+        blockmap = mutation(block, target, blockmap)
 
     # Step 4, validate the blockmap and return it
     if blockmap.code is None:
