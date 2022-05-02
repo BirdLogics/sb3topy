@@ -458,7 +458,10 @@
     },
     "event_whenflagclicked": {
         "type": "hat",
-        "args": {},
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack"
+        },
         "code": [
             "@on_green_flag",
             "async def {IDENT}(self, util):",
@@ -469,6 +472,8 @@
     "event_whenkeypressed": {
         "type": "hat",
         "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack",
             "KEY_OPTION": "field"
         },
         "code": [
@@ -480,7 +485,10 @@
     },
     "event_whenthisspriteclicked": {
         "type": "hat",
-        "args": {},
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack"
+        },
         "code": [
             "@on_clicked",
             "async def {IDENT}(self, util):",
@@ -490,7 +498,10 @@
     },
     "event_whenstageclicked": {
         "type": "hat",
-        "args": {},
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack"
+        },
         "code": [
             "@on_clicked",
             "async def {IDENT}(self, util):",
@@ -501,6 +512,8 @@
     "event_whenbackdropswitchesto": {
         "type": "hat",
         "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack",
             "BACKDROP": "field"
         },
         "code": [
@@ -513,6 +526,8 @@
     "event_whengreaterthan": {
         "type": "hat",
         "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack",
             "WHENGREATERTHANMENU": "field",
             "VALUE": "float"
         },
@@ -526,6 +541,8 @@
     "event_whenbroadcastreceived": {
         "type": "hat",
         "args": {
+            "IDENT": "ex_hat_ident",
+            "SUBSTACK": "stack",
             "BROADCAST_OPTION": "field"
         },
         "code": [
