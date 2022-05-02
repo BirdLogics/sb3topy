@@ -30,7 +30,7 @@ def hat_mutation(block, target, blockmap):
     #     fields[field] = value[0]
 
     # Save the base identifier name as a field
-    block['fields']['IDENT'] = (blockmap.basename)  # .format(**fields),)
+    block['fields']['IDENT'] = (blockmap.basename,)  # .format(**fields),)
 
     # Create a substack input with the next block
     block['inputs']['SUBSTACK'] = (2, block['next'])

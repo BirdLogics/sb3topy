@@ -154,16 +154,15 @@ class Parser:
             # logging.debug("Parsing block '%s' with opcode '%s'",
             #               blockid, block['opcode'])
 
+            # Get the conversion map
+            # May "mutate" the block to add custom arguments
+            # May set target.prototype
+            blockmap = specmap.get_blockmap(block, self.target)
+
             # Get fields
             args = {}
             for name in block['fields']:
                 args[name] = 'field', block['fields'][name][0]
-
-            # Get the conversion map
-            # May modify block and args to add custom arguments
-            # May set target.prototype
-            # TODO Here, modifies block to add args but args not added to `args`
-            blockmap = specmap.get_blockmap(block, args, self.target)
 
             # Get inputs
             for name, value in block['inputs'].items():

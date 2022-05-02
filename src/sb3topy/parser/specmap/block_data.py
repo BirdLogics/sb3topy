@@ -126,7 +126,7 @@ def format_switch(switch, args):
     return switch.format(**fields)
 
 
-def get_blockmap(block, args, target):
+def get_blockmap(block, target):
     """
     Creates the blockmap for the block.
     """
@@ -141,7 +141,13 @@ def get_blockmap(block, args, target):
 
     # Step 2, apply any basic switches.
     if blockmap.switch:
-        opcode = format_switch(blockmap.switch, args)
+        # Get fields from the block
+        fields = {}
+        for field, value in block['fields'].items():
+            fields[field] = value[0].lower().replace(' ', '_')
+
+        # Format the switch using the fields
+        opcode = format_switch(blockmap.switch, fields)
         blockmap = BLOCKS.get(opcode, blockmap)
 
     # Step 3, apply mutations.
