@@ -175,7 +175,7 @@ class Parser:
                 assert isinstance(clean_args[name], str)
 
             # Create the code for the block
-            code = code + blockmap.format(clean_args) + "\n"
+            code = code + blockmap.format_code(clean_args) + "\n"
 
             # Get the next block
             block = self.target.blocks.get(block['next'])

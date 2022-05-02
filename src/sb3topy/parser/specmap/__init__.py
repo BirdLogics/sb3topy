@@ -7,4 +7,4 @@ formatting parsed inputs and fields into Python code.
 
 from . import codemap
 from .specmap import *
-from .block_data import get_blockmap
+from .blockmap import *
