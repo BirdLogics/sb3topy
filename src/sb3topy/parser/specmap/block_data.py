@@ -117,13 +117,12 @@ def _read_blocks():
 BLOCKS = _read_blocks()
 
 
-def format_switch(switch, args):
+def format_switch(switch, block):
     """Formats a blockswitch"""
-    fields = {
-        key: value.lower().replace(' ', '_')
-        for key, (type_, value) in args.items()
-        if type_ == "field"
-    }
+    # Get and standardize fields from the block
+    fields = {}
+    for field, value in block['fields'].items():
+        fields[field] = value[0].lower().replace(' ', '_')
 
     return switch.format(**fields)
 
@@ -143,13 +142,8 @@ def get_blockmap(block, target):
 
     # Step 2, apply any basic switches.
     if blockmap.switch:
-        # Get fields from the block
-        fields = {}
-        for field, value in block['fields'].items():
-            fields[field] = value[0].lower().replace(' ', '_')
-
         # Format the switch using the fields
-        opcode = format_switch(blockmap.switch, fields)
+        opcode = format_switch(blockmap.switch, block)
         blockmap = BLOCKS.get(opcode, blockmap)
 
     # Step 3, apply mutations.
