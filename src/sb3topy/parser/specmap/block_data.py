@@ -17,7 +17,7 @@ Globals:
         Loop blocks should yield at the end, but the yield can be
         omitted in warped blocks as an optimization.
 
-TODO Validate block_data.json to prevent obscure errors
+TODO Verify all blocks in block_data.json have args matching code
 """
 
 import json
@@ -92,20 +92,32 @@ def _read_blocks():
     for opcode, block in block_data.items():
         # Get the code from the data
         code = block.get("code")
-        if code is None:
-            continue
-        if isinstance(code, list):
-            code = '\n'.join(code)
+        if code is not None:
+            # Allow lists of code to replace newlines
+            if isinstance(code, list):
+                code = '\n'.join(code)
 
-        # Read indents from the code
-        indents = {
-            arg_name: indent for indent, arg_name in re.findall(
-                INDENT_PAT, code
-            )
-        }
+            # Read indents from the code
+            indents = {
+                arg_name: indent for indent, arg_name in re.findall(
+                    INDENT_PAT, code
+                )
+            }
 
-        # Remove indents from the code
-        code = re.sub(INDENT_PAT, "{\\2}", code)
+            # Remove indents from the code
+            code = re.sub(INDENT_PAT, "{\\2}", code)
+
+        else:
+            # The blockmap must have either code or a switch
+            assert block.get("switch") is not None, \
+                f"Blockmap for '{opcode}' must have either code or a switch"
+
+            # No indentation
+            indents = {}
+
+        # Verify hats have a basename
+        assert block["type"] != "hat" or "basename" in block, \
+            f"Hat blockmap for '{opcode}' missing basename."
 
         # Save the block
         blocks[opcode] = Block(block["type"], block["args"], code, indents,
@@ -157,7 +169,6 @@ def get_blockmap(block, target):
         blockmap = switch(block, target) or blockmap
 
     # Step 4, validate the blockmap and return it
-    # Verify the blockmap is a valid
     if blockmap.code is None:
         logging.warning(
             "Failed to resolve blockmap for opcode '%s'", block['opcode'])
