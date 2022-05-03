@@ -13,10 +13,12 @@ from .variables import Variables
 
 __all__ = ('parse_project', 'Parser')
 
+logger = logging.getLogger(__name__)
+
 
 def parse_project(project, manifest):
     """Parses project and returns the Python code"""
-    logging.info("Compiling project into Python...")
+    logger.info("Compiling project into Python...")
     return Parser(project, manifest).parse()
 
 
@@ -139,7 +141,7 @@ class Parser:
 
         # TODO Add hats to identifiers
 
-        logging.debug("Skipping topLevel block '%s' with opcode '%s'",
+        logger.debug("Skipping topLevel block '%s' with opcode '%s'",
                       blockid, block['opcode'])
         return ""
 
@@ -152,7 +154,7 @@ class Parser:
         block = self.target.blocks[blockid]
 
         while block:
-            # logging.debug("Parsing block '%s' with opcode '%s'",
+            # logger.debug("Parsing block '%s' with opcode '%s'",
             #               blockid, block['opcode'])
 
             # Get the conversion map
@@ -296,5 +298,5 @@ class Parser:
             return self.target.prototype.get_arg(value)
 
         # Default to quoting
-        logging.warning("Unknown field type '%s'", end_type)
+        logger.warning("Unknown field type '%s'", end_type)
         return sanitizer.quote_field(value)

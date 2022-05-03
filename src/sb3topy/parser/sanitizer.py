@@ -10,6 +10,8 @@ import logging
 import math
 import re
 
+logger = logging.getLogger(__name__)
+
 
 def clean_identifier(text, default='identifier'):
     """Strips invalid character from an identifier"""
@@ -20,11 +22,11 @@ def clean_identifier(text, default='identifier'):
     ), "", text)
 
     if not cleaned:
-        logging.warning("Stripped all characters from identifier '%s'")
+        logger.warning("Stripped all characters from identifier '%s'")
         cleaned = default
 
     if not cleaned.isidentifier():
-        logging.error("Failed to clean identifier '%s'", text)
+        logger.error("Failed to clean identifier '%s'", text)
         return "identifier"
 
     return cleaned
@@ -142,7 +144,7 @@ def cast_literal(value, to_type):
         return str(quote_number(value))
 
     # Default behavior
-    logging.warning("Unknown literal type '%s'", to_type)
+    logger.warning("Unknown literal type '%s'", to_type)
     if value in (True, False, None):
         return str(value)
     return str(quote_number(value))
@@ -156,12 +158,12 @@ def cast_wrapper(value, from_type, to_type):
 
     # Don't cast any type
     if to_type == 'any':
-        # logging.debug("Did not cast wrap '%s' to any", from_type)
+        # logger.debug("Did not cast wrap '%s' to any", from_type)
         return value
 
     # Don't cast if both types are the same
     if to_type == from_type:
-        # logging.debug("Did not cast wrap '%s' to '%s'", from_type, to_type)
+        # logger.debug("Did not cast wrap '%s' to '%s'", from_type, to_type)
         return value
 
     # Cast wrapper for strings
@@ -188,6 +190,6 @@ def cast_wrapper(value, from_type, to_type):
     if to_type == 'bool' and from_type == 'none':
         return 'False'
 
-    logging.warning("Unknown cast wrap for '%s' to '%s'", from_type, to_type)
+    logger.warning("Unknown cast wrap for '%s' to '%s'", from_type, to_type)
 
     return value

@@ -10,6 +10,8 @@ from textwrap import indent
 
 from .. import sanitizer, targets
 
+logger = logging.getLogger(__name__)
+
 
 def create_header(target: targets.Target):
     """Creates code between "class ...:" and "def __init__" """
@@ -100,7 +102,7 @@ def parse_costumes(target, assets):
 
         # Get the validated and modified md5ext from assets
         if costume['md5ext'] not in assets:
-            logging.error("Missing costume asset '%s'", costume['md5ext'])
+            logger.error("Missing costume asset '%s'", costume['md5ext'])
             costumes.append("{'name': " + name + "}")
             continue
         md5ext = assets[costume['md5ext']] or costume['md5ext']
@@ -156,7 +158,7 @@ def parse_sounds(target: targets.Target, assets):
 
         # Get the validated and modified md5ext from assets
         if sound['md5ext'] not in assets:
-            logging.error("Missing sound asset '%s'", sound['md5ext'])
+            logger.error("Missing sound asset '%s'", sound['md5ext'])
             sounds.append("{'name': " + name + "}")
             continue
         md5ext = assets[sound['md5ext']] or sound['md5ext']
@@ -227,7 +229,7 @@ def parse_lists(target: targets.Target):
         # Get the list Variable object
         var = target.vars.get_var('list', lst[0])
         list_class = var.get_list_type()
-        logging.debug("Treating list '%s' as %s", var.clean_name, list_class)
+        logger.debug("Treating list '%s' as %s", var.clean_name, list_class)
 
         # Create code to initialize the list
         list_init.append((

@@ -19,6 +19,8 @@ from .. import config, project
 
 __all__ = ['download_project', 'Download']
 
+logger = logging.getLogger(__name__)
+
 
 def download_project(manifest: project.Manifest, project_url):
     """
@@ -33,11 +35,11 @@ def download_project(manifest: project.Manifest, project_url):
 
     match = re.search(r"\d+", project_url)
     if match is None:
-        logging.error("Invalid project url '%s'", project_url)
+        logger.error("Invalid project url '%s'", project_url)
         return None
 
-    logging.info("Downloading project...")
-    logging.debug("Downloading project '%s'", match[0])
+    logger.info("Downloading project...")
+    logger.debug("Downloading project '%s'", match[0])
 
     return Download(manifest, match[0]).project
 
@@ -86,7 +88,7 @@ class Download:
         """Downloads and returns the project.json"""
         # Verify requests is installed
         if requests is None:
-            logging.error(
+            logger.error(
                 "Failed to download project json; requests not installed.")
             return None
 
@@ -97,21 +99,21 @@ class Download:
             resp = requests.get(url)
             resp.raise_for_status()
         except requests.exceptions.RequestException:
-            logging.exception(
+            logger.exception(
                 "Failed to download project json from '%s':", url)
             return None
 
         # Verify the json SHA256 matches
         if config.JSON_SHA:
-            logging.debug("Validating JSON SHA256...")
+            logger.debug("Validating JSON SHA256...")
             json_hash = sha256(resp.content).hexdigest()
 
             # If JSON_SHA is set to True, give a warning
             # Tkinter variables treat True as 1
             if config.JSON_SHA in (True, 1):
-                logging.warning("SHA256 not provided for JSON:\n%s", json_hash)
+                logger.warning("SHA256 not provided for JSON:\n%s", json_hash)
             elif json_hash != config.JSON_SHA:
-                logging.error(
+                logger.error(
                     "SHA256 of JSON failed (project has been modified):\n%s", json_hash)
                 return None
 
@@ -133,18 +135,18 @@ class Download:
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
-            logging.debug(
+            logger.debug(
                 "Skipping download of asset '%s' (already exists)", md5ext)
             return md5ext, md5ext
 
-        logging.debug("Downloading asset '%s'", md5)
+        logger.debug("Downloading asset '%s'", md5)
 
         # Download the asset
         try:
             resp = requests.get(url)
             resp.raise_for_status()
         except requests.exceptions.RequestException:
-            logging.exception(
+            logger.exception(
                 "Failed to download asset from '%s':", url)
             return md5ext, None
 
@@ -152,7 +154,7 @@ class Download:
         if config.VERIFY_ASSETS:
             md5_hash = md5(resp.content).hexdigest()
             if not md5_hash + '.' + md5ext.partition('.')[2] == md5ext:
-                logging.error(
+                logger.error(
                     "Downloaded asset '%s' has the wrong md5: '%s'", md5ext, md5_hash)
                 return md5ext, None
 

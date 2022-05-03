@@ -21,6 +21,8 @@ from .project import __dict__ as _project
 __all__ = ('restore_defaults', 'save_config', 'load_config',
            'parse_args', 'get_config', 'set_config', 'AUTOLOAD_PATH')
 
+logger = logging.getLogger(__name__)
+
 
 all_defaults = {}
 for _key, _value in _defaults.items():
@@ -62,10 +64,10 @@ def set_config(new_config, skip_none=False):
             if not skip_none or value is not None:
                 _config[name] = value
         elif name in _consts:
-            logging.warning(
+            logger.warning(
                 "Attempt to set constant config value '%s' to '%s", name, value)
         else:
-            logging.warning(
+            logger.warning(
                 "Cannot set unknown config value '%s' to '%s'", name, value)
 
     # Remove names not in all_defaults and None values
@@ -128,7 +130,7 @@ def _autoload_config(load_path):
         try:
             new_config = json.load(config_file)
         except json.JSONDecodeError:
-            logging.error("Failed to autoload config '%s'", load_path)
+            logger.error("Failed to autoload config '%s'", load_path)
             _config['AUTOLOAD_CONFIG'] = False
             return
 

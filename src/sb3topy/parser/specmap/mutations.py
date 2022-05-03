@@ -15,6 +15,9 @@ from ... import config
 from . import blockmap as bm
 from . import data, specmap
 
+logger = logging.getLogger(__name__)
+
+
 MUTATIONS = {}
 
 
@@ -80,7 +83,7 @@ def proc_call(block, target, _):
 
     # If the block doesn't exist, ignore it
     if prototype is None:
-        logging.warning("Procedure called without definition '%s'",
+        logger.warning("Procedure called without definition '%s'",
                         block['mutation']['proccode'])
         return data.BLOCKS["default"]
 
@@ -173,7 +176,7 @@ def var_change(block, target, blockmap):
         )
 
     if var_type != "any":
-        logging.warning("Unexpected type '%s' for changevariableby", var_type)
+        logger.warning("Unexpected type '%s' for changevariableby", var_type)
 
     return blockmap
 
@@ -274,7 +277,7 @@ def broadcast_received_solo(block, target, blockmap):
         broadcast = block['fields']['BROADCAST_OPTION'][0].lower()
         target_name = target.broadcasts.get(broadcast)
         if target_name is not None and target_name not in target.cloned_targets:
-            logging.debug(
+            logger.debug(
                 "Solo broadcast '%s' in target '%s'",
                 broadcast, target_name)
             block['fields']['TARGET'] = (target_name,)

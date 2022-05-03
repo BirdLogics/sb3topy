@@ -14,6 +14,8 @@ from .prototypes import Prototypes
 from .typing import DiGraph
 from .variables import Variables
 
+logger = logging.getLogger(__name__)
+
 
 class Targets:
     """
@@ -118,7 +120,7 @@ class Target:
             - Marks universal variables used in sensing_of
         """
 
-        logging.debug("Running first pass on target '%s'", self.target['name'])
+        logger.debug("Running first pass on target '%s'", self.target['name'])
 
         # Loop through each block
         for blockid, block in self.blocks.items():
@@ -154,7 +156,7 @@ class Target:
             - Guesses the type of each variable
         """
 
-        logging.debug("Running second pass on target '%s'",
+        logger.debug("Running second pass on target '%s'",
                       self.target['name'])
 
         # Gets names for all variables
