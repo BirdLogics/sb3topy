@@ -23,7 +23,10 @@ from typing import Dict
 
 from . import blockmap
 
-__all__ = ["HATS", "LOOPS", "BLOCKS"]
+__all__ = [
+    "HATS", "LOOPS", "BLOCKS",
+    "is_hat", "is_loop", "is_procedure"
+]
 
 DATA_PATH = path.join(path.dirname(__file__), "data.json")
 
@@ -63,3 +66,23 @@ LOOPS = {
 }
 
 BLOCKS = _read_blocks()
+
+
+def is_hat(block):
+    """Determines if an opcode belongs to a hat block."""
+    return block['opcode'] in HATS
+
+
+def is_loop(block):
+    """
+    Determines if an opcode belongs to a loop block.
+
+    All loops need to have yield placed at their end. In a no refresh
+    custom block, the yield can optionally be omitted for speed.
+    """
+    return block['opcode'] in LOOPS
+
+
+def is_procedure(block):
+    """Determines if the opcode is 'procedures_definition'."""
+    return block['opcode'] == 'procedures_definition'

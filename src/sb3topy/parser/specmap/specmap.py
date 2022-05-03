@@ -1,115 +1,11 @@
 """
 specmap.py
 
-Contains functions used to read specmap data
-
-TODO Proper type detection
+Contains functions used parse inputs and certain blocks.
 """
 
 
 import logging
-
-from ... import config
-from .. import sanitizer
-from . import data, type_switches
-
-
-def is_hat(block):
-    """Determines if an opcode belongs a hat block"""
-    return block['opcode'] in data.HATS
-
-
-def is_procedure(block):
-    """Determines if the opcode is 'procedures_definition'"""
-    return block['opcode'] == 'procedures_definition'
-
-
-def is_loop(block):
-    """
-    Determines if an opcode belongs to a loop block
-
-    A yield needs to be added to the end of loops' code
-    """
-    return block['opcode'] in data.LOOPS
-
-
-def get_literal_type(value):
-    """Attempts to determine the type of a literal value"""
-
-    if str(value).isdigit() and len(str(value)) < config.SIG_DIGITS:
-        return 'int'
-    if str(sanitizer.cast_number(value)) == str(value) and \
-            len(str(value).partition('.')[2]) < config.SIG_DIGITS:
-        return 'float'
-    if str(value) == "":
-        return 'int'
-    return 'str'
-
-
-def get_input_type(target, value):
-    """Parses a block input to determine the type"""
-    # 1 Wrapped value
-    if value[0] == 1 and isinstance(value[1], list):
-        value = value[1]
-
-    # Handle a block input
-    # 1 wrapper with block, 2 block, 3 block over value
-    if value[0] in (1, 2, 3):
-        value = value[1]
-
-        # Empty block
-        if value is None:
-            return 'none'
-
-        # Verify not a variable
-        if isinstance(value, str):
-            block = target.blocks[value]
-            # Shadow block (dropdown)
-            if block['shadow']:
-                # Return the value of the field
-                return 'literal', value[0]
-
-            # Just a block
-            return get_block_type(target, block)
-
-    # 4-8 Number, 9-10 String, # 11 Broadcast
-    if 4 <= value[0] <= 10:
-        return get_literal_type(value[1])
-
-    # 12 Variable
-    if value[0] == 12:
-        var = target.vars.get_var('var', value[1])
-        return target.digraph.get_node(var.node.id_tuple)
-
-    # 13 List reporter
-    if value[0] == 13:
-        # TODO StaticList reporter typing?
-        return 'str'
-
-    return 'any'
-
-
-def get_block_type(target, block):
-    """Gets the return type of a block"""
-    type_ = None
-
-    # Attempt to get the type from a switch
-    switchf = type_switches.SWITCHES.get(block['opcode'])
-    if switchf is not None:
-        type_ = switchf(target, block)
-
-    # Default to the blockmap's return_type
-    if type_ is None:
-        blockmap = data.BLOCKS.get(block['opcode'])
-        if blockmap is not None:
-            type_ = blockmap.return_type
-
-    if type_ is not None:
-        return type_
-
-    # Missing blockmap or something, give a warning
-    logging.warning("Unknown type for block '%s'", block['opcode'])
-    return "any"
 
 
 def parse_input(blocks, value):
