@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 
 all_defaults = {}
 for _key, _value in _defaults.items():
-    if not _key[0] == '_':
+    if _key[0] != '_':
         all_defaults[_key] = _value
 for _key, _value in _project.items():
-    if not _key[0] == '_':
+    if _key[0] != '_':
         all_defaults[_key] = _value
 
 
@@ -49,7 +49,7 @@ def get_config(skip_unmodified=False):
     # Return all modified config values
     return {
         name: value for name, value in _config.items()
-        if name in all_defaults or name in _project
+        if name in all_defaults
     }
 
 
@@ -65,7 +65,7 @@ def set_config(new_config, skip_none=False):
                 _config[name] = value
         elif name in _consts:
             logger.warning(
-                "Attempt to set constant config value '%s' to '%s", name, value)
+                "Attempt to set constant config value '%s' to '%s'", name, value)
         else:
             logger.warning(
                 "Cannot set unknown config value '%s' to '%s'", name, value)
