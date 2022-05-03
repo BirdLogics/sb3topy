@@ -155,8 +155,9 @@ class Parser:
             # logging.debug("Parsing block '%s' with opcode '%s'",
             #               blockid, block['opcode'])
 
-            # Get the block's conversion map
-            # Also sets the target's procedure if necessary
+            # Get the conversion map
+            # May "mutate" the block to add custom arguments
+            # May set target.prototype
             blockmap = specmap.get_blockmap(block, self.target)
 
             # Get fields
@@ -175,7 +176,7 @@ class Parser:
                 assert isinstance(clean_args[name], str)
 
             # Create the code for the block
-            code = code + blockmap.format(clean_args) + "\n"
+            code = code + blockmap.format_code(clean_args) + "\n"
 
             # Get the next block
             block = self.target.blocks.get(block['next'])

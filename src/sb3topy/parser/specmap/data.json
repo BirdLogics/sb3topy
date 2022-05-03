@@ -1,0 +1,1363 @@
+{
+    "motion_movesteps": {
+        "type": "stack",
+        "args": {
+            "STEPS": "float"
+        },
+        "code": "self.move({STEPS})"
+    },
+    "motion_turnright": {
+        "type": "stack",
+        "args": {
+            "DEGREES": "float"
+        },
+        "code": "self.direction += {DEGREES}"
+    },
+    "motion_turnleft": {
+        "type": "stack",
+        "args": {
+            "DEGREES": "float"
+        },
+        "code": "self.direction -= {DEGREES}"
+    },
+    "motion_pointindirection": {
+        "type": "stack",
+        "args": {
+            "DIRECTION": "float"
+        },
+        "code": "self.direction = {DIRECTION}"
+    },
+    "motion_pointtowards": {
+        "type": "stack",
+        "args": {
+            "TOWARDS": "str"
+        },
+        "code": "self.point_towards(util, {TOWARDS})"
+    },
+    "motion_gotoxy": {
+        "type": "stack",
+        "args": {
+            "X": "float",
+            "Y": "float"
+        },
+        "code": "self.gotoxy({X}, {Y})"
+    },
+    "motion_goto": {
+        "type": "stack",
+        "args": {
+            "TO": "str"
+        },
+        "code": "self.goto(util, {TO})"
+    },
+    "motion_glidesecstoxy": {
+        "type": "stack",
+        "args": {
+            "SECS": "float",
+            "X": "float",
+            "Y": "float"
+        },
+        "code": "await self.glide({SECS}, {X}, {Y})"
+    },
+    "motion_glideto": {
+        "type": "stack",
+        "args": {
+            "TO": "str"
+        },
+        "code": "self.glideto(util, {TO})"
+    },
+    "motion_changexby": {
+        "type": "stack",
+        "args": {
+            "DX": "float"
+        },
+        "code": "self.xpos += {DX}"
+    },
+    "motion_setx": {
+        "type": "stack",
+        "args": {
+            "X": "float"
+        },
+        "code": "self.xpos = {X}"
+    },
+    "motion_changeyby": {
+        "type": "stack",
+        "args": {
+            "DY": "float"
+        },
+        "code": "self.ypos += {DY}"
+    },
+    "motion_sety": {
+        "type": "stack",
+        "args": {
+            "Y": "float"
+        },
+        "code": "self.ypos = {Y}"
+    },
+    "motion_ifonedgebounce": {
+        "type": "stack",
+        "args": {},
+        "code": "self.bounce_on_edge()"
+    },
+    "motion_setrotationstyle": {
+        "type": "stack",
+        "args": {
+            "STYLE": "field"
+        },
+        "code": "self.costume.rotation_style = {STYLE}"
+    },
+    "motion_xposition": {
+        "type": "float",
+        "args": {},
+        "code": "self.xpos"
+    },
+    "motion_yposition": {
+        "type": "float",
+        "args": {},
+        "code": "self.ypos"
+    },
+    "motion_direction": {
+        "type": "float",
+        "args": {},
+        "code": "self.direction"
+    },
+    "looks_sayforsecs": {
+        "type": "stack",
+        "args": {
+            "MESSAGE": "str",
+            "SECS": "float"
+        },
+        "code": "pass # looks_sayforsecs({MESSAGE}, {SECS})"
+    },
+    "looks_say": {
+        "type": "stack",
+        "args": {
+            "MESSAGE": "str"
+        },
+        "code": "pass # looks_say({MESSAGE})"
+    },
+    "looks_thinkforsecs": {
+        "type": "stack",
+        "args": {
+            "MESSAGE": "str",
+            "SECS": "float"
+        },
+        "code": "pass # looks_thinkforsecs({MESSAGE}, {SECS})"
+    },
+    "looks_think": {
+        "type": "stack",
+        "args": {
+            "MESSAGE": "str"
+        },
+        "code": "pass # looks_think({MESSAGE})"
+    },
+    "looks_show": {
+        "type": "stack",
+        "args": {},
+        "code": "self.shown = True"
+    },
+    "looks_hide": {
+        "type": "stack",
+        "args": {},
+        "code": "self.shown = False"
+    },
+    "looks_switchcostumeto": {
+        "type": "stack",
+        "args": {
+            "COSTUME": "any"
+        },
+        "code": "self.costume.switch({COSTUME})"
+    },
+    "looks_nextcostume": {
+        "type": "stack",
+        "args": {},
+        "code": "self.costume.next()"
+    },
+    "looks_switchbackdropto": {
+        "type": "stack",
+        "args": {
+            "BACKDROP": "any"
+        },
+        "code": [
+            "util.sprites.stage.costume.switch({BACKDROP})",
+            "util.send_event('backdrop_' + util.sprites.stage.costume.name, True)"
+        ]
+    },
+    "looks_switchbackdroptoandwait": {
+        "type": "stack",
+        "args": {
+            "BACKDROP": "any"
+        },
+        "code": [
+            "util.sprites.stage.costume.switch({BACKDROP})",
+            "await util.send_wait('backdrop_' + util.sprites.stage.costume.name, True)"
+        ]
+    },
+    "looks_nextbackdrop": {
+        "type": "stack",
+        "args": {},
+        "code": [
+            "util.sprites.stage.costume.next()",
+            "util.send_event('onbackdrop_' + util.sprites.stage.costume.name, True)"
+        ]
+    },
+    "looks_changeeffectby": {
+        "type": "stack",
+        "args": {
+            "EFFECT": "field",
+            "CHANGE": "float"
+        },
+        "code": "self.costume.change_effect({EFFECT}, {CHANGE})"
+    },
+    "looks_seteffectto": {
+        "type": "stack",
+        "args": {
+            "EFFECT": "field",
+            "VALUE": "float"
+        },
+        "code": "self.costume.set_effect({EFFECT}, {VALUE})"
+    },
+    "looks_cleargraphiceffects": {
+        "type": "stack",
+        "args": {},
+        "code": "self.costume.clear_effects()"
+    },
+    "looks_changesizeby": {
+        "type": "stack",
+        "args": {
+            "CHANGE": "float"
+        },
+        "code": "self.costume.size += {CHANGE}"
+    },
+    "looks_setsizeto": {
+        "type": "stack",
+        "args": {
+            "SIZE": "float"
+        },
+        "code": "self.costume.size = {SIZE}"
+    },
+    "looks_gotofrontback": {
+        "type": "stack",
+        "args": {
+            "FRONT_BACK": "field"
+        },
+        "switch": "looks_goto_{FRONT_BACK}"
+    },
+    "looks_goto_front": {
+        "type": "stack",
+        "args": {},
+        "code": "self.front_layer(util)"
+    },
+    "looks_goto_back": {
+        "type": "stack",
+        "args": {},
+        "code": "self.back_layer(util)"
+    },
+    "looks_goforwardbackwardlayers": {
+        "type": "stack",
+        "args": {
+            "FOWARDS_BACKWARDS": "field"
+        },
+        "switch": "looks_go_{FORWARD_BACKWARD}_layers"
+    },
+    "looks_go_forward_layers": {
+        "type": "stack",
+        "args": {
+            "NUM": "int"
+        },
+        "code": "self.change_layer(util, {NUM})"
+    },
+    "looks_go_backward_layers": {
+        "type": "stack",
+        "args": {
+            "NUM": "int"
+        },
+        "code": "self.change_layer(util, -{NUM})"
+    },
+    "looks_costumenumbername": {
+        "type": "any",
+        "args": {
+            "NUMER_NAME": "field"
+        },
+        "switch": "looks_costume_{NUMBER_NAME}"
+    },
+    "looks_costume_number": {
+        "type": "int",
+        "args": {},
+        "code": "self.costume.number"
+    },
+    "looks_costume_name": {
+        "type": "str",
+        "args": {},
+        "code": "self.costume.name"
+    },
+    "looks_backdropnumbername": {
+        "type": "any",
+        "args": {
+            "NUMBER_NAME": "field"
+        },
+        "switch": "looks_backdrop_{NUMBER_NAME}"
+    },
+    "looks_backdrop_number": {
+        "type": "int",
+        "args": {},
+        "code": "util.sprites.stage.costume.number"
+    },
+    "looks_backdrop_name": {
+        "type": "str",
+        "args": {},
+        "code": "util.sprites.stage.costume.name"
+    },
+    "looks_size": {
+        "type": "int",
+        "args": {},
+        "code": "round(self.costume.size)"
+    },
+    "sound_play": {
+        "type": "stack",
+        "args": {
+            "SOUND_MENU": "any"
+        },
+        "code": "self.sounds.play({SOUND_MENU})"
+    },
+    "sound_playuntildone": {
+        "type": "stack",
+        "args": {
+            "SOUND_MENU": "any"
+        },
+        "code": "await self.sounds.play({SOUND_MENU})"
+    },
+    "sound_stopallsounds": {
+        "type": "stack",
+        "args": {},
+        "code": "self.sounds.stop_all()"
+    },
+    "sound_changevolumeby": {
+        "type": "stack",
+        "args": {
+            "VOLUME": "float"
+        },
+        "code": "self.sounds.change_volume({VOLUME})"
+    },
+    "sound_setvolumeto": {
+        "type": "stack",
+        "args": {
+            "VOLUME": "float"
+        },
+        "code": "self.sounds.set_volume({VOLUME})"
+    },
+    "sound_volume": {
+        "type": "float",
+        "args": {},
+        "code": "self.sounds.volume"
+    },
+    "sound_seteffectto": {
+        "type": "stack",
+        "args": {
+            "EFFECT": "field",
+            "VALUE": "float"
+        },
+        "code": "self.sounds.set_effect({EFFECT}, {VALUE})"
+    },
+    "sound_changeeffectby": {
+        "type": "stack",
+        "args": {
+            "EFFECT": "field",
+            "VALUE": "float"
+        },
+        "code": "self.sounds.change_effect({EFFECT}, {VALUE})"
+    },
+    "sound_cleareffects": {
+        "type": "stack",
+        "args": {},
+        "code": "self.sounds.clear_effects()"
+    },
+    "pen_clear": {
+        "type": "stack",
+        "args": {},
+        "code": "self.pen.clear_all()"
+    },
+    "pen_stamp": {
+        "type": "stack",
+        "args": {},
+        "code": "self.pen.stamp(util)"
+    },
+    "pen_penDown": {
+        "type": "stack",
+        "args": {},
+        "code": "self.pen.down()"
+    },
+    "pen_penUp": {
+        "type": "stack",
+        "args": {},
+        "code": "self.pen.up()"
+    },
+    "pen_setPenColorToColor": {
+        "type": "stack",
+        "args": {
+            "COLOR": "any"
+        },
+        "code": "self.pen.exact_color({COLOR})"
+    },
+    "pen_changePenColorParamBy": {
+        "type": "stack",
+        "args": {
+            "COLOR_PARAM": "str",
+            "VALUE": "float"
+        },
+        "code": "self.pen.change_color({COLOR_PARAM}, {VALUE})"
+    },
+    "pen_setPenColorParamTo": {
+        "type": "stack",
+        "args": {
+            "COLOR_PARAM": "str",
+            "VALUE": "float"
+        },
+        "code": "self.pen.set_color({COLOR_PARAM}, {VALUE})"
+    },
+    "pen_changePenSizeBy": {
+        "type": "stack",
+        "args": {
+            "SIZE": "float"
+        },
+        "code": "self.pen.change_size({SIZE})"
+    },
+    "pen_setPenSizeTo": {
+        "type": "stack",
+        "args": {
+            "SIZE": "float"
+        },
+        "code": "self.pen.set_size({SIZE})"
+    },
+    "pen_setPenShadeToNumber": {
+        "type": "stack",
+        "args": {
+            "SHADE": "float"
+        },
+        "code": "self.pen.set_shade({SHADE})"
+    },
+    "pen_changePenShadeBy": {
+        "type": "stack",
+        "args": {
+            "SHADE": "float"
+        },
+        "code": "self.pen.change_shade({SHADE})"
+    },
+    "pen_setHueTo": {
+        "type": "stack",
+        "args": {
+            "HUE": "float"
+        },
+        "code": "self.pen.set_hue({HUE})"
+    },
+    "pen_changePenHueBy": {
+        "type": "stack",
+        "args": {
+            "HUE": "float"
+        },
+        "code": "self.pen.change_hue({HUE})"
+    },
+    "event_whenflagclicked": {
+        "type": "hat",
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "@on_green_flag",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "green_flag"
+    },
+    "event_whenkeypressed": {
+        "type": "hat",
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack",
+            "KEY_OPTION": "field"
+        },
+        "code": [
+            "@on_pressed({KEY_OPTION})",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "key_{KEY_OPTION}_pressed"
+    },
+    "event_whenthisspriteclicked": {
+        "type": "hat",
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "@on_clicked",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "sprite_clicked"
+    },
+    "event_whenstageclicked": {
+        "type": "hat",
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "@on_clicked",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "sprite_clicked"
+    },
+    "event_whenbackdropswitchesto": {
+        "type": "hat",
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack",
+            "BACKDROP": "field"
+        },
+        "code": [
+            "@on_backdrop({BACKDROP})",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "on_backdrop_{BACKDROP}"
+    },
+    "event_whengreaterthan": {
+        "type": "hat",
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack",
+            "WHENGREATERTHANMENU": "field",
+            "VALUE": "float"
+        },
+        "code": [
+            "@on_greater({WHENGREATERTHANMENU}, {VALUE})",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "on_{WHENGREATERTHANMENU}"
+    },
+    "event_whenbroadcastreceived": {
+        "type": "hat",
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack",
+            "BROADCAST_OPTION": "field"
+        },
+        "code": [
+            "@on_broadcast({BROADCAST_OPTION})",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "broadcast_{BROADCAST_OPTION}"
+    },
+    "event_broadcast": {
+        "type": "stack",
+        "args": {
+            "BROADCAST_INPUT": "str"
+        },
+        "code": "util.send_broadcast({BROADCAST_INPUT})"
+    },
+    "event_broadcastandwait": {
+        "type": "stack",
+        "args": {
+            "BROADCAST_INPUT": "str"
+        },
+        "code": "await util.send_broadcast_wait({BROADCAST_INPUT})"
+    },
+    "event_whenbroadcastreceived_solo": {
+        "type": "hat",
+        "args": {
+            "TARGET": "field",
+            "IDENT": "ex_hat_ident",
+            "SUBSTACK": "stack",
+            "BROADCAST_OPTION": "field"
+        },
+        "code": [
+            "@on_broadcast({BROADCAST_OPTION})",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "broadcast_{BROADCAST_OPTION}"
+    },
+    "event_broadcastandwait_solo": {
+        "type": "stack",
+        "args": {
+            "TARGET": "str",
+            "IDENT": "ex_hat_ident"
+        },
+        "code": "await util.sprites[{TARGET}].{IDENT}(util)"
+    },
+    "control_wait": {
+        "type": "stack",
+        "args": {
+            "DURATION": "float"
+        },
+        "code": "await self.sleep({DURATION})"
+    },
+    "control_repeat": {
+        "type": "stack",
+        "args": {
+            "TIMES": "int",
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "for _ in range({TIMES}):",
+            "    {SUBSTACK}"
+        ]
+    },
+    "control_forever": {
+        "type": "stack",
+        "args": {
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "while True:",
+            "    {SUBSTACK}"
+        ]
+    },
+    "control_if": {
+        "type": "stack",
+        "args": {
+            "CONDITION": "bool",
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "if {CONDITION}:",
+            "    {SUBSTACK}"
+        ]
+    },
+    "control_if_else": {
+        "type": "stack",
+        "args": {
+            "CONDITION": "bool",
+            "SUBSTACK": "stack",
+            "SUBSTACK2": "stack"
+        },
+        "code": [
+            "if {CONDITION}:",
+            "    {SUBSTACK}",
+            "else:",
+            "    {SUBSTACK2}"
+        ]
+    },
+    "control_wait_until": {
+        "type": "stack",
+        "args": {
+            "CONDITION": "bool"
+        },
+        "code": [
+            "while not {CONDITION}:",
+            "    await self.yield_()"
+        ]
+    },
+    "control_repeat_until": {
+        "type": "stack",
+        "args": {
+            "CONDITION": "bool",
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "while not {CONDITION}:",
+            "    {SUBSTACK}"
+        ]
+    },
+    "control_stop": {
+        "type": "stack",
+        "args": {
+            "STOP_OPTION": "field"
+        },
+        "switch": "control_stop_{STOP_OPTION}"
+    },
+    "control_stop_this_script": {
+        "type": "stack",
+        "args": {},
+        "code": "return None"
+    },
+    "control_stop_other_scripts_in_sprite": {
+        "type": "stack",
+        "args": {},
+        "code": "self.stop_other()"
+    },
+    "control_stop_all": {
+        "type": "stack",
+        "args": {},
+        "code": [
+            "util.stop_all()",
+            "return None"
+        ]
+    },
+    "control_start_as_clone": {
+        "type": "hat",
+        "args": {
+            "IDENT": "hat_ident",
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "@on_clone_start",
+            "async def {IDENT}(self, util):",
+            "    {SUBSTACK}"
+        ],
+        "basename": "clone_start"
+    },
+    "control_create_clone_of": {
+        "type": "stack",
+        "args": {
+            "CLONE_OPTION": "str"
+        },
+        "code": "self.create_clone_of(util, {CLONE_OPTION})"
+    },
+    "control_delete_this_clone": {
+        "type": "stack",
+        "args": {},
+        "code": "self.delete_clone(util)"
+    },
+    "sensing_touchingobject": {
+        "type": "bool",
+        "args": {
+            "TOUCHINGOBJECTMENU": "str"
+        },
+        "code": "self.get_touching(util, {TOUCHINGOBJECTMENU})",
+        "switch": "sensing_touching"
+    },
+    "sensing_touchingcolor": {
+        "type": "bool",
+        "args": {
+            "COLOR": "color"
+        },
+        "code": "False"
+    },
+    "sensing_coloristouchingcolor": {
+        "type": "bool",
+        "args": {
+            "COLOR": "color",
+            "COLOR2": "color"
+        },
+        "code": "False"
+    },
+    "sensing_distanceto": {
+        "type": "float",
+        "args": {
+            "DISTANCETOMENU": "field"
+        },
+        "code": "self.distance_to(util, {DISTANCETOMENU})"
+    },
+    "sensing_askandwait": {
+        "type": "stack",
+        "args": {
+            "QUESTION": "str"
+        },
+        "code": "util.ask({QUESTION})"
+    },
+    "sensing_answer": {
+        "type": "str",
+        "args": {},
+        "code": "util.answer"
+    },
+    "sensing_keypressed": {
+        "type": "bool",
+        "args": {
+            "KEY_OPTION": "str"
+        },
+        "code": "util.inputs[{KEY_OPTION}]"
+    },
+    "sensing_mousedown": {
+        "type": "bool",
+        "args": {},
+        "code": "util.inputs.mouse_down"
+    },
+    "sensing_mousex": {
+        "type": "int",
+        "args": {},
+        "code": "util.inputs.mouse_x"
+    },
+    "sensing_mousey": {
+        "type": "int",
+        "args": {},
+        "code": "util.inputs.mouse_y"
+    },
+    "sensing_loudness": {
+        "type": "int",
+        "args": {},
+        "code": "0"
+    },
+    "sensing_loud": {
+        "type": "bool",
+        "args": {},
+        "code": "False"
+    },
+    "sensing_timer": {
+        "type": "float",
+        "args": {},
+        "code": "util.timer()"
+    },
+    "sensing_resettimer": {
+        "type": "stack",
+        "args": {},
+        "code": "util.timer.reset()"
+    },
+    "sensing_of": {
+        "type": "any",
+        "args": {
+            "PROPERTY": "property",
+            "OBJECT": "str"
+        },
+        "code": "util.sprites[{OBJECT}].{PROPERTY}",
+        "switch": "sensing_{PROPERTY}_of"
+    },
+    "sensing_x_position_of": {
+        "type": "float",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "str"
+        },
+        "code": "util.sprites[{OBJECT}].xpos"
+    },
+    "sensing_y_position_of": {
+        "type": "float",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "str"
+        },
+        "code": "util.sprites[{OBJECT}].ypos"
+    },
+    "sensing_direction_of": {
+        "type": "float",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "str"
+        },
+        "code": "util.sprites[{OBJECT}].direction"
+    },
+    "sensing_costume_of": {
+        "type": "int",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "str"
+        },
+        "code": "util.sprites[{OBJECT}].costume.number"
+    },
+    "sensing_costume_name_of": {
+        "type": "str",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "str"
+        },
+        "code": "util.sprites[{OBJECT}].costume.name"
+    },
+    "sensing_size_of": {
+        "type": "int",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "str"
+        },
+        "code": "round(util.sprites[{OBJECT}].costume.size)"
+    },
+    "sensing_volume_of": {
+        "type": "float",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "str"
+        },
+        "code": "util.sprites[{OBJECT}].volume"
+    },
+    "sensing_backdrop_of": {
+        "type": "int",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "str"
+        },
+        "code": "round(util.sprites[{OBJECT}].costume.number)"
+    },
+    "sensing_backdrop_name_of": {
+        "type": "str",
+        "args": {
+            "PROPERTY": "field",
+            "OBJECT": "field"
+        },
+        "code": "util.sprites[{OBJECT}].costume.name"
+    },
+    "sensing_current": {
+        "type": "int",
+        "args": {
+            "CURRENTMENU": "field"
+        },
+        "switch": "sensing_current_{CURRENTMENU}"
+    },
+    "sensing_current_year": {
+        "type": "int",
+        "args": {},
+        "code": "time.localtime()['tm_year']"
+    },
+    "sensing_current_month": {
+        "type": "int",
+        "args": {},
+        "code": "time.localtime()['tm_month']"
+    },
+    "sensing_current_date": {
+        "type": "int",
+        "args": {},
+        "code": "time.localtime()['tm_mday']"
+    },
+    "sensing_current_day_of_week": {
+        "type": "int",
+        "args": {},
+        "code": "(time.localtime()['tm_wday'] + 2)"
+    },
+    "sensing_current_hour": {
+        "type": "int",
+        "args": {},
+        "code": "time.localtime()['tm_hour']"
+    },
+    "sensing_current_minute": {
+        "type": "int",
+        "args": {},
+        "code": "time.localtime()['tm_min']"
+    },
+    "sensing_current_second": {
+        "type": "int",
+        "args": {},
+        "code": "time.localtime()['tm_sec']"
+    },
+    "sensing_dayssince2000": {
+        "type": "float",
+        "args": {},
+        "code": "(time.time() / 86400 - 10957)"
+    },
+    "sensing_username": {
+        "type": "str",
+        "args": {},
+        "code": "config.USERNAME"
+    },
+    "operator_add": {
+        "type": "float",
+        "args": {
+            "NUM1": "float",
+            "NUM2": "float"
+        },
+        "code": "({NUM1} + {NUM2})"
+    },
+    "operator_subtract": {
+        "type": "float",
+        "args": {
+            "NUM1": "float",
+            "NUM2": "float"
+        },
+        "code": "({NUM1} - {NUM2})"
+    },
+    "operator_multiply": {
+        "type": "float",
+        "args": {
+            "NUM1": "float",
+            "NUM2": "float"
+        },
+        "code": "({NUM1} * {NUM2})"
+    },
+    "operator_divide": {
+        "type": "float",
+        "args": {
+            "NUM1": "any",
+            "NUM2": "any"
+        },
+        "code": "div({NUM1}, {NUM2})"
+    },
+    "operator_random": {
+        "type": "float",
+        "args": {
+            "FROM": "float",
+            "TO": "float"
+        },
+        "code": "pick_rand({FROM}, {TO})"
+    },
+    "operator_lt": {
+        "type": "bool",
+        "args": {
+            "OPERAND1": "any",
+            "OPERAND2": "any"
+        },
+        "code": "lt({OPERAND1}, {OPERAND2})"
+    },
+    "operator_equals": {
+        "type": "bool",
+        "args": {
+            "OPERAND1": "any",
+            "OPERAND2": "any"
+        },
+        "code": "eq({OPERAND1}, {OPERAND2})"
+    },
+    "operator_gt": {
+        "type": "bool",
+        "args": {
+            "OPERAND1": "any",
+            "OPERAND2": "any"
+        },
+        "code": "gt({OPERAND1}, {OPERAND2})"
+    },
+    "operator_and": {
+        "type": "bool",
+        "args": {
+            "OPERAND1": "bool",
+            "OPERAND2": "bool"
+        },
+        "code": "({OPERAND1} and {OPERAND2})"
+    },
+    "operator_or": {
+        "type": "bool",
+        "args": {
+            "OPERAND1": "bool",
+            "OPERAND2": "bool"
+        },
+        "code": "({OPERAND1} or {OPERAND2})"
+    },
+    "operator_not": {
+        "type": "bool",
+        "args": {
+            "OPERAND": "bool"
+        },
+        "code": "not {OPERAND}"
+    },
+    "operator_join": {
+        "type": "str",
+        "args": {
+            "STRING1": "str",
+            "STRING2": "str"
+        },
+        "code": "({STRING1} + {STRING2})"
+    },
+    "operator_letter_of": {
+        "type": "str",
+        "args": {
+            "LETTER": "int",
+            "STRING": "str"
+        },
+        "code": "letter_of({STRING}, {LETTER})"
+    },
+    "operator_length": {
+        "type": "int",
+        "args": {
+            "STRING": "str"
+        },
+        "code": "len({STRING})"
+    },
+    "operator_contains": {
+        "type": "bool",
+        "args": {
+            "STRING1": "str",
+            "STRING2": "str"
+        },
+        "code": "({STRING2} in {STRING1})"
+    },
+    "operator_mod": {
+        "type": "float",
+        "args": {
+            "NUM1": "float",
+            "NUM2": "float"
+        },
+        "code": "({NUM1} % {NUM2})"
+    },
+    "operator_round": {
+        "type": "int",
+        "args": {
+            "NUM": "int"
+        },
+        "code": "{NUM}"
+    },
+    "operator_mathop": {
+        "type": "float",
+        "args": {
+            "OPERATOR": "str",
+            "NUM": "float"
+        },
+        "code": "#? operator_mathop_{OPERATOR}",
+        "switch": "operator_mathop_{OPERATOR}"
+    },
+    "operator_mathop_abs": {
+        "type": "int",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "abs({NUM})"
+    },
+    "operator_mathop_floor": {
+        "type": "int",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.floor({NUM})"
+    },
+    "operator_mathop_ceiling": {
+        "type": "int",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.ceil({NUM})"
+    },
+    "operator_mathop_sqrt": {
+        "type": "int",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "sqrt({NUM})"
+    },
+    "operator_mathop_sin": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.sin(math.radians({NUM}))"
+    },
+    "operator_mathop_cos": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.cos(math.radians({NUM}))"
+    },
+    "operator_mathop_tan": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.tan(math.radians({NUM}))"
+    },
+    "operator_mathop_asin": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.degrees(math.asin({NUM}))"
+    },
+    "operator_mathop_acos": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.degrees(math.acos({NUM}))"
+    },
+    "operator_mathop_atan": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.degrees(math.atan({NUM}))"
+    },
+    "operator_mathop_ln": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.log({NUM})"
+    },
+    "operator_mathop_log": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.log({NUM}, 10)"
+    },
+    "operator_mathop_e_^": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.exp({NUM})"
+    },
+    "operator_mathop_10_^": {
+        "type": "float",
+        "args": {
+            "NUM": "float"
+        },
+        "code": "math.pow(10, {NUM})"
+    },
+    "data_variable": {
+        "type": "any",
+        "args": {
+            "VARIABLE": "variable"
+        },
+        "code": "{VARIABLE}"
+    },
+    "data_setvariableto": {
+        "type": "stack",
+        "args": {
+            "VARIABLE": "variable",
+            "VALUE": "any"
+        },
+        "code": "{VARIABLE} = {VALUE}"
+    },
+    "data_changevariableby": {
+        "type": "stack",
+        "args": {
+            "VARIABLE": "variable",
+            "VALUE": "float"
+        },
+        "code": "{VARIABLE} = tonum({VARIABLE}) + {VALUE}"
+    },
+    "data_showvariable": {
+        "type": "stack",
+        "args": {
+            "VARIABLE": "variable"
+        },
+        "code": "print({VARIABLE})"
+    },
+    "data_hidevariable": {
+        "type": "stack",
+        "args": {
+            "VARIABLE": "variable"
+        },
+        "code": "pass # hide variable"
+    },
+    "data_listcontents": {
+        "type": "str",
+        "args": {
+            "LIST": "list"
+        },
+        "code": "{LIST}.join()"
+    },
+    "data_addtolist": {
+        "type": "stack",
+        "args": {
+            "ITEM": "any",
+            "LIST": "list"
+        },
+        "code": "{LIST}.append({ITEM})"
+    },
+    "data_deleteoflist": {
+        "type": "stack",
+        "args": {
+            "INDEX": "int",
+            "LIST": "list"
+        },
+        "code": "{LIST}.delete({INDEX})"
+    },
+    "data_deleteoflist_legacy": {
+        "type": "stack",
+        "args": {
+            "INDEX": "any",
+            "LIST": "list"
+        },
+        "code": "{LIST}.delete2({INDEX})"
+    },
+    "data_deletealloflist": {
+        "type": "stack",
+        "args": {
+            "LIST": "list"
+        },
+        "code": "{LIST}.delete_all()"
+    },
+    "data_insertatlist": {
+        "type": "stack",
+        "args": {
+            "ITEM": "any",
+            "INDEX": "int",
+            "LIST": "list"
+        },
+        "code": "{LIST}.insert({INDEX}, {ITEM})"
+    },
+    "data_insertatlist_legacy": {
+        "type": "stack",
+        "args": {
+            "ITEM": "any",
+            "INDEX": "any",
+            "LIST": "list"
+        },
+        "code": "{LIST}.insert2({INDEX}, {ITEM})"
+    },
+    "data_replaceitemoflist": {
+        "type": "stack",
+        "args": {
+            "INDEX": "int",
+            "LIST": "list",
+            "ITEM": "any"
+        },
+        "code": "{LIST}[{INDEX}] = {ITEM}"
+    },
+    "data_replaceitemoflist_legacy": {
+        "type": "stack",
+        "args": {
+            "INDEX": "any",
+            "LIST": "list",
+            "ITEM": "any"
+        },
+        "code": "{LIST}.set({INDEX}, {ITEM})"
+    },
+    "data_itemoflist": {
+        "type": "any",
+        "args": {
+            "INDEX": "int",
+            "LIST": "list"
+        },
+        "code": "{LIST}[{INDEX}]"
+    },
+    "data_itemoflist_legacy": {
+        "type": "any",
+        "args": {
+            "INDEX": "any",
+            "LIST": "list"
+        },
+        "code": "{LIST}.get({INDEX})"
+    },
+    "data_itemnumoflist": {
+        "type": "int",
+        "args": {
+            "LIST": "list",
+            "ITEM": "any"
+        },
+        "code": "{LIST}.index({ITEM})"
+    },
+    "data_lengthoflist": {
+        "type": "int",
+        "args": {
+            "LIST": "list"
+        },
+        "code": "len({LIST})"
+    },
+    "data_listcontainsitem": {
+        "type": "bool",
+        "args": {
+            "LIST": "list",
+            "ITEM": "any"
+        },
+        "code": "{ITEM} in {LIST}"
+    },
+    "data_showlist": {
+        "type": "stack",
+        "args": {
+            "LIST": "list"
+        },
+        "code": "{LIST}.show()"
+    },
+    "data_hidelist": {
+        "type": "stack",
+        "args": {
+            "LIST": "list"
+        },
+        "code": "{LIST}.hide()"
+    },
+    "procedures_definition": {
+        "type": "hat",
+        "args": {},
+        "code": "",
+        "basename": ""
+    },
+    "argument_reporter_string_number": {
+        "type": "any",
+        "args": {},
+        "code": ""
+    },
+    "argument_reporter_boolean": {
+        "type": "bool",
+        "args": {},
+        "code": "False"
+    },
+    "procedures_call": {
+        "type": "stack",
+        "args": {},
+        "code": ""
+    },
+    "default": {
+        "type": "stack",
+        "args": {},
+        "code": "0"
+    }
+}
