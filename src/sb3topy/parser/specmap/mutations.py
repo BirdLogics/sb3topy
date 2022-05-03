@@ -211,7 +211,9 @@ def list_insert(block, _, blockmap):
     # If the index is a block and not a literal,
     # use legacy list mode depending on config
     if not (isinstance(value, list) and value[0] == 7):
-        return data.BLOCKS['data_insertatlist_legacy'] if config.LEGACY_LISTS else None
+        if config.LEGACY_LISTS:
+            return data.BLOCKS['data_insertatlist_legacy']
+        return blockmap
 
     # Check if the if the index is special
     if value[1] == 'last':
