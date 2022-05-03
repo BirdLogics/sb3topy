@@ -23,28 +23,9 @@ from typing import Dict
 
 from . import blockmap
 
-__all__ = [
-    "HATS", "LOOPS", "BLOCKS",
-    "is_hat", "is_loop", "is_procedure"
-]
+__all__ = ["is_hat", "is_loop", "is_procedure"]
 
 DATA_PATH = path.join(path.dirname(__file__), "data.json")
-
-
-def _read_blocks():
-    """Reads blocks from data.json"""
-
-    # Read the json block data
-    with open(DATA_PATH, 'r', encoding="utf-8") as data_file:
-        data = json.load(data_file)
-
-    # Parse the block data
-    blocks: Dict[str, blockmap.BlockMap] = {
-        opcode: blockmap.BlockMap.from_dict(opcode, block)
-        for opcode, block in data.items()
-    }
-
-    return blocks
 
 
 HATS = {
@@ -65,7 +46,25 @@ LOOPS = {
     'control_repeat_until'
 }
 
-BLOCKS = _read_blocks()
+BLOCKS: Dict[str, "blockmap.BlockMap"] = {}
+
+
+def init_data():
+    """
+    Reads data into BLOCKS from data.json.
+    Called automatically at startup.
+    """
+    global BLOCKS  # pylint: disable=global-statement
+
+    # Read the json block data
+    with open(DATA_PATH, 'r', encoding="utf-8") as data_file:
+        data = json.load(data_file)
+
+    # Parse the block data
+    BLOCKS = {
+        opcode: blockmap.BlockMap.from_dict(opcode, block)
+        for opcode, block in data.items()
+    }
 
 
 def is_hat(block):
