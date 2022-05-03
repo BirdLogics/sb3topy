@@ -145,7 +145,7 @@ def get_blockmap(block, target):
     # Step 3, apply mutations.
     # Modify the block if it is a hat
     if blockmap.return_type == "hat":
-        mutations.hat_mutation(block, target, blockmap)
+        blockmap = mutations.hat_mutation(block, target, blockmap)
 
     # Find another mutation
     mutation = mutations.get_mutation(block['opcode'])

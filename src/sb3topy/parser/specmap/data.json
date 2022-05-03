@@ -1334,6 +1334,27 @@
         },
         "code": "{LIST}.hide()"
     },
+    "procedures_definition": {
+        "type": "hat",
+        "args": {},
+        "code": "",
+        "basename": ""
+    },
+    "argument_reporter_string_number": {
+        "type": "any",
+        "args": {},
+        "code": ""
+    },
+    "argument_reporter_boolean": {
+        "type": "bool",
+        "args": {},
+        "code": "False"
+    },
+    "procedures_call": {
+        "type": "stack",
+        "args": {},
+        "code": ""
+    },
     "default": {
         "type": "stack",
         "args": {},

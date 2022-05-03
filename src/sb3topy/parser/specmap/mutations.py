@@ -34,6 +34,8 @@ def hat_mutation(block, _target, blockmap):
     block['inputs']['SUBSTACK'] = (2, block['next'])
     block['next'] = None
 
+    return blockmap
+
 
 def mutation(opcode):
     """Decorator which adds a function to MUTATIONS"""
@@ -61,10 +63,6 @@ def proc_def(block, target, _):
     args = prototype.args_list()
     warp = "@warp\n" if prototype.warp else ""
     code = f"{warp}async def {prototype.name}(self, util, {args}):\n{{SUBSTACK}}"
-
-    # Create a substack input with the next block
-    block['inputs']['SUBSTACK'] = (2, block['next'])
-    block['next'] = None
 
     # Save the prototype to the target
     target.prototype = prototype
