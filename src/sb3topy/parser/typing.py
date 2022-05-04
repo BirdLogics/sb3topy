@@ -271,7 +271,7 @@ class DiGraph:
         if config.RENDER_GRAPH:
             render = Render(self)
 
-        logger.info("Resolving type graph...")
+        logger.debug("Resolving type graph...")
 
         while self.unresolved:
             logger.debug("Type digraph resolution step")

@@ -56,6 +56,7 @@ class Parser:
         The first pass creates classes for targets and prototypes,
         and marks universal variable used in sensing_of.
         """
+        logger.info("Initializing parser...")
 
         # Create a class for each target
         self.targets.add_targets(self.project['targets'])
@@ -73,6 +74,7 @@ class Parser:
 
         Also names solo broadcast receivers.
         """
+        logger.info("Running optimizations...")
 
         for target in self.targets:
             target.second_pass()
@@ -94,6 +96,8 @@ class Parser:
         Runs the third pass of the parser.
         This pass actually creates the Python code for the project.
         """
+        logger.info("Generating Python code...")
+
         code = codemap.file_header() + "\n\n\n"
 
         for target in self.targets:
@@ -142,7 +146,7 @@ class Parser:
         # TODO Add hats to identifiers
 
         logger.debug("Skipping topLevel block '%s' with opcode '%s'",
-                      blockid, block['opcode'])
+                     blockid, block['opcode'])
         return ""
 
     def parse_stack(self, blockid, parent_block=None):
