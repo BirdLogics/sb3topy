@@ -139,7 +139,7 @@ class Download:
                 "Skipping download of asset '%s' (already exists)", md5ext)
             return md5ext, md5ext
 
-        logger.debug("Downloading asset '%s'", md5)
+        logger.debug("Downloading asset '%s'", md5ext)
 
         # Download the asset
         try:
