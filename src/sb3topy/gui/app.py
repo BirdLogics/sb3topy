@@ -6,6 +6,7 @@ Contains the gui app
 TODO export config
 """
 
+import logging
 # from ctypes import windll
 import tkinter as tk
 
@@ -40,6 +41,9 @@ class App(tk.Tk):
         # Create config variables
         self.init_config()
         self.read_config()
+
+        # Set the default log level to debug
+        self.setvar("LOG_LEVEL", logging.DEBUG)
 
         self.mode = tk.StringVar()
         self.mode.trace_add('write', self.cb_mode)
@@ -371,7 +375,7 @@ class App(tk.Tk):
         config.RANDOM_SEED = self.getvar("RANDOM_SEED")
 
         # Debug / Debug
-        config.LOG_LEVEL = self.getvar("LOG_LEVEL")
+        config.LOG_LEVEL = int(self.getvar("LOG_LEVEL"))
         config.DEBUG_JSON = tkbool(self.getvar("DEBUG_JSON"))
         config.FORMAT_JSON = tkbool(self.getvar("FORMAT_JSON"))
         config.OVERWRITE_ENGINE = tkbool(self.getvar("OVERWRITE_ENGINE"))
