@@ -5,6 +5,7 @@ Handles the package logger.
 """
 
 import logging
+from logging import handlers
 
 from . import config, packer, parser, unpacker
 
@@ -38,3 +39,11 @@ def config_logger():
     Applies settings from `config` to the package logger.
     """
     pkg_logger.setLevel(config.LOG_LEVEL)
+
+
+def config_queue(queue):
+    """
+    Configures the logger to send data over a queue.
+    """
+    handler = handlers.QueueHandler(queue)
+    pkg_logger.addHandler(handler)

@@ -10,7 +10,6 @@ path to a configuration json can be passed as an argument.
 
 
 import logging
-from logging.handlers import QueueHandler
 from multiprocessing import Process, Queue
 
 from . import config, packer, parser, pkg_log, project, unpacker
@@ -100,15 +99,15 @@ def _run_worker(queue, config_data):
     Runs and attaches a QueueHandler to the log.
     """
     try:
+        # Load configuration
         config.set_config(config_data)
 
-        handler = QueueHandler(queue)
-        pkg_logger = logging.getLogger(__package__)
-        pkg_logger.addHandler(handler)
+        # Setup the log to use the queue
+        pkg_log.config_logger()
+        pkg_log.config_queue(queue)
 
+        # Run the converter
         run()
-
-        pkg_logger.removeHandler(handler)
 
     # Catch any errors so they can be shown in the GUI
     except Exception:
@@ -116,6 +115,8 @@ def _run_worker(queue, config_data):
             "Unhandled exception during the conversion process:",
             exc_info=True)
         raise
+
+    # Process now ends
 
 
 def run_mp():
