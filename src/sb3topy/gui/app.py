@@ -6,7 +6,6 @@ Contains the gui app
 TODO export config
 """
 
-import logging
 # from ctypes import windll
 import tkinter as tk
 
@@ -41,9 +40,6 @@ class App(tk.Tk):
         # Create config variables
         self.init_config()
         self.read_config()
-
-        # Set the default log level to debug
-        self.setvar("LOG_LEVEL", logging.DEBUG)
 
         self.mode = tk.StringVar()
         self.mode.trace_add('write', self.cb_mode)
@@ -84,6 +80,7 @@ class App(tk.Tk):
             self.examples.switch_to()
         elif mode == "output":
             self.output.grid()
+            self.output.switch_to()
         elif mode == "settings":
             self.settings.grid()
 

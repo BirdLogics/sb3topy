@@ -17,6 +17,8 @@ class OutputFrame(ttk.Frame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
 
+        self.app = parent
+
         self.process = None
         self.queue = None
 
@@ -27,7 +29,7 @@ class OutputFrame(ttk.Frame):
 
         self.show_info = tk.BooleanVar(value=True)
         self.show_debug = tk.BooleanVar()
-        debug_check = ttk.Checkbutton(
+        self.debug_check = ttk.Checkbutton(
             self, text="Debug Ouput",
             variable=self.show_debug, command=self.debug_tag)
 
@@ -39,7 +41,7 @@ class OutputFrame(ttk.Frame):
                        sticky="NSEW", pady=5)
         scroll.grid(column=4, row=0, sticky="NS", pady=5)
 
-        debug_check.grid(column=0, row=1, sticky="NSW", padx=15)
+        self.debug_check.grid(column=0, row=1, sticky="NSW", padx=15)
 
         export_button.grid(row=1, column=3, sticky="NSW")
 
@@ -120,3 +122,13 @@ class OutputFrame(ttk.Frame):
             file.write('\n'.join(
                 self.text.get('1.0', 'end').splitlines()
             ))
+
+    def switch_to(self):
+        """
+        Disable the debug check if the log level is not debug
+        """
+        if int(self.app.getvar("LOG_LEVEL")) > logging.DEBUG:
+            self.show_debug.set(False)
+            self.debug_check.state(["disabled"])
+        else:
+            self.debug_check.state(["!disabled"])
