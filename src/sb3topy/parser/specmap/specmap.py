@@ -7,6 +7,8 @@ Contains functions used parse inputs and certain blocks.
 
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 def parse_input(blocks, value):
     """
@@ -57,7 +59,7 @@ def parse_input(blocks, value):
     # Default to a literal
     # 4-8 Number, 9-10 String, # 11 Broadcast
     if not 4 <= value[0] <= 11:
-        logging.error("Unexpected input type %i", value[0])
+        logger.error("Unexpected input type %i", value[0])
 
     return 'literal', value[1]
 

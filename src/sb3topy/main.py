@@ -10,10 +10,11 @@ path to a configuration json can be passed as an argument.
 
 
 import logging
-from logging.handlers import QueueHandler
 from multiprocessing import Process, Queue
 
-from . import config, packer, parser, project, unpacker
+from . import config, packer, parser, pkg_log, project, unpacker
+
+logger = logging.getLogger(__name__)
 
 
 def main(args=None):
@@ -23,9 +24,8 @@ def main(args=None):
     # Load configuration from the command line
     config.parse_args(args)
 
-    # Setup the logger
-    logging.basicConfig(
-        format="[%(levelname)s] %(message)s", level=config.LOG_LEVEL)
+    # Configure the logger from config
+    pkg_log.config_logger()
 
     # Run the gui if it is enabled
     if config.USE_GUI:
@@ -57,7 +57,7 @@ def run():
         sb3 = unpacker.extract_project(manifest, config.PROJECT_PATH)
 
     else:
-        logging.error("A project url/path was not provided.")
+        logger.error("A project url/path was not provided.")
         sb3 = None
 
     # Verify the project was unpacked
@@ -83,37 +83,40 @@ def run():
         # Save the project's code
         packer.save_code(manifest, code)
 
-        logging.info("Finished converting project. Saved in '%s'",
-                     manifest.output_dir)
+        logger.info("Finished converting project. Saved in '%s'",
+                    manifest.output_dir)
 
     if config.AUTORUN:
         packer.run_project(manifest.output_dir)
 
-    logging.info("Done!")
+    logger.info("Done!")
 
     return True
 
 
 def _run_worker(queue, config_data):
     """
-    Runs and attaches a QueueHandler to the log
+    Runs and attaches a QueueHandler to the log.
     """
     try:
+        # Load configuration
         config.set_config(config_data)
 
-        handler = QueueHandler(queue)
-        logger = logging.getLogger()
-        logger.addHandler(handler)
-        logger.setLevel(logging.DEBUG)
+        # Setup the log to use the queue
+        pkg_log.config_logger()
+        pkg_log.config_queue(queue)
 
+        # Run the converter
         run()
 
     # Catch any errors so they can be shown in the GUI
     except Exception:
-        logging.critical(
+        logger.critical(
             "Unhandled exception during the conversion process:",
             exc_info=True)
         raise
+
+    # Process now ends
 
 
 def run_mp():

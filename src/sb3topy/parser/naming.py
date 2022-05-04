@@ -14,6 +14,8 @@ import logging
 
 from . import sanitizer
 
+logger = logging.getLogger(__name__)
+
 
 class Identifiers:
     """
@@ -99,7 +101,7 @@ class Sprites:
             return self.sprites.dict[name]
 
         # This should not occur, but can be handled
-        logging.warning("Unregistered sprite '%s'", name)
+        logger.warning("Unregistered sprite '%s'", name)
 
         return self.create_identifier(name)
 
@@ -107,7 +109,7 @@ class Sprites:
         """Creates an identifier for a sprite"""
         # Verify the identifier hasn't already been created
         if name in self.sprites.dict:
-            logging.error("Duplicate sprite name '%s'", name)
+            logger.error("Duplicate sprite name '%s'", name)
             return self.sprites.dict[name]
 
         # Remove invalid characters

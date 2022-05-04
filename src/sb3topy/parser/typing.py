@@ -24,6 +24,9 @@ from typing import Any, Dict, Set
 
 from .. import config
 
+logger = logging.getLogger(__name__)
+
+
 COLORS = {
     'var': 'orange',
     'list': 'red',
@@ -113,7 +116,7 @@ class Node:
         if self not in self.unresolved:
             return self.known_type
 
-        logging.debug("Resolving node %s", self.id_tuple)
+        logger.debug("Resolving node %s", self.id_tuple)
 
         # Add self to chain to detect loops
         chain.add(self)
@@ -127,7 +130,7 @@ class Node:
             # Resolve the parent
             else:
                 if parent in loops:
-                    logging.warning("Type node parent in loops but not chain")
+                    logger.warning("Type node parent in loops but not chain")
 
                 # Loops don't matter for each parent's branch
                 branch_loops = set()
@@ -166,7 +169,7 @@ class Node:
         self.known_type = self.resolve_type(self.types_set.copy())
         self.unresolved.remove(self)
 
-        logging.debug("Resolved %s type node '%s' as '%s'",
+        logger.debug("Resolved %s type node '%s' as '%s'",
                       self.id_tuple[0], self.id_tuple[-1], self.known_type)
 
     @staticmethod
@@ -222,7 +225,7 @@ class Node:
 
         # The types_set should be empty
         if types_set:
-            logging.warning("Failed to identify type of '%s'", types_set)
+            logger.warning("Failed to identify type of '%s'", types_set)
 
         return 'any'
 
@@ -248,7 +251,7 @@ class DiGraph:
             self.nodes[id_tuple] = Node(id_tuple, self.unresolved)
 
         else:
-            logging.warning("Duplicate type node %s", id_tuple)
+            logger.warning("Duplicate type node %s", id_tuple)
 
         return self.nodes[id_tuple]
 
@@ -259,7 +262,7 @@ class DiGraph:
         if node is not None:
             return node
 
-        logging.warning("Unknown type node %s", id_tuple)
+        logger.warning("Unknown type node %s", id_tuple)
         return self.add_node(id_tuple)
 
     def resolve(self):
@@ -268,10 +271,10 @@ class DiGraph:
         if config.RENDER_GRAPH:
             render = Render(self)
 
-        logging.info("Resolving type graph...")
+        logger.debug("Resolving type graph...")
 
         while self.unresolved:
-            logging.debug("Type digraph resolution step")
+            logger.debug("Type digraph resolution step")
             # Get and resolve an unresolved node
             next(iter(self.unresolved)).resolve(set(), set())
 
@@ -305,7 +308,7 @@ class Render:
     """
 
     def __init__(self, digraph: DiGraph):
-        logging.debug("Pre-rendering type graph.")
+        logger.debug("Pre-rendering type graph.")
 
         self.digraph = digraph
 
@@ -339,10 +342,10 @@ class Render:
     def render(self):
         """Render the digraph"""
 
-        logging.info("Rendering type graph...")
+        logger.info("Rendering type graph...")
 
         if gvDigraph is None:
-            logging.warning(
+            logger.warning(
                 "Cannot render type graph; graphviz not installed.")
             return
 

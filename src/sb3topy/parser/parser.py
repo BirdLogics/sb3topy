@@ -13,10 +13,12 @@ from .variables import Variables
 
 __all__ = ('parse_project', 'Parser')
 
+logger = logging.getLogger(__name__)
+
 
 def parse_project(project, manifest):
     """Parses project and returns the Python code"""
-    logging.info("Compiling project into Python...")
+    logger.info("Compiling project into Python...")
     return Parser(project, manifest).parse()
 
 
@@ -54,6 +56,7 @@ class Parser:
         The first pass creates classes for targets and prototypes,
         and marks universal variable used in sensing_of.
         """
+        logger.info("Initializing parser...")
 
         # Create a class for each target
         self.targets.add_targets(self.project['targets'])
@@ -71,6 +74,7 @@ class Parser:
 
         Also names solo broadcast receivers.
         """
+        logger.info("Running optimizations...")
 
         for target in self.targets:
             target.second_pass()
@@ -92,6 +96,8 @@ class Parser:
         Runs the third pass of the parser.
         This pass actually creates the Python code for the project.
         """
+        logger.info("Generating Python code...")
+
         code = codemap.file_header() + "\n\n\n"
 
         for target in self.targets:
@@ -139,8 +145,8 @@ class Parser:
 
         # TODO Add hats to identifiers
 
-        logging.debug("Skipping topLevel block '%s' with opcode '%s'",
-                      blockid, block['opcode'])
+        logger.debug("Skipping topLevel block '%s' with opcode '%s'",
+                     blockid, block['opcode'])
         return ""
 
     def parse_stack(self, blockid, parent_block=None):
@@ -152,7 +158,7 @@ class Parser:
         block = self.target.blocks[blockid]
 
         while block:
-            # logging.debug("Parsing block '%s' with opcode '%s'",
+            # logger.debug("Parsing block '%s' with opcode '%s'",
             #               blockid, block['opcode'])
 
             # Get the conversion map
@@ -296,5 +302,5 @@ class Parser:
             return self.target.prototype.get_arg(value)
 
         # Default to quoting
-        logging.warning("Unknown field type '%s'", end_type)
+        logger.warning("Unknown field type '%s'", end_type)
         return sanitizer.quote_field(value)

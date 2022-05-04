@@ -13,6 +13,8 @@ from .. import config
 from . import sanitizer, specmap, typing
 from .naming import Identifiers
 
+logger = logging.getLogger(__name__)
+
 
 class Variable:
     """
@@ -150,7 +152,7 @@ class Variables:
             return "util.sprites.stage." + self.global_vars.dict[name].clean_name
 
         # This should not occur, but can be handled
-        logging.warning("Unregistered var ref '%s'", name)
+        logger.warning("Unregistered var ref '%s'", name)
 
         # Create a new local variable
         return "self." + self.create_local('', name, typing.DiGraph()).clean_name
@@ -172,7 +174,7 @@ class Variables:
             return self.global_vars.dict[name].get_type()
 
         # This should not occur, but can be handled
-        logging.warning("Unregistered var type '%s'", name)
+        logger.warning("Unregistered var type '%s'", name)
 
         # Create a new local variable
         return self.create_local('', name, typing.DiGraph()).get_type()
@@ -191,7 +193,7 @@ class Variables:
             return self.local_vars.dict[name].clean_name
 
         # This should not normally occur, but can be handled
-        logging.warning("Unregistered local var '%s'", name)
+        logger.warning("Unregistered local var '%s'", name)
 
         # Create a new local variable
         return self.create_local(prefix, name, typing.DiGraph()).clean_name
@@ -213,7 +215,7 @@ class Variables:
             return self.global_vars.dict[name]
 
         # This should not normally occur, but can be handled
-        logging.warning("Unregistered var '%s'", name)
+        logger.warning("Unregistered var '%s'", name)
 
         # Create a new local variable
         return self.create_local(prefix, name, typing.DiGraph())
@@ -229,7 +231,7 @@ class Variables:
             # TODO Identify variables with their id as well
             # Sometimes a variable has an invisible duplicate in the json
             # Once fixed, the below should be changed back to warning
-            logging.debug("Duplicate local var '%s'", name)
+            logger.debug("Duplicate local var '%s'", name)
 
             # Get the type node for the variable
             node = self.local_vars.dict[name].node
@@ -263,7 +265,7 @@ class Variables:
             # Save the identifier
             self.local_vars.dict[name] = Variable(ident, node)
 
-            logging.debug(
+            logger.debug(
                 "Creating local var '%s' as universal '%s'", name, ident)
 
             return self.local_vars.dict[name]
@@ -277,7 +279,7 @@ class Variables:
         # Save the identifier for future use
         self.local_vars.dict[name] = Variable(ident, node)
 
-        logging.debug("Creating local var '%s' as '%s'", name, ident)
+        logger.debug("Creating local var '%s' as '%s'", name, ident)
 
         return self.local_vars.dict[name]
 
@@ -301,7 +303,7 @@ class Variables:
         # Save the identifier for future use
         cls.universal_vars.dict[name] = ident
 
-        logging.debug("Created universal var '%s' as '%s'", name, ident)
+        logger.debug("Created universal var '%s' as '%s'", name, ident)
 
         return ident
 
@@ -316,7 +318,7 @@ class Variables:
         ident = cls.universal_vars.dict.get(name)
 
         if ident is None:
-            logging.error("Unmarked universal var '%s'", name)
+            logger.error("Unmarked universal var '%s'", name)
             ident = cls.mark_universal(name)
 
         return ident

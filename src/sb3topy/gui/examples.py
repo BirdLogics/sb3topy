@@ -21,6 +21,8 @@ except ImportError:
 
 from .. import config
 
+logger = logging.getLogger(__name__)
+
 
 class Example:
     """
@@ -50,7 +52,7 @@ class Example:
     def get_image(self):
         """Gets a PhotoImage of the example thumbnail"""
         if requests is None:
-            logging.warning(
+            logger.warning(
                 "Failed to load thumbnail; requests not installed.")
             return None
 
@@ -73,11 +75,11 @@ def read_examples():
         with open(examples_path, 'r') as examples_file:
             return json.load(examples_file)
     except OSError:
-        logging.exception(
+        logger.exception(
             "Failed to load examples json '%s'", examples_path)
         return []
     except json.JSONDecodeError:
-        logging.exception("Failed to parse examples json '%s'", examples_path)
+        logger.exception("Failed to parse examples json '%s'", examples_path)
         return []
 
 

@@ -80,6 +80,7 @@ class App(tk.Tk):
             self.examples.switch_to()
         elif mode == "output":
             self.output.grid()
+            self.output.switch_to()
         elif mode == "settings":
             self.settings.grid()
 
@@ -371,7 +372,7 @@ class App(tk.Tk):
         config.RANDOM_SEED = self.getvar("RANDOM_SEED")
 
         # Debug / Debug
-        config.LOG_LEVEL = self.getvar("LOG_LEVEL")
+        config.LOG_LEVEL = int(self.getvar("LOG_LEVEL"))
         config.DEBUG_JSON = tkbool(self.getvar("DEBUG_JSON"))
         config.FORMAT_JSON = tkbool(self.getvar("FORMAT_JSON"))
         config.OVERWRITE_ENGINE = tkbool(self.getvar("OVERWRITE_ENGINE"))

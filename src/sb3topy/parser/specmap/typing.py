@@ -17,6 +17,9 @@ from . import data
 
 __all__ = ["get_literal_type", "get_input_type", "get_block_type"]
 
+logger = logging.getLogger(__name__)
+
+
 SWITCHES: Dict[str, Callable[[Any, Any], Any]] = {}
 
 
@@ -95,7 +98,7 @@ def get_block_type(target, block):
         return type_
 
     # Missing blockmap or something, give a warning
-    logging.warning("Unknown type for block '%s'", block['opcode'])
+    logger.warning("Unknown type for block '%s'", block['opcode'])
     return "any"
 
 

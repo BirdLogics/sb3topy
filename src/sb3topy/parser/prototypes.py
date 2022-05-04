@@ -12,6 +12,8 @@ from typing import Dict
 from .. import config
 from . import naming, sanitizer, specmap
 
+logger = logging.getLogger(__name__)
+
 
 class Prototype:
     """
@@ -77,7 +79,7 @@ class Prototype:
         """Gets an argument identifier based on the name"""
         ident = self.args.get(name)
         if ident is None:
-            logging.warning(
+            logger.warning(
                 "Unknown argument name '%s' for prototype '%s'", name, self.name)
             ident = "0"
         return ident
@@ -86,7 +88,7 @@ class Prototype:
         """Gets an argument identifier from the name"""
         ident = self.args_id.get(argid)
         if ident is None:
-            logging.warning(
+            logger.warning(
                 "Unknown argument id '%s' for prototype '%s'", argid, self.name)
             ident = "arg" + str(monotonic_ns())
         return ident
@@ -114,8 +116,8 @@ class Prototype:
         if argid is not None:
             return self.arg_nodes[argid].known_type
 
-        logging.warning("Prototype '%s' missing argument '%s",
-                        self.name, arg_name)
+        logger.warning("Prototype '%s' missing argument '%s",
+                       self.name, arg_name)
         return None
 
 
@@ -185,7 +187,7 @@ class Prototypes:
 
         # Verify at least one prototype was found
         if not protos:
-            logging.warning("Unknown proc arg '%s'", name)
+            logger.warning("Unknown proc arg '%s'", name)
 
         # If only one was found, assume the arg belongs to it
         if len(protos) == 1:
@@ -206,11 +208,11 @@ class Prototypes:
                 return protos[blockid].arg_nodes_unclean[name]
 
             # The prototype doesn't contain the arg
-            logging.warning(
+            logger.warning(
                 "Unknown proc arg '%s' for prototype '%s'",
                 name, self.prototypes_id[blockid].name)
             return 'any'
 
-        logging.warning("Proc arg '%s' used outside of a custom block",
-                        name)
+        logger.warning("Proc arg '%s' used outside of a custom block",
+                       name)
         return 'any'

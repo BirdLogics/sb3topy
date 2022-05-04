@@ -37,12 +37,14 @@ from .. import config, project
 
 __all__ = ('convert_assets', 'Convert')
 
+logger = logging.getLogger(__name__)
+
 
 def convert_assets(manifest: project.Manifest):
     """
     Converts all assets in project to a supported format
     """
-    logging.info("Converting project assets...")
+    logger.info("Converting project assets...")
     Convert(manifest)
 
 
@@ -55,11 +57,11 @@ class Convert:
         # Create a pool of workers
         if config.USE_CAIROSVG and config.CONVERT_THREADS > 1:
             workers = pool.ThreadPool(1)
-            logging.debug(
+            logger.debug(
                 "Created 1 worker thread for conversion with cairosvg.")
         else:
             workers = pool.ThreadPool(config.CONVERT_THREADS)
-            logging.debug("Created %i worker threads for asset conversion.")
+            logger.debug("Created %i worker threads for asset conversion.")
 
         # Treat a timeout of 0 as no timeout
         if config.CONVERT_TIMEOUT == 0:
@@ -70,12 +72,12 @@ class Convert:
             # Verify the command is available
             command = shlex.split(config.SVG_COMMAND)
             if config.USE_CAIROSVG and cairosvg is None:
-                logging.error((
+                logger.error((
                     "USE_CAIROSVG is enabled but the cairosvg "
                     "package does not appear to be installed."
                 ))
             elif shutil.which(command[0]) is None:
-                logging.error((
+                logger.error((
                     "SVG conversion is enabled but '%s' "
                     "does not appear to be installed."),
                     command[0]
@@ -86,7 +88,7 @@ class Convert:
                 manifest.costumes.update(workers.imap_unordered(
                     self.convert_costume, manifest.costumes.items()))
         else:
-            logging.warning((
+            logger.warning((
                 "Costume conversion is disabled. "
                 "Any svgs in the project will prevent it from running."
             ))
@@ -96,7 +98,7 @@ class Convert:
             # Verify the conversion method is available
             command = shlex.split(config.MP3_COMMAND)
             if shutil.which(command[0]) is None:
-                logging.error((
+                logger.error((
                     "MP3 conversion is enabled but '%s' "
                     "does not appear to be installed."),
                     command[0]
@@ -164,7 +166,7 @@ class Convert:
 
         # Possibly don't reconvert the asset
         if path.isfile(save_path) and not config.RECONVERT_SOUNDS:
-            logging.debug(
+            logger.debug(
                 "Skipping conversion of mp3 '%s' (already converted)", md5ext)
             return new_md5ext
 
@@ -176,23 +178,23 @@ class Convert:
 
         # Attempt to run the command
         try:
-            logging.debug("Converting mp3 '%s' to wav", md5ext)
+            logger.debug("Converting mp3 '%s' to wav", md5ext)
             result = subprocess.run(shlex.split(cmd_str), check=True, capture_output=True,
                                     text=True, timeout=config.CONVERT_TIMEOUT)
 
         except subprocess.CalledProcessError as error:
-            logging.error("Failed to convert mp3 '%s':\n%s\n%s\n",
+            logger.error("Failed to convert mp3 '%s':\n%s\n%s\n",
                           md5ext, cmd_str, error.stderr.rstrip())
             return md5ext
 
         except subprocess.TimeoutExpired:
-            logging.error(
+            logger.error(
                 "Failed to convert mp3 '%s': Timeout expired.", md5ext)
             return md5ext
 
         # Verify the converted file exists
         if not path.isfile(save_path):
-            logging.error("Failed to convert svg '%s':\n%s\n%s\n",
+            logger.error("Failed to convert svg '%s':\n%s\n%s\n",
                           md5ext, cmd_str, result.stderr.rstrip())
             return md5ext
 
@@ -209,14 +211,14 @@ class Convert:
 
         # Possibly don't reconvert the asset
         if path.isfile(save_path) and not config.RECONVERT_IMAGES:
-            logging.debug(
+            logger.debug(
                 "Skipping conversion of svg '%s' (already converted)", md5ext)
             return new_md5ext
 
         # Some blank svg files fail to convert with cairosvg
         # Use a fallback pre-converted png image instead
         if md5ext in config.BLANK_SVG_HASHES:
-            logging.debug("Using fallback image for blank svg '%s'", md5ext)
+            logger.debug("Using fallback image for blank svg '%s'", md5ext)
             return self.fallback_image(md5ext, ".png")
 
         # Convert the svg with the configured method
@@ -244,14 +246,14 @@ def convert_svg_cairo(asset_path, save_path, md5ext):
     used for logging purposes.
     """
 
-    logging.debug("Converting svg '%s' to png", md5ext)
+    logger.debug("Converting svg '%s' to png", md5ext)
 
     # Convert the svg
     try:
         cairosvg.svg2png(url=asset_path, write_to=save_path,
                          scale=config.SVG_SCALE)
     except ValueError:
-        logging.exception("Failed to convert svg '%s' with cairosvg:", md5ext)
+        logger.exception("Failed to convert svg '%s' with cairosvg:", md5ext)
         return False
 
     return True
@@ -263,7 +265,7 @@ def convert_svg_cmd(asset_path, save_path, md5ext):
     used for logging purposes.
     """
 
-    logging.debug("Converting svg '%s' to png", md5ext)
+    logger.debug("Converting svg '%s' to png", md5ext)
 
     # Get the conversion command
     cmd_str = config.SVG_COMMAND.format(
@@ -279,18 +281,18 @@ def convert_svg_cmd(asset_path, save_path, md5ext):
                                 text=True, timeout=config.CONVERT_TIMEOUT)
 
     except subprocess.CalledProcessError as error:
-        logging.error("Failed to convert svg '%s':\n%s\n%s\n",
+        logger.error("Failed to convert svg '%s':\n%s\n%s\n",
                       md5ext, cmd_str, error.stderr.rstrip())
         return False
 
     except subprocess.TimeoutExpired:
-        logging.error(
+        logger.error(
             "Failed to convert svg '%s': Timeout expired.", md5ext)
         return False
 
     # Verify the file exists
     if not path.isfile(save_path):
-        logging.error("Failed to save svg '%s':\n%s\n%s\n",
+        logger.error("Failed to save svg '%s':\n%s\n%s\n",
                       md5ext, cmd_str, result.stderr.rstrip())
         return False
 

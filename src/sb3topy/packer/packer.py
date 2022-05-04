@@ -14,6 +14,8 @@ from .. import config, project
 
 __all__ = ('save_code', 'copy_engine', 'run_project')
 
+logger = logging.getLogger(__name__)
+
 
 def save_code(manifest: project.Manifest, code: str):
     """
@@ -21,7 +23,7 @@ def save_code(manifest: project.Manifest, code: str):
     """
     save_path = path.join(manifest.output_dir, "project.py")
 
-    logging.info("Saving converted project to '%s'", save_path)
+    logger.info("Saving converted project to '%s'", save_path)
 
     with open(save_path, 'w', encoding="utf-8", errors="ignore") as code_file:
         code_file.write(code)
@@ -39,22 +41,22 @@ def copy_engine(manifest: project.Manifest):
     save_dir = path.join(manifest.output_dir, "engine")
 
     if path.isfile(path.join(save_dir, "DISABLE_OVERWRITE")):
-        logging.info(
+        logger.info(
             "Did not copy engine files; 'DISABLE_OVERWRITE' file exists.")
         return
 
     # Delete and copy the engine files
     if path.isdir(save_dir):
         if config.OVERWRITE_ENGINE:
-            logging.info("Overwriting engine files at '%s'", save_dir)
+            logger.info("Overwriting engine files at '%s'", save_dir)
             shutil.rmtree(save_dir)
             shutil.copytree(read_dir, save_dir, )
             create_config(save_dir)
         else:
-            logging.info(
+            logger.info(
                 "Did not copy engine files; OVERWRITE_ENGINE disabled.")
     else:
-        logging.info("Copying engine files to '%s'", save_dir)
+        logger.info("Copying engine files to '%s'", save_dir)
         shutil.copytree(read_dir, save_dir)
         create_config(save_dir)
 
@@ -92,7 +94,7 @@ def run_project(output_dir):
     Runs the project.py stored in output_dir.
     """
     # pylint: disable=all
-    logging.info("Running project...")
+    logger.info("Running project...")
 
     old_cwd = os.getcwd()
     os.chdir(output_dir)

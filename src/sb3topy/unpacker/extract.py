@@ -14,6 +14,8 @@ from .. import config, project
 
 __all__ = ['extract_project', 'Extract']
 
+logger = logging.getLogger(__name__)
+
 
 def extract_project(manifest: project.Manifest, project_path):
     """
@@ -26,26 +28,26 @@ def extract_project(manifest: project.Manifest, project_path):
     Otherwise, the md5ext value will be stored.
     """
 
-    logging.info("Extracting project...")
-    logging.debug("Extracting project from '%s'", project_path)
+    logger.info("Extracting project...")
+    logger.debug("Extracting project from '%s'", project_path)
 
     project_zip = None
     try:
         project_zip = zipfile.ZipFile(project_path, 'r')
 
         if not "project.json" in project_zip.namelist():
-            logging.error(
+            logger.error(
                 "Could not find 'project.json' in '%s'", project_path)
             return None
 
         return Extract(manifest, project_zip).project
 
     except FileNotFoundError:
-        logging.error("Invalid project path '%s'", project_path)
+        logger.error("Invalid project path '%s'", project_path)
         return None
 
     except zipfile.BadZipFile:
-        logging.error("Invalid project sb3 '%s'", project_path)
+        logger.error("Invalid project sb3 '%s'", project_path)
         return None
 
     finally:
@@ -98,11 +100,11 @@ class Extract:
 
         # If the file already exists, don't download it
         if path.isfile(save_path) and not config.FRESHEN_ASSETS:
-            logging.debug(
+            logger.debug(
                 "Skipping extraction of asset '%s' (already exists)", md5ext)
             return md5ext
 
-        logging.debug("Extracting asset '%s'", md5ext)
+        logger.debug("Extracting asset '%s'", md5ext)
 
         # Extract the asset
         asset = self.project_zip.read(md5ext)
@@ -111,7 +113,7 @@ class Extract:
         if config.VERIFY_ASSETS:
             md5_hash = md5(asset).hexdigest()
             if not md5_hash + '.' + md5ext.partition('.')[2] == md5ext:
-                logging.error(
+                logger.error(
                     "Extracted asset '%s' has the wrong md5: '%s'", md5ext, md5_hash)
                 return None
 

@@ -876,6 +876,7 @@ class DebugFrame(ttk.Frame):
         self.app = app
 
         debug_frame = ttk.Labelframe(self, text="Debug", padding=5)
+        log_frame = ttk.Labelframe(self, text="Logging", padding=5)
 
         self.debug_json = tk.BooleanVar(app, name="DEBUG_JSON")
         self.format_json = tk.BooleanVar(app, name="FORMAT_JSON")
@@ -891,12 +892,33 @@ class DebugFrame(ttk.Frame):
             debug_frame, text="Overwrite Engine",
             variable=self.overwrite_engine)
 
+        self.log_level = tk.StringVar(app, name="LOG_LEVEL")
+        self.log_path = tk.StringVar(app, name="LOG_PATH")
+        self.save_log = tk.StringVar(app, name="SAVE_LOG")
+
+        level_label = ttk.Label(log_frame, text="Log Level:")
+        level_spin = ttk.Spinbox(log_frame, from_=10, to=50, increment=10,
+                                 textvariable=self.log_level, width=7)
+        path_label = ttk.Label(log_frame, text="Log Path:")
+        path_box = ttk.Entry(log_frame, textvariable=self.log_path, state="disabled")
+        save_box = ttk.Checkbutton(log_frame, text="Save Log", state="disabled",
+                                   variable=self.save_log)
+
         d_json_check.grid(column=0, row=0, sticky="W")
         self.f_json_check.grid(column=0, row=1, sticky="W")
         engine_check.grid(column=0, row=2, sticky="W")
 
+        level_label.grid(column=0, row=0, sticky="W")
+        level_spin.grid(column=1, row=0, sticky="W", padx=3, pady=3)
+        path_label.grid(column=0, row=1, sticky="W")
+        path_box.grid(column=1, row=1, sticky="EW", padx=3, pady=3)
+        save_box.grid(column=0, row=2, sticky="W", columnspan=2)
+
         debug_frame.grid(column=0, row=0, stick="NSEW")
         debug_frame.columnconfigure(0, weight=1)
+
+        log_frame.grid(column=0, row=1, sticky="NSEW")
+        log_frame.columnconfigure(1, weight=1)
 
         self.columnconfigure(0, weight=1)
 

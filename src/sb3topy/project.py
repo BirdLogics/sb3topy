@@ -14,6 +14,8 @@ from .parser import sanitizer
 
 __all__ = ('Project', 'Manifest')
 
+logger = logging.getLogger(__name__)
+
 
 class Project:
     """
@@ -50,7 +52,7 @@ class Project:
 
                 # Log invalid md5exts
                 else:
-                    logging.error(
+                    logger.error(
                         "Invalid md5ext for costume '%s'", costume['md5ext'])
         return assets
 
@@ -67,7 +69,7 @@ class Project:
 
                 # Log invalid md5exts
                 else:
-                    logging.error(
+                    logger.error(
                         "Invalid md5ext for sound '%s'", sound['md5ext'])
         return assets
 
@@ -80,11 +82,11 @@ class Project:
 
         if not 'targets' in self.json:
             if 'objName' in self.json:
-                logging.error((
+                logger.error((
                     "Project is in the sb2 format.\nPlease save the "
                     "project with Scratch 3 to convert it to an sb3."))
             else:
-                logging.error("Invalid project.json.")
+                logger.error("Invalid project.json.")
 
             return False
         return True
@@ -113,8 +115,8 @@ class Manifest:
         else:
             self._tempdir = tempfile.TemporaryDirectory()
             self.output_dir = self._tempdir.name
-            logging.info("Created a temporary directory at '%s'",
-                         self.output_dir)
+            logger.info("Created a temporary directory at '%s'",
+                        self.output_dir)
 
         # Create the assets folder if one doesn't exist
         assets_dir = path.join(self.output_dir, "assets")
@@ -126,7 +128,7 @@ def save_json(project: Project, manifest: Manifest, pretty=False):
     """Saves the project.json data in the output directory"""
     save_path = path.join(manifest.output_dir, "project.json")
 
-    logging.info("Saving project.json to '%s'", save_path)
+    logger.info("Saving project.json to '%s'", save_path)
 
     with open(save_path, 'w', encoding='utf-8') as json_file:
         json.dump(project.json, json_file,

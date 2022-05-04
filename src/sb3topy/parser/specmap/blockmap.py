@@ -13,6 +13,9 @@ from . import data, mutations
 
 __all__ = ["BlockMap", "get_blockmap"]
 
+logger = logging.getLogger(__name__)
+
+
 INDENT_PAT = r"(?m)^(\s+)\{(\w+)\}"
 
 
@@ -133,7 +136,7 @@ def get_blockmap(block, target):
 
     # Report an error and use a fallback
     if blockmap is None:
-        logging.warning("Unknown block with opcode '%s'", block['opcode'])
+        logger.warning("Unknown block with opcode '%s'", block['opcode'])
         blockmap = data.BLOCKS['default']
 
     # Step 2, apply any basic switches.
@@ -154,7 +157,7 @@ def get_blockmap(block, target):
 
     # Step 4, validate the blockmap and return it
     if blockmap.code is None:
-        logging.warning(
+        logger.warning(
             "Failed to resolve blockmap for opcode '%s'", block['opcode'])
         blockmap = data.BLOCKS['default']
 
