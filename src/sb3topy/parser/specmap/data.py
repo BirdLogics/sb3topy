@@ -43,7 +43,9 @@ HATS = {
 LOOPS = {
     'control_repeat',
     'control_forever',
-    'control_repeat_until'
+    'control_repeat_until',
+    'control_for_each',
+    'control_while'
 }
 
 BLOCKS: Dict[str, "blockmap.BlockMap"] = {}

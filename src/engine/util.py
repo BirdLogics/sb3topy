@@ -16,17 +16,19 @@ class Util:
     functions to interface with project.py where needed.
 
     Attributes:
-        timer: Handles the Timer
+        timer: Handles the Timer.
 
-        inputs: Handles keyboard/mouse input
+        inputs: Handles keyboard/mouse input.
 
-        sprites: Provides sprite lookup and stage
+        sprites: Provides sprite lookup and stage.
 
-        display: Used to get display info
+        display: Used to get display info.
 
-        events: Used to send events to sprites
+        events: Used to send events to sprites.
 
-        runtime: The current Runtime instance
+        runtime: The current Runtime instance.
+
+        counter: Used for the hidden counter blocks.
     """
 
     def __init__(self, runtime):
@@ -37,6 +39,7 @@ class Util:
         self.events = runtime.events
         self.runtime = runtime
         self.answer = ""
+        self.counter = 0
 
     def send_event(self, event, restart=False):
         """Send an event"""

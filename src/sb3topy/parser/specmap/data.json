@@ -713,6 +713,55 @@
         "args": {},
         "code": "self.delete_clone(util)"
     },
+    "control_for_each": {
+        "type": "stack",
+        "args": {
+            "SUBSTACK": "stack",
+            "VARIABLE": "variable",
+            "VALUE": "int"
+        },
+        "code": [
+            "for i in range(1, {VALUE}+1):",
+            "    {VARIABLE} = i",
+            "    {SUBSTACK}"
+        ]
+    },
+    "control_while": {
+        "type": "stack",
+        "args": {
+            "CONDITION": "bool",
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "while {CONDITION}:",
+            "    {SUBSTACK}"
+        ]
+    },
+    "control_all_at_once": {
+        "type": "stack",
+        "args": {
+            "SUBSTACK": "stack"
+        },
+        "code": [
+            "with self.warp:",
+            "    {SUBSTACK}"
+        ]
+    },
+    "control_get_counter": {
+        "type": "int",
+        "args": {},
+        "code": "util.counter"
+    },
+    "control_clear_counter": {
+        "type": "stack",
+        "args": {},
+        "code": "util.counter = 0"
+    },
+    "control_incr_counter": {
+        "type": "stack",
+        "args": {},
+        "code": "util.counter += 1"
+    },
     "sensing_touchingobject": {
         "type": "bool",
         "args": {
