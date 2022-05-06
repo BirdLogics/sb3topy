@@ -222,8 +222,7 @@ class GeneralSettings(ttk.Frame):
         self.autoload = tk.BooleanVar(app, name="AUTOLOAD_CONFIG")
         self.autoload.set(True)
 
-        # if autoload is None, config_path is not None
-        # TODO Here
+        # If autoload is None, config_path is not None
         self.autoload_saved = config.AUTOLOAD_CONFIG
         if config.AUTOLOAD_CONFIG is None:
             self.last_saved = config.CONFIG_PATH
@@ -429,7 +428,7 @@ class GeneralSettings(ttk.Frame):
 
             # Change the check to the saved state
             self.load_check["text"] = "Load on Start"
-            self.autoload.set(self.autoload_saved)
+            self.autoload.set(bool(self.autoload_saved)) # TODO Error here
 
         # Disable save if it isn't a valid directory
         if path.isdir(path.dirname(config_path)):
