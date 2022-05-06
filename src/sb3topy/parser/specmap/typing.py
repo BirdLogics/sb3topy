@@ -83,17 +83,21 @@ def get_block_type(target, block):
     """Gets the return type of a block"""
     type_ = None
 
-    # Attempt to get the type from a switch
-    switchf = SWITCHES.get(block['opcode'])
-    if switchf is not None:
-        type_ = switchf(target, block)
+    # Step 1, get the base blockmap.
+    blockmap = data.BLOCKS.get(block['opcode'])
+    if blockmap is not None:
+        # Step 2, apply any basic switches.
+        if blockmap.switch:
+            # Format the switch using the fields
+            opcode = blockmap.format_switch(block)
+            blockmap = data.BLOCKS.get(opcode, blockmap)
 
-    # Default to the blockmap's return_type
-    if type_ is None:
-        blockmap = data.BLOCKS.get(block['opcode'])
-        if blockmap is not None:
-            type_ = blockmap.return_type
+        # Save the return type
+        type_ = blockmap.return_type
 
+    # TODO Step 3, apply mutations / type switches?
+
+    # Return the result
     if type_ is not None:
         return type_
 
