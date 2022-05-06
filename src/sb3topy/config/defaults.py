@@ -109,7 +109,8 @@ Optimizations Settings:
     DISABLE_ANY_CAST: Causes the type guesser to ignore items with the
         'any' type when guessing the type of an object. If the object
         is set to a item of any type, the item will be casted to the
-        guessed type of the object.
+        guessed type of the object. Is likely to cause incorrect type
+        guesses unless variables are only used for a single type.
 
     AGGRESSIVE_NUM_CAST: If an object is ever set to a number, assume
         the object is of a numeric type.
@@ -231,7 +232,7 @@ LIST_TYPES = True
 SOLO_BROADCASTS = True
 
 # Adjust Aggression
-DISABLE_ANY_CAST = True
+DISABLE_ANY_CAST = False
 AGGRESSIVE_NUM_CAST = False
 CHANGED_NUM_CAST = False
 DISABLE_STR_CAST = False  # TODO Set to True
