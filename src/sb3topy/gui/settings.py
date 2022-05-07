@@ -428,7 +428,7 @@ class GeneralSettings(ttk.Frame):
 
             # Change the check to the saved state
             self.load_check["text"] = "Load on Start"
-            self.autoload.set(bool(self.autoload_saved)) # TODO Error here
+            self.autoload.set(bool(self.autoload_saved))  # TODO Error here
 
         # Disable save if it isn't a valid directory
         if path.isdir(path.dirname(config_path)):
@@ -490,13 +490,13 @@ class AssetSettings(ttk.Frame):
         timeout_spin = ttk.Spinbox(
             worker_frame, textvariable=self.convert_timeout)
 
-        self.use_cairosvg = tk.BooleanVar(app, name="USE_CAIROSVG")
+        self.use_svg_cmd = tk.BooleanVar(app, name="USE_SVG_CMD")
         self.svg_command = tk.StringVar(app, name="SVG_COMMAND")
         self.svg_scale = tk.IntVar(app, name="SVG_SCALE")
 
         svg_cairo_box = ttk.Checkbutton(
-            svg_frame, text="Use cairosvg (Python package)",
-            variable=self.use_cairosvg, command=self.cairo_toggle)
+            svg_frame, text="Use SVG Command",
+            variable=self.use_svg_cmd, command=self.cairo_toggle)
         svg_comm_label = ttk.Label(svg_frame, text="Convert Command:")
         self.svg_comm_box = ttk.Entry(svg_frame, textvariable=self.svg_command)
         svg_scale_label = ttk.Label(svg_frame, text="Converted Scale:")
@@ -546,13 +546,11 @@ class AssetSettings(ttk.Frame):
         self.columnconfigure(0, weight=1)
 
     def cairo_toggle(self):
-        """Called when USE_CAIROSVG is toggled"""
-        if self.use_cairosvg.get():
-            self.svg_comm_box.state(["disabled"])
-            self.cv_workers_spin.state(["disabled"])
-        else:
+        """Called when USE_SVG_CMD is toggled"""
+        if self.use_svg_cmd.get():
             self.svg_comm_box.state(["!disabled"])
-            self.cv_workers_spin.state(["!disabled"])
+        else:
+            self.svg_comm_box.state(["disabled"])
 
 
 class OptimizationSettings(ttk.Frame):
@@ -899,7 +897,8 @@ class DebugFrame(ttk.Frame):
         level_spin = ttk.Spinbox(log_frame, from_=10, to=50, increment=10,
                                  textvariable=self.log_level, width=7)
         path_label = ttk.Label(log_frame, text="Log Path:")
-        path_box = ttk.Entry(log_frame, textvariable=self.log_path, state="disabled")
+        path_box = ttk.Entry(
+            log_frame, textvariable=self.log_path, state="disabled")
         save_box = ttk.Checkbutton(log_frame, text="Save Log", state="disabled",
                                    variable=self.save_log)
 

@@ -15,6 +15,12 @@ It is not necessary to convert mp3s to wav when using Pygame 2+, but it
 may a good idea since, according to the Pygame docs, mp3 support is
 limited and can crash with certain formats on some systems.
 
+
+
+
+
+
+
 TODO Better fallback support.
 """
 
@@ -25,15 +31,8 @@ import subprocess
 from multiprocessing import pool
 from os import path
 
-try:
-    import cairosvg
-except ImportError:
-    cairosvg = None
-except OSError:
-    print("cairosvg is not installed correctly.")
-    cairosvg = None
-
 from .. import config, project
+from . import convert_svg
 
 __all__ = ('convert_assets', 'Convert')
 
@@ -54,44 +53,34 @@ class Convert:
     def __init__(self, manifest: project.Manifest):
         self.output_dir = manifest.output_dir
 
-        # Create a pool of workers
-        if config.USE_CAIROSVG and config.CONVERT_THREADS > 1:
-            workers = pool.ThreadPool(1)
-            logger.debug(
-                "Created 1 worker thread for conversion with cairosvg.")
-        else:
-            workers = pool.ThreadPool(config.CONVERT_THREADS)
-            logger.debug("Created %i worker threads for asset conversion.")
+        workers = pool.ThreadPool(config.CONVERT_THREADS)
+        logger.debug("Created %i worker threads for asset conversion.",
+                     config.CONVERT_THREADS)
 
         # Treat a timeout of 0 as no timeout
-        if config.CONVERT_TIMEOUT == 0:
+        if config.CONVERT_TIMEOUT == 0 or isinstance(config.CONVERT_TIMEOUT, str):
             config.CONVERT_TIMEOUT = None
 
-        # Convert all costumes
+        # Get an SVG conversion function
+        self.convert_svg_func = None
         if config.CONVERT_COSTUMES:
-            # Verify the command is available
-            command = shlex.split(config.SVG_COMMAND)
-            if config.USE_CAIROSVG and cairosvg is None:
-                logger.error((
-                    "USE_CAIROSVG is enabled but the cairosvg "
-                    "package does not appear to be installed."
-                ))
-            elif shutil.which(command[0]) is None:
-                logger.error((
-                    "SVG conversion is enabled but '%s' "
-                    "does not appear to be installed."),
-                    command[0]
-                )
-
-            # Convert the sounds
-            else:
-                manifest.costumes.update(workers.imap_unordered(
-                    self.convert_costume, manifest.costumes.items()))
-        else:
+            self.convert_svg_func = convert_svg.get_svg_function()
+        if self.convert_svg_func is None:
+            self.convert_svg_func = convert_svg.fallback_image
             logger.warning((
                 "Costume conversion is disabled. "
-                "Any svgs in the project will prevent it from running."
+                "Any SVGs in the project will not be visible."
             ))
+
+        # Convert the SVGs
+        if self.convert_svg_func.use_workers:
+            # Convert using multiple threads
+            manifest.costumes.update(workers.imap_unordered(
+                self.convert_costume, manifest.costumes.keys()))
+        else:
+            # Convert using a single thread
+            manifest.costumes.update(map(
+                self.convert_costume, manifest.costumes.keys()))
 
         # Convert all sounds
         if config.CONVERT_SOUNDS:
@@ -113,26 +102,35 @@ class Convert:
         workers.close()
         workers.join()
 
-    def convert_costume(self, md5ext_oldnew):
+    def convert_costume(self, md5ext):
         """
-        Converts a costume and saves it to the output folder. The
-        filename is the same as the md5ext unless a problem prevented
-        the asset from being extracted or downloaded.
+        At this point, the costume has been saved to the output folder
+        using the md5ext as the filename.
+
+        If the md5ext indicates that the image is an SVG, attempt to
+        convert it.
+
+        The new filename after conversion will be returned.
         """
-        md5ext, filename = md5ext_oldnew
+        # Default to no change in the filename
+        new_md5ext = md5ext
 
         # Get the file extension
-        ext = filename.rpartition('.')[2] if filename is not None else None
+        ext = md5ext.rpartition('.')[2]
 
         # Convert SVG assets
         if ext == "svg":
-            filename = self.convert_svg(filename)
+            new_md5ext = self.convert_svg(md5ext)
 
-        # Use a fallback image if necessary
-        if filename is None:
-            filename = self.fallback_image(md5ext)
+        # If the output file doesn't exist, use a fallback
+        if not path.isfile(path.join(self.output_dir, "assets", new_md5ext)):
+            logger.warning("Failed to locate %s after conversion.",
+                           new_md5ext)
 
-        return md5ext, filename
+            new_md5ext = convert_svg.fallback_image(
+                "", self.output_dir, md5ext)
+
+        return md5ext, new_md5ext
 
     def convert_sound(self, md5ext_oldnew):
         """
@@ -184,7 +182,7 @@ class Convert:
 
         except subprocess.CalledProcessError as error:
             logger.error("Failed to convert mp3 '%s':\n%s\n%s\n",
-                          md5ext, cmd_str, error.stderr.rstrip())
+                         md5ext, cmd_str, error.stderr.rstrip())
             return md5ext
 
         except subprocess.TimeoutExpired:
@@ -195,105 +193,27 @@ class Convert:
         # Verify the converted file exists
         if not path.isfile(save_path):
             logger.error("Failed to convert svg '%s':\n%s\n%s\n",
-                          md5ext, cmd_str, result.stderr.rstrip())
+                         md5ext, cmd_str, result.stderr.rstrip())
             return md5ext
 
         return new_md5ext
 
     def convert_svg(self, md5ext):
         """Converts an svg asset to png"""
-        # Get the new md5ext reflecting the conversion
-        new_md5ext = f"{md5ext.rstrip('.svg')}-svg-{config.SVG_SCALE}x.png"
-
         # Get the input and output paths
-        asset_path = path.join(self.output_dir, "assets", md5ext)
-        save_path = path.join(self.output_dir, "assets", new_md5ext)
-
-        # Possibly don't reconvert the asset
-        if path.isfile(save_path) and not config.RECONVERT_IMAGES:
-            logger.debug(
-                "Skipping conversion of svg '%s' (already converted)", md5ext)
-            return new_md5ext
+        output_dir = path.join(self.output_dir, "assets")
+        svg_path = path.join(output_dir, md5ext)
 
         # Some blank svg files fail to convert with cairosvg
         # Use a fallback pre-converted png image instead
         if md5ext in config.BLANK_SVG_HASHES:
-            logger.debug("Using fallback image for blank svg '%s'", md5ext)
-            return self.fallback_image(md5ext, ".png")
+            logger.debug("Using fallback image for blank svg %s", md5ext)
+            return convert_svg.fallback_image("", output_dir, md5ext)
 
         # Convert the svg with the configured method
-        if config.USE_CAIROSVG:
-            result = convert_svg_cairo(asset_path, save_path, md5ext)
-        else:
-            result = convert_svg_cmd(asset_path, save_path, md5ext)
+        new_md5ext = self.convert_svg_func(svg_path, output_dir, md5ext)
 
-        return new_md5ext if result else None
-
-    def fallback_image(self, md5ext, new_ext="-fallback.png"):
-        """Saves a fallback image for a md5ext"""
-        filename = md5ext.partition('.')[0] + new_ext
-        save_path = path.join(self.output_dir, "assets", filename)
-
-        with open(save_path, 'wb') as image_file:
-            image_file.write(config.FALLBACK_IMAGE)
-
-        return filename
-
-
-def convert_svg_cairo(asset_path, save_path, md5ext):
-    """
-    Converts the svg to png using the cairosvg module. The md5ext is
-    used for logging purposes.
-    """
-
-    logger.debug("Converting svg '%s' to png", md5ext)
-
-    # Convert the svg
-    try:
-        cairosvg.svg2png(url=asset_path, write_to=save_path,
-                         scale=config.SVG_SCALE)
-    except ValueError:
-        logger.exception("Failed to convert svg '%s' with cairosvg:", md5ext)
-        return False
-
-    return True
-
-
-def convert_svg_cmd(asset_path, save_path, md5ext):
-    """
-    Converts the svg using the configured command. The md5ext is
-    used for logging purposes.
-    """
-
-    logger.debug("Converting svg '%s' to png", md5ext)
-
-    # Get the conversion command
-    cmd_str = config.SVG_COMMAND.format(
-        INPUT=shlex.quote(asset_path),
-        OUTPUT=shlex.quote(save_path),
-        DPI=config.BASE_DPI*config.SVG_SCALE,
-        SCALE=config.SVG_SCALE
-    )
-
-    # Attempt to run the command
-    try:
-        result = subprocess.run(shlex.split(cmd_str), check=True, capture_output=True,
-                                text=True, timeout=config.CONVERT_TIMEOUT)
-
-    except subprocess.CalledProcessError as error:
-        logger.error("Failed to convert svg '%s':\n%s\n%s\n",
-                      md5ext, cmd_str, error.stderr.rstrip())
-        return False
-
-    except subprocess.TimeoutExpired:
-        logger.error(
-            "Failed to convert svg '%s': Timeout expired.", md5ext)
-        return False
-
-    # Verify the file exists
-    if not path.isfile(save_path):
-        logger.error("Failed to save svg '%s':\n%s\n%s\n",
-                      md5ext, cmd_str, result.stderr.rstrip())
-        return False
-
-    return True
+        # Use a fallback image if conversion failed
+        if new_md5ext is None:
+            return convert_svg.fallback_image("", output_dir, md5ext)
+        return new_md5ext
