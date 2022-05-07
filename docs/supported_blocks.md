@@ -126,7 +126,7 @@ glitches with the pen clipping on the screen have also been observed.
 
 ![pen blocks](scratchblocks/svg/pen.svg)
 
-## Hidden Blocks
+## Hidden blocks
 
 Some hidden blocks are supported and act as expected. Notably, the `all at once` block
 functions and runs its contents without screen refresh.
