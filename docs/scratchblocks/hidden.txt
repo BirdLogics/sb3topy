@@ -1,0 +1,17 @@
+for each [i v] in (10) {
+
+} ::control
+
+while < > {
+
+} ::control
+
+(counter ::control)
+
+increment counter ::control
+
+clear counter ::control
+
+all at once {
+
+} ::control
