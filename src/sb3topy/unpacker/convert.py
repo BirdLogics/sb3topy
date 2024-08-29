@@ -65,22 +65,24 @@ class Convert:
         self.convert_svg_func = None
         if config.CONVERT_COSTUMES:
             self.convert_svg_func = convert_svg.get_svg_function()
-        if self.convert_svg_func is None:
-            self.convert_svg_func = convert_svg.fallback_image
-            logger.warning((
-                "Costume conversion is disabled. "
-                "Any SVGs in the project will not be visible."
-            ))
 
         # Convert the SVGs
-        if self.convert_svg_func.use_workers:
-            # Convert using multiple threads
-            manifest.costumes.update(workers.imap_unordered(
-                self.convert_costume, manifest.costumes.keys()))
+        if self.convert_svg_func:
+            if self.convert_svg_func.use_workers:
+                # Convert using multiple threads
+                manifest.costumes.update(workers.imap_unordered(
+                    self.convert_costume, manifest.costumes.keys()))
+            else:
+                # Convert using a single thread
+                manifest.costumes.update(map(
+                    self.convert_costume, manifest.costumes.keys()))
         else:
-            # Convert using a single thread
-            manifest.costumes.update(map(
-                self.convert_costume, manifest.costumes.keys()))
+            logger.warning((
+                "Costume conversion is disabled. "
+                "Pygame SVG support will be used instead. "
+                "Pygame does not have support for adjusting the DPI "
+                "of images, so SVGs will be a bit blurry."
+            ))
 
         # Convert all sounds
         if config.CONVERT_SOUNDS:
