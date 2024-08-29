@@ -61,9 +61,10 @@
     "motion_glideto": {
         "type": "stack",
         "args": {
+            "SECS": "float",
             "TO": "str"
         },
-        "code": "self.glideto(util, {TO})"
+        "code": "await self.glideto(util, {SECS}, {TO})"
     },
     "motion_changexby": {
         "type": "stack",

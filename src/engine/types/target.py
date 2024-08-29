@@ -13,6 +13,7 @@ __all__ = ['Target', 'warp']
 
 import asyncio
 import math
+import random
 import time
 import types
 from functools import wraps
@@ -204,11 +205,10 @@ class Target:
 
     def goto(self, util, other):
         """Goto the position of another sprite"""
-        # Copy the position of the other sprite
-        other = util.sprites.targets.get(other)
+        target_xy = self._get_target_xy(util, other)
         if other:
-            self._xpos = other._xpos
-            self._ypos = other._ypos
+            self._xpos = target_xy[0]
+            self._ypos = target_xy[1]
 
         # Set dirty
         self.dirty = True
@@ -260,10 +260,26 @@ class Target:
 
     async def glideto(self, util, duration, other):
         """Glides to the position of another sprite"""
-        # Copy the position of the other sprite
-        other = util.sprites.targets.get(other)
-        if other:
-            await self.glide(duration, other._xpos, other._ypos)
+        target_xy = self._get_target_xy(util, other)
+        if target_xy:
+            await self.glide(duration, target_xy[0], target_xy[1])
+
+    def _get_target_xy(self, util, other):
+        """Gets the xy coordinates of another sprite."""
+        if other == "_mouse_":
+            return (util.inputs.mouse_x, util.inputs.mouse_y)
+
+        elif other == "_random_":
+            return (
+                config.STAGE_SIZE[0] * (random.random() - 0.5),
+                config.STAGE_SIZE[1] * (random.random() - 0.5),
+            )
+
+        target = util.sprites.targets.get(other)
+        if target:
+            return (target._xpos, target._ypos)
+
+        return None
 
     def bounce_on_edge(self):
         """If on edge, bounce. Not implemented."""
