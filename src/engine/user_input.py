@@ -46,8 +46,8 @@ class Inputs:
         self.pressed_keys.add(key)
 
         # Send the event to sprites
-        util.send_event("key" + key + "_pressed")
-        util.send_event("keyany_pressed")
+        util.send_event("key_" + key + "_pressed")
+        util.send_event("key_any_pressed")
 
         # Handle hotkeys
         self.hotkey(util, event)
@@ -65,8 +65,8 @@ class Inputs:
 
         # Remove the key from the key list
         self.pressed_keys.discard(key)
-        if len(self.pressed_keys) == 1:
-            self.pressed_keys = set()
+        if len(self.pressed_keys) == 1: # Just any
+            self.pressed_keys.clear()
 
         # Handle hotkeys
         if event.key == pg.K_F3:
