@@ -203,8 +203,12 @@ class SanitizationTests(unittest.TestCase):
         self.assertFalse(result, "Long md5ext considered valid")
 
         result = sanitizer.valid_md5ext(
-            'b581e068825ed08ca9f01cc937784bd7\\.png')
+            'b581e068825ed08ca9f01cc937784bd\\.png')
         self.assertFalse(result, "Slash allowed in md5ext")
+
+        result = sanitizer.valid_md5ext(
+            'b581e068825ed08ca9f01cc937784bd/.png')
+        self.assertFalse(result, "Forward slash allowed in md5ext")
 
         result = sanitizer.valid_md5ext(
             'e4261fdaddcf6a23dc7f966c7b956e1.mpeg')
