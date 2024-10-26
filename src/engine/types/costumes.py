@@ -86,8 +86,20 @@ class Costumes:
         """Loads an image or retrieves it from cache"""
         image = self._cache.get(path)
         if not image:
-            image = pg.image.load("assets/" + path).convert_alpha()
-            self._cache[path] = image
+            try:
+                image = pg.image.load("assets/" + path).convert_alpha()
+                self._cache[path] = image
+            except pg.error as error:
+                print(
+                    f"Failed to load '{path}'! Using a blank image instead. Details:",
+                    error)
+
+                image = pg.Surface((2, 2), pg.SRCALPHA)
+                image.fill((0, 0, 0, 0))
+                image = image.convert_alpha()
+
+                self._cache[path] = image
+
         return image
 
     def switch(self, costume):
