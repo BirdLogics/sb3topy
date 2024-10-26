@@ -13,29 +13,17 @@
         "id": 61991330,
         "link": "https://phosphorus.github.io/#61991330",
         "author": "griffpatch",
-        "description": "View on Phosphorus\nA 3D Demoscene, rendered entierly with the pen.",
+        "description": "View on Phosphorus\nA 3D Demoscene, rendered entirely with the pen.",
         "sha256": "fd2836a67bb773638030e50da750bfab3ab2855972bc1804c2ae4bd59f0e8aa4",
         "config": {}
     },
     {
-        "name": "The Taco Incident",
-        "id": 560636304,
-        "link": "https://scratch.mit.edu/projects/1823533/",
-        "author": "jonzo",
-        "description": "View on Scratch\nA humorous animation. All assets are bitmap.",
-        "sha256": "7888e015c63731a854cf2f9e3f5da6e2700ee69b3743abc1263de33dcb3fec43",
+        "name": "Hexplore",
+        "id": 248263497,
+        "link": "https://scratch.mit.edu/projects/248263497/",
+        "author": "Dad76",
+        "description": "View on Scratch\nA hand drawn point and click adventure.",
+        "sha256": "f74c3eee03f8f3e6e01c066be59592a3145f6abbbfd9128f21796dd172be4f15",
         "config": {}
-    },
-    {
-        "name": "Pokemon Battle!",
-        "id": 561258215,
-        "link": "https://scratch.mit.edu/projects/356302497/",
-        "author": "im_feeling_itchy",
-        "description": "View on Scratch\nA Pokemon battle game. Uses many vector images.",
-        "sha256": "48fd3731d50e877b9e9cc4f6d573fb70a4905ed6ae40aa991b09e507e5457787",
-        "config": {
-            "SOLO_BROADCASTS": true
-        },
-        "TODO": "make my_printnamesandhealth patch unecessary"
     }
 ]
