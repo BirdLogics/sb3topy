@@ -64,10 +64,15 @@ class Download:
         self.output_dir = manifest.output_dir
         self.project_id = project_id
 
-        # Download the project json
-        project_json = self.download_json()
+        metadata = self.project_metadata()
+        if metadata is None or "project_token" not in metadata:
+            logger.critical(
+                "Is the project shared? Failed to get project token.")
+            self.project = None
+            return
 
-        # Verify the json was loaded correctly
+        # Download the project json
+        project_json = self.download_json(metadata["project_token"])
         if project_json is None:
             self.project = None
             return
@@ -84,7 +89,21 @@ class Download:
 
         pool.close()
 
-    def download_json(self):
+    def project_metadata(self):
+        """Requests a token for the project."""
+
+        url = f"{config.PROJECT_TOKEN_HOST}/{self.project_id}"
+
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+        except requests.exceptions.RequestException:
+            logger.exception("Failed to get project metadata from '%s':", url)
+            return None
+
+        return resp.json()
+
+    def download_json(self, token):
         """Downloads and returns the project.json"""
         # Verify requests is installed
         if requests is None:
@@ -92,7 +111,7 @@ class Download:
                 "Failed to download project json; requests not installed.")
             return None
 
-        url = f"{config.PROJECT_HOST}/{self.project_id}"
+        url = f"{config.PROJECT_HOST}/{self.project_id}?token={token}"
 
         # Download the project.json
         try:

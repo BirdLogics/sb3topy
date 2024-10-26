@@ -241,6 +241,7 @@ DISABLE_INT_CAST = True
 SIG_DIGITS = 17
 
 # Download Settings
+PROJECT_TOKEN_HOST = "https://api.scratch.mit.edu/projects"
 PROJECT_HOST = "https://projects.scratch.mit.edu"
 ASSET_HOST = "https://assets.scratch.mit.edu"
 
