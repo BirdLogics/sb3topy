@@ -114,6 +114,7 @@ class App(tk.Tk):
         tk.StringVar(self, name="SVG_COMMAND")
         tk.IntVar(self, name="SVG_SCALE")
         # tk.IntVar(self, name="SVG_DPI")
+        tk.BooleanVar(self, name="CONVERT_COSTUMES")
 
         # Assets / MP3s
         tk.BooleanVar(self, name="CONVERT_SOUNDS")
@@ -216,6 +217,7 @@ class App(tk.Tk):
         self.setvar("SVG_COMMAND", config.SVG_COMMAND)
         self.setvar("SVG_SCALE", config.SVG_SCALE)
         # self.setvar("SVG_DPI", config.SVG_DPI)
+        self.setvar("CONVERT_COSTUMES", config.CONVERT_COSTUMES)
 
         # Assets / MP3s
         self.setvar("CONVERT_SOUNDS", config.CONVERT_SOUNDS)
@@ -314,6 +316,7 @@ class App(tk.Tk):
         config.SVG_COMMAND = self.getvar("SVG_COMMAND")
         config.SVG_SCALE = self.getvar("SVG_SCALE")
         # config.SVG_DPI = self.getvar("SVG_DPI")
+        config.CONVERT_COSTUMES = tkbool(self.getvar("CONVERT_COSTUMES"))
 
         # Assets / MP3s
         config.CONVERT_SOUNDS = tkbool(self.getvar("CONVERT_SOUNDS"))

@@ -493,6 +493,7 @@ class AssetSettings(ttk.Frame):
         self.use_svg_cmd = tk.BooleanVar(app, name="USE_SVG_CMD")
         self.svg_command = tk.StringVar(app, name="SVG_COMMAND")
         self.svg_scale = tk.IntVar(app, name="SVG_SCALE")
+        self.convert_costumes = tk.BooleanVar(app, name="CONVERT_COSTUMES")
 
         svg_cairo_box = ttk.Checkbutton(
             svg_frame, text="Use SVG Command",
@@ -502,6 +503,8 @@ class AssetSettings(ttk.Frame):
         svg_scale_label = ttk.Label(svg_frame, text="Converted Scale:")
         svg_scale_spin = ttk.Spinbox(svg_frame, from_=1, to=128, width=7,
                                      textvariable=self.svg_scale)
+        convert_svg_check = ttk.Checkbutton(svg_frame, text="Convert costumes",
+                                            variable=self.convert_costumes)
 
         self.mp3_command = tk.StringVar(app, name="MP3_COMMAND")
         self.convert_sounds = tk.BooleanVar(app, name="CONVERT_SOUNDS")
@@ -527,6 +530,8 @@ class AssetSettings(ttk.Frame):
         self.svg_comm_box.grid(column=1, row=1, sticky="EW", padx=3, pady=3)
         svg_scale_label.grid(column=0, row=2, sticky="W")
         svg_scale_spin.grid(column=1, row=2, sticky="W", padx=3, pady=3)
+        convert_svg_check.grid(column=0, row=3, columnspan=2,
+                               sticky="W", padx=3, pady=3)
 
         mp3_comm_label.grid(column=0, row=0, sticky="W")
         mp3_comm_box.grid(column=1, row=0, sticky="EW", padx=3, pady=3)
